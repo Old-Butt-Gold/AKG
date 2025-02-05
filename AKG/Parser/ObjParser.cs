@@ -50,7 +50,7 @@ public static class ObjParser
                     float z = float.Parse(tokens[3], culture);
                     float w = tokens.Length >= 5 ? float.Parse(tokens[4], culture) : 1.0f;
                     Vector4 vertex = new Vector4(x, y, z, w);
-                    model.Vertices.Add(vertex);
+                    model.OriginalVertices.Add(vertex);
 
                     // Обновляем bounding box (min/max) по осям X, Y и Z
                     if (vertex.X < min.X) min.X = vertex.X;
@@ -193,6 +193,8 @@ public static class ObjParser
         model.Max = max;
         model.Scale = scale;
         model.Delta = delta;
+
+        model.TransformedVertices = new Vector4[model.OriginalVertices.Count];
         
         return model;
     }
