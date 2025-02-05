@@ -1,4 +1,6 @@
-﻿using AKG.Parser;
+﻿using System.Numerics;
+using AKG.Parser;
+using AKG.Transformations;
 
 string pathToObj = @"C:\drive-D\marci.obj"; 
 
@@ -10,6 +12,7 @@ try
     Console.WriteLine($"Прочитано текстурных координат: {model.TextureCoords.Count}");
     Console.WriteLine($"Прочитано нормалей: {model.Normals.Count}");
     Console.WriteLine($"Прочитано граней: {model.Faces.Count}");
+    
 }
 catch (Exception ex)
 {
