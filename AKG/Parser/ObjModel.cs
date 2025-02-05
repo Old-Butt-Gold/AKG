@@ -45,4 +45,16 @@ public class ObjModel
     // Вектор, направленный вертикально вверх с точки зрения камеры
     // Вектор вверх (ось Y)
     public Vector3 Up { get; init; } = Vector3.UnitY;
+    
+    // Поле зрения камеры по оси Y (в радианах)
+    public float Fov { get; init; } = MathF.PI / 3; // 60° = PI / 3
+    
+    // Соотношение сторон обзора камеры
+    public float Aspect { get; init; } = 16f / 9f;
+
+    // Расстояние до ближней плоскости обзора
+    public float ZNear { get; init; } = 0.1f;
+    
+    // Расстояние до дальней плоскости обзора
+    public float ZFar = 100f;
 }

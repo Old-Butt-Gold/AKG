@@ -68,6 +68,33 @@ public static class Transformations
     }
 
     /// <summary>
+    /// Создаёт матрицу перспективной проекции, используя поле зрения по оси Y.
+    /// Результирующая матрица переводит координаты из пространства наблюдателя
+    /// в каноническое пространство проекции.
+    /// </summary>
+    /// <param name="fov">Угол поля зрения по оси Y (в радианах)</param>
+    /// <param name="aspect">Соотношение сторон (ширина/высота)</param>
+    /// <param name="znear">Расстояние до ближней плоскости обзора</param>
+    /// <param name="zfar">Расстояние до дальней плоскости обзора</param>
+    public static Matrix4x4 CreatePerspectiveProjection(float fov, float aspect, float znear, float zfar)
+    {
+        float tanHalfFov = MathF.Tan(fov / 2);
+        // Единичный масштаб по Y равен 1/tan(fov/2). По X – делим дополнительно на aspect.
+        float m00 = 1 / (aspect * tanHalfFov);
+        float m11 = 1 / tanHalfFov;
+        // Здесь выбирается формула, дающая z-координату в диапазоне [0, 1].
+        float m22 = zfar / (znear - zfar);
+        float m32 = (znear * zfar) / (znear - zfar);
+
+        return new Matrix4x4(
+            m00, 0,    0,   0,
+            0,   m11,  0,   0,
+            0,   0,    m22, m32,
+            0,   0,   -1,   0
+        );
+    }
+    
+    /// <summary>
     /// Применяет матричное преобразование ко всем вершинам модели.
     /// </summary>
     /// <param name="model">Модель, вершины которой необходимо преобразовать</param>
@@ -76,7 +103,7 @@ public static class Transformations
     {
         for (int i = 0; i < model.Vertices.Count; i++)
         {
-            // Преобразование вершины. Функция Vector4.Transform учитывает матрицу 4×4.
+            // Преобразование вершины. Функция учитывает матрицу 4×4.
             model.Vertices[i] = Vector4.Transform(model.Vertices[i], transform);
         }
     }
@@ -91,5 +118,22 @@ public static class Transformations
         ApplyTransformation(model, viewMatrix);
     }
     
-    
+    /// <summary>
+    /// Применяет матричное преобразование координат из
+    /// пространства наблюдателя в пространство проекции ко всем вершинам модели.
+    /// </summary>
+    public static void ApplyTransformationProjection(this ObjModel model, Matrix4x4 transform)
+    {
+        for (int i = 0; i < model.Vertices.Count; i++)
+        {
+            // Внимание: после применения перспективной матрицы получается 4D-вектор,
+            // где требуется выполнить перспективное деление: x, y, z делятся на w.
+            var v = Vector4.Transform(model.Vertices[i], transform);
+            if (v.W != 0)
+            {
+                v /= v.W;
+            }
+            model.Vertices[i] = v;
+        }
+    }
 }
