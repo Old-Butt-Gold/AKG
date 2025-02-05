@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Numerics;
 
 namespace AKG.Parser;
@@ -34,6 +35,11 @@ public class ObjModel
 
     // Дополнительная величина, например, для шага перемещения
     public float Delta { get; set; }
+    
+    //Размер экрана
+    public Size WindowSize { get; set; }
+    
+    //Дальше идут переменные, которые изменяют состояние внутренне
 
     // Позиция камеры в мировом пространстве
     public Vector3 Eye { get; init; } = new(1.0f, 1.0f, -MathF.PI);
@@ -56,5 +62,12 @@ public class ObjModel
     public float ZNear { get; init; } = 0.1f;
     
     // Расстояние до дальней плоскости обзора
-    public float ZFar = 100f;
+    public float ZFar { get; init; } = 100.0f;
+    
+    
+
+    public void UpdateImage()
+    {
+        
+    }
 }

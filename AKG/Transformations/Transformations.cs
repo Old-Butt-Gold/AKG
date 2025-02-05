@@ -95,6 +95,26 @@ public static class Transformations
     }
     
     /// <summary>
+    /// Создаёт матрицу преобразования из пространства проекции (NDC) в окно просмотра.
+    /// Преобразование масштабирует координаты в диапазоне [-1, 1] по X и Y в окно,
+    /// где ось Y перевёрнута (из-за того, что начало координат экрана – верхний левый угол).
+    /// </summary>
+    /// <param name="width">Ширина окна просмотра</param>
+    /// <param name="height">Высота окна просмотра</param>
+    /// <param name="xMin">Смещение по оси X окна (например, 0)</param>
+    /// <param name="yMin">Смещение по оси Y окна (например, 0)</param>
+    /// <returns>Матрица 4x4 для преобразования в координаты окна просмотра</returns>
+    public static Matrix4x4 CreateViewportMatrix(float width, float height, float xMin = 0.0f, float yMin = 0.0f)
+    {
+        return new Matrix4x4(
+            width / 2,  0,            0,  xMin + width / 2,
+            0,         -height / 2,   0,  yMin + height / 2,
+            0,          0,            1,  0,
+            0,          0,            0,  1
+        );
+    }
+    
+    /// <summary>
     /// Применяет матричное преобразование ко всем вершинам модели.
     /// </summary>
     /// <param name="model">Модель, вершины которой необходимо преобразовать</param>
@@ -134,6 +154,25 @@ public static class Transformations
                 v /= v.W;
             }
             model.Vertices[i] = v;
+        }
+    }
+    
+    /// <summary>
+    /// Применяет данное преобразование ко всем вершинам модели.
+    /// </summary>
+    /// <param name="model">Модель, вершины которой будут преобразованы</param>
+    /// <param name="viewportMatrix">Матрица преобразования окна просмотра</param>
+    public static void ApplyViewportTransformation(this ObjModel model, Matrix4x4 viewportMatrix)
+    {
+        for (int i = 0; i < model.Vertices.Count; i++)
+        {
+            // Находятся в диапазоне [-1; 1], * на Height / 2, => надо + 1?
+            /*var vertice = model.Vertices[i];
+            vertice.X++;
+            vertice.Y++;
+            model.Vertices[i] = vertice;*/
+            
+            model.Vertices[i] = Vector4.Transform(model.Vertices[i], viewportMatrix);
         }
     }
 }
