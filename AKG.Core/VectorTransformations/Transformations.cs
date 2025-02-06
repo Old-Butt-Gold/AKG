@@ -167,14 +167,20 @@ public static class Transformations
         Parallel.For(0, count, i =>
         {
             var v = Vector4.Transform(model.TransformedVertices[i], transform);
-            if (v.W != 0)
+            if (v.W > model.ZNear) 
             {
                 v /= v.W;
             }
+            
+            /*if (v.W != 0)
+            {
+                v /= v.W;
+            }*/
+
             model.TransformedVertices[i] = v;
         });
     }
-    
+
     /// <summary>
     /// Применяет данное преобразование ко всем вершинам модели.
     /// </summary>
@@ -194,7 +200,7 @@ public static class Transformations
             vertice.X = vertice.X + 1;
             vertice.Y = -vertice.Y + 1;
             model.TransformedVertices[i] = vertice;#1#
-            
+
             model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
         }*/
     }

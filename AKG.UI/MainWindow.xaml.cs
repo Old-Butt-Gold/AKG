@@ -15,7 +15,7 @@ public partial class MainWindow
     private ObjModel? ObjModel { get; set; }
     private WriteableBitmap? Wb { get; set; }
 
-    private float FloatAmount { get; init; } = 0.5f;
+    private float FloatAmount { get; init; } = 2.5f;
 
     private float RotateSensitivity { get; init; } = MathF.PI / 360.0f;
     
@@ -117,7 +117,7 @@ public partial class MainWindow
             }
             else
             {
-                matrix = Matrix4x4.CreateRotationX((float)-delta.Y * RotateSensitivity)
+                matrix = Matrix4x4.CreateRotationX((float)delta.Y * RotateSensitivity)
                          * Matrix4x4.CreateRotationY((float)delta.X * RotateSensitivity);
             }
             _lastMousePos = currentPos;
@@ -133,11 +133,11 @@ public partial class MainWindow
         
         switch (e.Key)
         {
-            case Key.Left:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(-FloatAmount, 0, 0));
-                break;
             case Key.Right:
                 ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(FloatAmount, 0, 0));
+                break;
+            case Key.Left:
+                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(-FloatAmount, 0, 0));
                 break;
             case Key.Up:
                 ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, FloatAmount, 0));
@@ -145,10 +145,10 @@ public partial class MainWindow
             case Key.Down:
                 ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, -FloatAmount, 0));
                 break;
-            case Key.W:
+            case Key.S:
                 ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, 0, -FloatAmount));
                 break;
-            case Key.S:
+            case Key.W:
                 ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, 0, FloatAmount));
                 break;
         }

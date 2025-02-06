@@ -47,7 +47,7 @@ public class ObjModel
     // Параметры камеры:
     
     // Позиция камеры в мировом пространстве
-    public Vector3 Eye { get; init; } = new(1.0f, 1.0f, -MathF.PI);
+    public Vector3 Eye { get; init; } = new(1.0f, 1.0f, MathF.PI);
     
     // Позиция цели, на которую направлена камера
     // направлена в центр сцены
@@ -58,13 +58,13 @@ public class ObjModel
     public Vector3 Up { get; init; } = Vector3.UnitY;
     
     // Поле зрения камеры по оси Y (в радианах)
-    public float Fov { get; init; } = MathF.PI / 3.0f; // 60° = PI / 3
+    public float Fov { get; init; } = MathF.PI / 4.0f; // 60° = PI / 3
     
     // Соотношение сторон обзора камеры
     public float Aspect { get; init; } = 16f / 9f;
 
     // Расстояние до ближней плоскости обзора
-    public float ZNear { get; init; } = 0.1f;
+    public float ZNear { get; init; } = 1f; // было 0.01f, при приближении проблемы возникают
     
     // Расстояние до дальней плоскости обзора
     public float ZFar { get; init; } = 100.0f;
@@ -86,7 +86,7 @@ public class ObjModel
         var projectionTransform = Transformations.CreatePerspectiveProjection(Fov, Aspect, ZNear, ZFar);
         this.ApplyTransformationProjection(projectionTransform);
 
-        var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height, -100, -200);
+        var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height);
         this.ApplyViewportTransformation(viewportTransform);
     }
 
