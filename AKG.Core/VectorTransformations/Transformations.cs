@@ -135,11 +135,12 @@ public static class Transformations
     /// <param name="transform">Матрица преобразования</param>
     public static void ApplyWorldTransformation(this ObjModel model, Matrix4x4 transform)
     {
-        for (int i = 0; i < model.OriginalVertices.Count; i++)
+        int count = model.OriginalVertices.Count;
+        Parallel.For(0, count, i =>
         {
-            // Преобразование вершины. Функция учитывает матрицу 4×4.
+            // Преобразуем исходную вершину и записываем в TransformedVertices по индексу i.
             model.TransformedVertices[i] = Vector4.Transform(model.OriginalVertices[i], transform);
-        }
+        });
     }
     
     /// <summary>
@@ -149,10 +150,11 @@ public static class Transformations
     /// <param name="viewMatrix">Матрица преобразования вида</param>
     public static void ApplyViewTransformation(this ObjModel model, Matrix4x4 viewMatrix)
     {
-        for (int i = 0; i < model.OriginalVertices.Count; i++)
+        int count = model.OriginalVertices.Count;
+        Parallel.For(0, count, i =>
         {
             model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewMatrix);
-        }
+        });
     }
     
     /// <summary>
@@ -161,17 +163,16 @@ public static class Transformations
     /// </summary>
     public static void ApplyTransformationProjection(this ObjModel model, Matrix4x4 transform)
     {
-        for (int i = 0; i < model.OriginalVertices.Count; i++)
+        int count = model.OriginalVertices.Count;
+        Parallel.For(0, count, i =>
         {
-            // Внимание: после применения перспективной матрицы получается 4D-вектор,
-            // где требуется выполнить перспективное деление: x, y, z делятся на w.
             var v = Vector4.Transform(model.TransformedVertices[i], transform);
             if (v.W != 0)
             {
                 v /= v.W;
             }
             model.TransformedVertices[i] = v;
-        }
+        });
     }
     
     /// <summary>
@@ -181,15 +182,20 @@ public static class Transformations
     /// <param name="viewportMatrix">Матрица преобразования окна просмотра</param>
     public static void ApplyViewportTransformation(this ObjModel model, Matrix4x4 viewportMatrix)
     {
-        for (int i = 0; i < model.OriginalVertices.Count; i++)
+        int count = model.OriginalVertices.Count;
+        Parallel.For(0, count, i =>
+        {
+            model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
+        });
+        /*for (int i = 0; i < model.OriginalVertices.Count; i++)
         {
             // Находятся в диапазоне [-1; 1], * на Height / 2, => надо + 1???
             /*var vertice = model.TransformedVertices[i];
             vertice.X = vertice.X + 1;
             vertice.Y = -vertice.Y + 1;
-            model.TransformedVertices[i] = vertice;*/
+            model.TransformedVertices[i] = vertice;#1#
             
             model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
-        }
+        }*/
     }
 }

@@ -187,7 +187,7 @@ public static class ObjParser
         
         // Определяем максимальный размер по осям
         float maxDiff = MathF.Max(diff.X, MathF.Max(diff.Y, diff.Z));
-        float scale = 1.0f / (maxDiff == 0 ? 1 : maxDiff);
+        float scale = 2.0f / (maxDiff == 0 ? 1 : maxDiff);
         float delta = scale / 10.0f; // к примеру шаг изменения 10
 
         model.Min = min;

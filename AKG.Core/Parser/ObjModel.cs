@@ -42,7 +42,7 @@ public class ObjModel
     public float Delta { get; set; }
     
     //Размер экрана
-    public Size WindowSize { get; set; } = new(1080, 720);
+    public Size WindowSize { get; set; }
 
     // Параметры камеры:
     
@@ -86,7 +86,16 @@ public class ObjModel
         var projectionTransform = Transformations.CreatePerspectiveProjection(Fov, Aspect, ZNear, ZFar);
         this.ApplyTransformationProjection(projectionTransform);
 
-        var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height);
+        var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height, -100, -200);
         this.ApplyViewportTransformation(viewportTransform);
+    }
+
+    public void ApplyTransformation(Matrix4x4 transformation)
+    {
+        int count = OriginalVertices.Count;
+        Parallel.For(0, count, i =>
+        {
+            OriginalVertices[i] = Vector4.Transform(OriginalVertices[i], transformation);
+        });
     }
 }

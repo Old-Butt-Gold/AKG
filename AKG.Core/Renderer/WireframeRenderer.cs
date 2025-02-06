@@ -16,9 +16,6 @@ public static class WireframeRenderer
     /// <param name="color">Цвет линий</param>
     public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color)
     {
-        // Очистим WriteableBitmap (например, заполнив его черным или прозрачным цветом)
-        ClearBitmap(wb, Colors.White);
-
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
         int intColor = (color.B << 0) | (color.G << 8) | (color.R << 16) | (color.A << 24);
 
@@ -64,17 +61,6 @@ public static class WireframeRenderer
         // Сообщаем системе, что изменился весь буфер
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
-        return;
-
-        static void ClearBitmap(WriteableBitmap wb, Color clearColor)
-        {
-            int intColor = (clearColor.B << 0) | (clearColor.G << 8) | (clearColor.R << 16) | (clearColor.A << 24);
-            int pixelCount = wb.PixelWidth * wb.PixelHeight;
-            int[] pixels = new int[pixelCount];
-            for (int i = 0; i < pixelCount; i++)
-                pixels[i] = intColor;
-            wb.WritePixels(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight), pixels, wb.BackBufferStride, 0);
-        }
     }
     
     /// <summary>
@@ -100,7 +86,7 @@ public static class WireframeRenderer
         while (true)
         {
             // Если координаты внутри экрана, установим пиксель
-            if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
+            if (x0 > 0 && x0 + 1 < width && y0 > 0 && y0 + 1 < height)
             {
                 buffer[y0 * width + x0] = color;
             }
@@ -121,5 +107,34 @@ public static class WireframeRenderer
             }
         }
     }
+    
+    public static void ClearBitmap(WriteableBitmap wb, Color clearColor)
+    {
+        int intColor = (clearColor.A << 24) | (clearColor.R << 16) | (clearColor.G << 8) | clearColor.B;
 
+        wb.Lock();
+
+        try
+        {
+            unsafe
+            {
+                int* pBackBuffer = (int*)wb.BackBuffer;
+
+                for (int i = 0; i < wb.PixelHeight; i++)
+                {
+                    for (int j = 0; j < wb.PixelWidth; j++)
+                    {
+                        *pBackBuffer++ = intColor;
+                    }
+                }
+            }
+
+            wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
+        }
+        finally
+        {
+            wb.Unlock();
+        }
+    }
+    
 }
