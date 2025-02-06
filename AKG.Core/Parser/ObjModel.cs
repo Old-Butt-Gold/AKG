@@ -1,8 +1,8 @@
 using System.Drawing;
 using System.Numerics;
-using AKG.VectorTransformations;
+using AKG.Core.VectorTransformations;
 
-namespace AKG.Parser;
+namespace AKG.Core.Parser;
 
 /// <summary>
 /// Класс модели, содержащей списки всех элементов 

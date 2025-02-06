@@ -1,7 +1,7 @@
 using System.Numerics;
-using AKG.Parser;
+using AKG.Core.Parser;
 
-namespace AKG.VectorTransformations;
+namespace AKG.Core.VectorTransformations;
 
 public static class Transformations
 {

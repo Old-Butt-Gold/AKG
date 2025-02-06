@@ -1,7 +1,8 @@
 using System.Globalization;
+using System.IO;
 using System.Numerics;
 
-namespace AKG.Parser;
+namespace AKG.Core.Parser;
 
 public static class ObjParser
 {
