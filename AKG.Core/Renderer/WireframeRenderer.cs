@@ -86,7 +86,7 @@ public static class WireframeRenderer
         while (true)
         {
             // Если координаты внутри экрана, установим пиксель
-            if (x0 > 0 && x0 + 1 < width && y0 > 0 && y0 + 1 < height)
+            if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
             {
                 buffer[y0 * width + x0] = color;
             }

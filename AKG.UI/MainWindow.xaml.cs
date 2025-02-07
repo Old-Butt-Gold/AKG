@@ -15,12 +15,13 @@ public partial class MainWindow
     private ObjModel? ObjModel { get; set; }
     private WriteableBitmap? Wb { get; set; }
 
-    private float FloatAmount { get; init; } = 2.5f;
-
     private float RotateSensitivity { get; init; } = MathF.PI / 360.0f;
     
     private bool _isRotating;
     private Point _lastMousePos;
+    
+    private Color ForegroundSelectedColor { get; set; } = Colors.Red;
+    private Color BackgroundSelectedColor { get; set; } = Colors.White;
     
     public MainWindow()
     {
@@ -95,22 +96,23 @@ public partial class MainWindow
     
     private void ImagePanel_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        ImagePanel.Focus();
         _isRotating = true;
-        _lastMousePos = e.GetPosition(ImgDisplay);
-        ImgDisplay.CaptureMouse();
+        _lastMousePos = e.GetPosition(ImagePanel);
+        ImagePanel.CaptureMouse();
     }
 
     private void ImagePanel_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         _isRotating = false;
-        ImgDisplay.ReleaseMouseCapture();
+        ImagePanel.ReleaseMouseCapture();
     }
     
     private void ImagePanel_OnMouseMove(object sender, MouseEventArgs e)
     {
         if (_isRotating && ObjModel != null)
         {
-            Point currentPos = e.GetPosition(ImgDisplay);
+            Point currentPos = e.GetPosition(ImagePanel);
             Vector delta = currentPos - _lastMousePos;
 
             // Если нажата клавиша Shift, вращаем по оси Z, иначе по X и Y.
@@ -135,31 +137,31 @@ public partial class MainWindow
     private void ImagePanel_KeyDown(object sender, KeyEventArgs e)
     {
         if (ObjModel is null) return;
+
+        var optimalStep = ObjModel.GetOptimalTranslationStep();
         
         switch (e.Key)
         {
             case Key.Right:
-                ObjModel.Translation += new Vector3(FloatAmount, 0, 0);
+                ObjModel.Translation += new Vector3(optimalStep.X, 0, 0);
                 break;
             case Key.Left:
-                ObjModel.Translation += new Vector3(-FloatAmount, 0, 0);
+                ObjModel.Translation += new Vector3(-optimalStep.X, 0, 0);
                 break;
             case Key.Up:
-                ObjModel.Translation += new Vector3(0, FloatAmount, 0);
+                ObjModel.Translation += new Vector3(0, optimalStep.Y, 0);
                 break;
             case Key.Down:
-                ObjModel.Translation += new Vector3(0, -FloatAmount, 0);
+                ObjModel.Translation += new Vector3(0, -optimalStep.Y, 0);
                 break;
             case Key.S:
-                ObjModel.Translation += new Vector3(0, 0, -FloatAmount);
+                ObjModel.Translation += new Vector3(0, 0, optimalStep.Z);
                 break;
             case Key.W:
-                ObjModel.Translation += new Vector3(0, 0, FloatAmount);
+                ObjModel.Translation += new Vector3(0, 0, -optimalStep.Z);
                 break;
         }
     }
-
-    private Color ForegroundSelectedColor { get; set; } = Colors.Red;
 
     private void ForegroundColor_OnClick(object sender, RoutedEventArgs e)
     {
@@ -170,8 +172,6 @@ public partial class MainWindow
             RedrawModel(); 
         }
     }
-    
-    private Color BackgroundSelectedColor { get; set; } = Colors.White;
 
     private void BackgroundColor_OnClick(object sender, RoutedEventArgs e)
     {

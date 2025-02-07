@@ -150,4 +150,17 @@ public class ObjModel
         var finalTransform = worldTransform * viewTransform * projectionTransform * viewportTransform;
         this.ApplyFinalTransformation(finalTransform);
     }
+
+    public Vector3 GetOptimalTranslationStep()
+    {
+        float dx = Max.X - Min.X;
+        float dy = Max.Y - Min.Y;
+        float dz = Max.Z - Min.Z;
+
+        float stepX = dx / 50.0f;
+        float stepY = dy / 50.0f;
+        float stepZ = dz / 50.0f;
+
+        return new Vector3(stepX, stepY, stepZ);
+    }
 }
