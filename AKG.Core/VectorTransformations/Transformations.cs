@@ -204,4 +204,29 @@ public static class Transformations
             model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
         }*/
     }
+
+    /// <summary>
+    /// Применяет преобразование к вершинам модели после перемножений матриц World x View x Projection x Viewport
+    /// </summary>
+    /// <param name="model">Модль, вершины которой будут преобразованы</param>
+    /// <param name="finalTransform">Матрица, финального преобразования</param>
+    public static void ApplyFinalTransformation(this ObjModel model, Matrix4x4 finalTransform)
+    {
+        int count = model.OriginalVertices.Count;
+        Parallel.For(0, count, i =>
+        {
+            var v = Vector4.Transform(model.OriginalVertices[i], finalTransform);
+            if (v.W > model.ZNear) 
+            {
+                v /= v.W;
+            }
+            
+            /*if (v.W != 0)
+            {
+                v /= v.W;
+            }*/
+
+            model.TransformedVertices[i] = v;
+        });
+    }
 }

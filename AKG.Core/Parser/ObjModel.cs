@@ -131,20 +131,23 @@ public class ObjModel
     /// Исходно копирует данные из OriginalVertices, затем последовательно
     /// применяет преобразования: мировое -> вид -> проекция -> viewport.
     /// </summary>
-    private void UpdateImage()
+    public void UpdateImage()
     {
         // Start point to change TransformedVertices
-        Matrix4x4 rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+        var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
         var worldTransform = Transformations.CreateWorldTransform(Scale, rotationMatrix, Translation);
-        this.ApplyWorldTransformation(worldTransform);
+        //this.ApplyWorldTransformation(worldTransform);
 
         var viewTransform = Transformations.CreateViewMatrix(Eye, Target, Up);
-        this.ApplyViewTransformation(viewTransform);
+        //this.ApplyViewTransformation(viewTransform);
 
         var projectionTransform = Transformations.CreatePerspectiveProjection(Fov, Aspect, ZNear, ZFar);
-        this.ApplyTransformationProjection(projectionTransform);
+        //this.ApplyTransformationProjection(projectionTransform);
 
         var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height);
-        this.ApplyViewportTransformation(viewportTransform);
+        //this.ApplyViewportTransformation(viewportTransform);
+        
+        var finalTransform = worldTransform * viewTransform * projectionTransform * viewportTransform;
+        this.ApplyFinalTransformation(finalTransform);
     }
 }

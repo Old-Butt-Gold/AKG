@@ -17,7 +17,7 @@ public static class WireframeRenderer
     public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color)
     {
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
-        int intColor = (color.B << 0) | (color.G << 8) | (color.R << 16) | (color.A << 24);
+        int intColor = color.ColorToIntBGRA();
 
         wb.Lock();
 
@@ -75,7 +75,7 @@ public static class WireframeRenderer
     /// <param name="x1">Конечная координата X</param>
     /// <param name="y1">Конечная координата Y</param>
     /// <param name="color">Цвет линии в формате ARGB (целое число)</param>
-    private static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color)
+    public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color)
     {
         int dx = Math.Abs(x1 - x0);
         int dy = Math.Abs(y1 - y0);
@@ -136,5 +136,4 @@ public static class WireframeRenderer
             wb.Unlock();
         }
     }
-    
 }

@@ -27,6 +27,12 @@ public partial class MainWindow
         InitializeComponent();
         WindowState = WindowState.Maximized;
     }
+    
+    private void ObjModel_TransformationChanged(object? sender, EventArgs e)
+    {
+        RedrawModel();
+        UpdateModelInfo();
+    }
 
     private void LoadFile_OnClick(object sender, RoutedEventArgs e)
     {
@@ -45,9 +51,9 @@ public partial class MainWindow
                 Wb = new WriteableBitmap(ObjModel.WindowSize.Width, ObjModel.WindowSize.Height, 96, 96, PixelFormats.Bgra32, null);
                 ImgDisplay.Source = Wb;
                 
-                ObjModel.TransformationChanged += (_, _) => RedrawModel();
+                ObjModel.TransformationChanged += ObjModel_TransformationChanged;
 
-                ObjModel.Scale = ObjModel.Delta * 10.0f; // вызовет RedrawModel();
+                ObjModel.Scale = ObjModel.Delta * 10.0f; // вызовет UpdateImage -> RedrawModel();
             }
             catch (Exception ex)
             {
@@ -55,18 +61,19 @@ public partial class MainWindow
             }
         }
     }
+    
     private void RedrawModel()
     {
         if (Wb == null || ObjModel == null) return;
-        WireframeRenderer.ClearBitmap(Wb, Colors.White);
-        WireframeRenderer.DrawWireframe(ObjModel, Wb, Colors.Red);
+        WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
+        WireframeRenderer.DrawWireframe(ObjModel, Wb, ForegroundSelectedColor);
     }
     
     private void FileClear_OnClick(object sender, RoutedEventArgs e)
     {
         if (Wb != null)
         {
-            WireframeRenderer.ClearBitmap(Wb, Colors.White);
+            WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
             ObjModel = null;
         }
     }
@@ -150,5 +157,62 @@ public partial class MainWindow
                 ObjModel.Translation += new Vector3(0, 0, FloatAmount);
                 break;
         }
+    }
+
+    private Color ForegroundSelectedColor { get; set; } = Colors.Red;
+
+    private void ForegroundColor_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new System.Windows.Forms.ColorDialog();
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            ForegroundSelectedColor = Color.FromArgb(dialog.Color.A, dialog.Color.R, dialog.Color.G, dialog.Color.B);
+            RedrawModel(); 
+        }
+    }
+    
+    private Color BackgroundSelectedColor { get; set; } = Colors.White;
+
+    private void BackgroundColor_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new System.Windows.Forms.ColorDialog();
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            BackgroundSelectedColor = Color.FromArgb(dialog.Color.A, dialog.Color.R, dialog.Color.G, dialog.Color.B);
+            RedrawModel(); 
+        }
+    }
+    
+    private void UpdateModelInfo()
+    {
+        if (ObjModel == null) return;
+
+        double rotXDeg = NormalizeAngle(ObjModel.Rotation.X * (180.0 / Math.PI));
+        double rotYDeg = NormalizeAngle(ObjModel.Rotation.Y * (180.0 / Math.PI));
+        double rotZDeg = NormalizeAngle(ObjModel.Rotation.Z * (180.0 / Math.PI));
+
+        string info = $"Vertices: {ObjModel.OriginalVertices.Count}\n" +
+                      $"Faces: {ObjModel.Faces.Count}\n" +
+                      $"Scale: {ObjModel.Scale:F10}\n" +
+                      $"Delta: {ObjModel.Delta:F10}\n" +
+                      $"Translation: ({ObjModel.Translation.X:F2}, {ObjModel.Translation.Y:F2}, {ObjModel.Translation.Z:F2})\n" +
+                      $"Rotation: (X:{rotXDeg:F0}°, Y:{rotYDeg:F0}°, Z:{rotZDeg:F0}°)\n" +
+                      $"Model Size: (X: {ObjModel.Max.X - ObjModel.Min.X:F2}, Y: {ObjModel.Max.Y - ObjModel.Min.Y:F2}, Z: {ObjModel.Max.Z - ObjModel.Min.Z:F2});";
+        ModelInfoText.Text = info;
+        
+        double NormalizeAngle(double angle)
+        {
+            angle %= 360;
+            if (angle > 180)
+                angle -= 360;
+            else if (angle <= -180)
+                angle += 360;
+            return angle;
+        }
+    }
+
+    private void ToggleModelInfoPopup(object sender, RoutedEventArgs e)
+    {
+        ModelInfoPopup.IsOpen = !ModelInfoPopup.IsOpen;
     }
 }

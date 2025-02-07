@@ -13,8 +13,23 @@
         </Grid.RowDefinitions>
         
         <StackPanel Grid.Row="0" Name="StackPanel" Orientation="Horizontal" Background="LightGray" Margin="5">
-            <Button x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Click="LoadFile_OnClick"/>
-            <Button x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Click="FileClear_OnClick"/>
+            <Button Focusable="False" x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Click="LoadFile_OnClick"/>
+            <Button Focusable="False" x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Click="FileClear_OnClick"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="Foreground Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <Button Focusable="False" Content="Pick Color" Click="ForegroundColor_OnClick" Width="100" Height="30" Margin="0 0 5 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="Background Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <Button Focusable="False" Content="Pick Color" Click="BackgroundColor_OnClick" Width="100" Height="30"/>
+            </StackPanel>
+            <Button Focusable="False" Content="Model Info" ClickMode="Press" Click="ToggleModelInfoPopup" Margin="10" Padding="5"/>
+            
+            <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="False" StaysOpen="False">
+                <Border Background="White" BorderBrush="Black" BorderThickness="1" Padding="10">
+                    <TextBlock x:Name="ModelInfoText" TextWrapping="Wrap" Width="Auto" Height="Auto"/>
+                </Border>
+            </Popup>
         </StackPanel>
         
         <StackPanel Focusable="True" Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
