@@ -19,6 +19,9 @@ public partial class MainWindow
 
     private float RotateSensitivity { get; init; } = MathF.PI / 360.0f;
     
+    private bool _isRotating;
+    private Point _lastMousePos;
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -42,7 +45,9 @@ public partial class MainWindow
                 Wb = new WriteableBitmap(ObjModel.WindowSize.Width, ObjModel.WindowSize.Height, 96, 96, PixelFormats.Bgra32, null);
                 ImgDisplay.Source = Wb;
                 
-                RedrawModel();
+                ObjModel.TransformationChanged += (_, _) => RedrawModel();
+
+                ObjModel.Scale = ObjModel.Delta * 10.0f; // вызовет RedrawModel();
             }
             catch (Exception ex)
             {
@@ -54,7 +59,6 @@ public partial class MainWindow
     {
         if (Wb == null || ObjModel == null) return;
         WireframeRenderer.ClearBitmap(Wb, Colors.White);
-        ObjModel.UpdateImage();
         WireframeRenderer.DrawWireframe(ObjModel, Wb, Colors.Red);
     }
     
@@ -79,14 +83,8 @@ public partial class MainWindow
             {
                 ObjModel.Scale -= ObjModel.Delta;
             }
-
-            ObjModel.Delta = ObjModel.Scale / 10.0f;
-            RedrawModel();
         }
     }
-
-    private bool _isRotating;
-    private Point _lastMousePos;
     
     private void ImagePanel_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -108,22 +106,22 @@ public partial class MainWindow
             Point currentPos = e.GetPosition(ImgDisplay);
             Vector delta = currentPos - _lastMousePos;
 
-            Matrix4x4 matrix;
-            
             // Если нажата клавиша Shift, вращаем по оси Z, иначе по X и Y.
             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                matrix = Matrix4x4.CreateRotationZ((float)-delta.X * RotateSensitivity);
+                ObjModel.Rotation = new Vector3(
+                    ObjModel.Rotation.X,
+                    ObjModel.Rotation.Y,
+                    ObjModel.Rotation.Z - (float)delta.X * RotateSensitivity);
             }
             else
             {
-                matrix = Matrix4x4.CreateRotationX((float)delta.Y * RotateSensitivity)
-                         * Matrix4x4.CreateRotationY((float)delta.X * RotateSensitivity);
+                ObjModel.Rotation = new Vector3(
+                    ObjModel.Rotation.X + (float)delta.Y * RotateSensitivity,
+                    ObjModel.Rotation.Y + (float)delta.X * RotateSensitivity,
+                    ObjModel.Rotation.Z);
             }
             _lastMousePos = currentPos;
-            
-            ObjModel.ApplyTransformation(matrix);
-            RedrawModel();
         }
     }
 
@@ -134,24 +132,23 @@ public partial class MainWindow
         switch (e.Key)
         {
             case Key.Right:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(FloatAmount, 0, 0));
+                ObjModel.Translation += new Vector3(FloatAmount, 0, 0);
                 break;
             case Key.Left:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(-FloatAmount, 0, 0));
+                ObjModel.Translation += new Vector3(-FloatAmount, 0, 0);
                 break;
             case Key.Up:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, FloatAmount, 0));
+                ObjModel.Translation += new Vector3(0, FloatAmount, 0);
                 break;
             case Key.Down:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, -FloatAmount, 0));
+                ObjModel.Translation += new Vector3(0, -FloatAmount, 0);
                 break;
             case Key.S:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, 0, -FloatAmount));
+                ObjModel.Translation += new Vector3(0, 0, -FloatAmount);
                 break;
             case Key.W:
-                ObjModel.ApplyTransformation(Matrix4x4.CreateTranslation(0, 0, FloatAmount));
+                ObjModel.Translation += new Vector3(0, 0, FloatAmount);
                 break;
         }
-        RedrawModel();
     }
 }

@@ -9,6 +9,10 @@ namespace AKG.Core.Parser;
 /// </summary>
 public class ObjModel
 {
+    private float _scale;
+    private Vector3 _translation = Vector3.Zero;
+    private Vector3 _rotation = Vector3.Zero;
+
     // Список исходных (оригинальных) вершин, полученных из файла OBJ.
     // V
     // W – Дополнительная координата, по умолчанию 1
@@ -36,7 +40,44 @@ public class ObjModel
     public Vector4 Max { get; set; }
 
     // Коэффициент масштабирования, рассчитанный по размеру объекта.
-    public float Scale { get; set; }
+    public float Scale
+    {
+        get => _scale;
+        set
+        {
+            _scale = value;
+            Delta = _scale / 10.0f;
+            OnTransformationChanged();
+        }
+    }
+
+    // Смещение модели
+    public Vector3 Translation
+    {
+        get => _translation;
+        set
+        {
+            if (_translation != value)
+            {
+                _translation = value;
+                OnTransformationChanged();
+            }
+        }
+    }
+
+    // Вращение модели (углы в радианах по осям X, Y, Z).
+    public Vector3 Rotation
+    {
+        get => _rotation;
+        set
+        {
+            if (_rotation != value)
+            {
+                _rotation = value;
+                OnTransformationChanged();
+            }
+        }
+    }
 
     // Дополнительная величина, например, для шага перемещения
     public float Delta { get; set; }
@@ -58,7 +99,7 @@ public class ObjModel
     public Vector3 Up { get; init; } = Vector3.UnitY;
     
     // Поле зрения камеры по оси Y (в радианах)
-    public float Fov { get; init; } = MathF.PI / 4.0f; // 60° = PI / 3
+    public float Fov { get; init; } = MathF.PI / 4.0f; // 45° = PI / 4
     
     // Соотношение сторон обзора камеры
     public float Aspect { get; init; } = 16f / 9f;
@@ -70,14 +111,31 @@ public class ObjModel
     public float ZFar { get; init; } = 100.0f;
     
     /// <summary>
+    /// Событие, которое вызывается при изменении параметров трансформации.
+    /// На него можно подписаться, чтобы, например, перерисовать изображение.
+    /// </summary>
+    public event EventHandler? TransformationChanged;
+
+    /// <summary>
+    /// Вызывается при изменении Scale, Translation или Rotation.
+    /// Пересчитывает матрицы и обновляет трансформированные вершины, а затем генерирует событие.
+    /// </summary>
+    protected virtual void OnTransformationChanged()
+    {
+        UpdateImage();
+        TransformationChanged?.Invoke(this, EventArgs.Empty);
+    }
+    
+    /// <summary>
     /// Обновляет отображаемые (трансформированные) вершины.
     /// Исходно копирует данные из OriginalVertices, затем последовательно
     /// применяет преобразования: мировое -> вид -> проекция -> viewport.
     /// </summary>
-    public void UpdateImage()
+    private void UpdateImage()
     {
         // Start point to change TransformedVertices
-        var worldTransform = Transformations.CreateWorldTransform(Scale, Matrix4x4.Identity, Vector3.Zero);
+        Matrix4x4 rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+        var worldTransform = Transformations.CreateWorldTransform(Scale, rotationMatrix, Translation);
         this.ApplyWorldTransformation(worldTransform);
 
         var viewTransform = Transformations.CreateViewMatrix(Eye, Target, Up);
@@ -88,14 +146,5 @@ public class ObjModel
 
         var viewportTransform = Transformations.CreateViewportMatrix(WindowSize.Width, WindowSize.Height);
         this.ApplyViewportTransformation(viewportTransform);
-    }
-
-    public void ApplyTransformation(Matrix4x4 transformation)
-    {
-        int count = OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            OriginalVertices[i] = Vector4.Transform(OriginalVertices[i], transformation);
-        });
     }
 }
