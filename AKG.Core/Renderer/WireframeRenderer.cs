@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AKG.Core.Objects;
 using AKG.Core.Parser;
 
 namespace AKG.Core.Renderer;

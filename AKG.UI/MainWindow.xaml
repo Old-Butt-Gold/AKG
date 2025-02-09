@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AKG.UI"
         mc:Ignorable="d"
-        Title="3D Obj Viewer">
+        Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -37,7 +37,8 @@
                     MouseLeftButtonDown="ImagePanel_OnMouseLeftButtonDown"
                     MouseLeftButtonUp="ImagePanel_OnMouseLeftButtonUp"
                     KeyDown="ImagePanel_KeyDown"
-                    MouseMove="ImagePanel_OnMouseMove">
+                    MouseMove="ImagePanel_OnMouseMove"
+                    MouseRightButtonDown="ImagePanel_OnMouseRightButtonDown">
             <Image x:Name="ImgDisplay" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         </StackPanel>
     </Grid>

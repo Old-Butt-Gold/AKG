@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AKG.Core.Objects;
 using AKG.Core.Parser;
 using AKG.Core.Renderer;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -12,11 +13,11 @@ namespace AKG.UI;
 
 public partial class MainWindow
 {
-    private ObjModel? ObjModel { get; set; }
+    private Scene Scene { get; set; } = new();
     private WriteableBitmap? Wb { get; set; }
 
-    private float RotateSensitivity { get; init; } = MathF.PI / 360.0f;
-    
+    private float RotateSensitivity => MathF.PI / 360.0f;
+
     private bool _isRotating;
     private Point _lastMousePos;
     
@@ -27,12 +28,20 @@ public partial class MainWindow
     {
         InitializeComponent();
         WindowState = WindowState.Maximized;
+
+        Scene.Camera = new Camera();
+        
+        Scene.SelectedModelChanged += (s, e) =>
+        {
+            RedrawScene();
+            UpdateModelInfo();
+        };
     }
     
-    private void ObjModel_TransformationChanged(object? sender, EventArgs e)
+    private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
     {
-        RedrawModel();
-        UpdateModelInfo();
+        Scene.CanvasHeight = (int) ImagePanel.ActualHeight;
+        Scene.CanvasWidth = (int) ImagePanel.ActualWidth;
     }
 
     private void LoadFile_OnClick(object sender, RoutedEventArgs e)
@@ -43,18 +52,15 @@ public partial class MainWindow
         {
             try
             {
-                ObjModel = ObjParser.Parse(dlg.FileName!);
-
-                int width = (int)(ImagePanel.ActualWidth > 0 ? ImagePanel.ActualWidth : 800);
-                int height = (int)(ImagePanel.ActualHeight > 0 ? ImagePanel.ActualHeight : 600);
-                ObjModel.WindowSize = new(width, height);
-
-                Wb = new WriteableBitmap(ObjModel.WindowSize.Width, ObjModel.WindowSize.Height, 96, 96, PixelFormats.Bgra32, null);
+                var loadedModel = ObjParser.Parse(dlg.FileName!);
+                Wb = new WriteableBitmap(Scene.CanvasWidth, Scene.CanvasHeight, 96, 96, PixelFormats.Bgra32, null);
                 ImgDisplay.Source = Wb;
-                
-                ObjModel.TransformationChanged += ObjModel_TransformationChanged;
 
-                ObjModel.Scale = ObjModel.Delta * 10.0f; // вызовет UpdateImage -> RedrawModel();
+                Scene.Models.Add(loadedModel);
+                Scene.SelectedModel = loadedModel;
+                Scene.UpdateSelectedModel();
+                
+                //Scene.UpdateSelectedModel();
             }
             catch (Exception ex)
             {
@@ -63,11 +69,16 @@ public partial class MainWindow
         }
     }
     
-    private void RedrawModel()
+    private void RedrawScene()
     {
-        if (Wb == null || ObjModel == null) return;
+        if (Wb == null) return;
+        
         WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
-        WireframeRenderer.DrawWireframe(ObjModel, Wb, ForegroundSelectedColor);
+
+        foreach (var model in Scene.Models)
+        {
+            WireframeRenderer.DrawWireframe(model, Wb, ForegroundSelectedColor);
+        }
     }
     
     private void FileClear_OnClick(object sender, RoutedEventArgs e)
@@ -75,22 +86,25 @@ public partial class MainWindow
         if (Wb != null)
         {
             WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
-            ObjModel = null;
+            Scene.Models.Clear();
+            Scene.SelectedModel = null;
         }
     }
 
     private void ImagePanel_OnMouseWheel(object sender, MouseWheelEventArgs e)
     {
-        if (ObjModel != null)
+        if (Scene.SelectedModel != null)
         {
             if (e.Delta > 0)
             {
-                ObjModel.Scale += ObjModel.Delta;
+                Scene.SelectedModel.Scale += Scene.SelectedModel.Delta;
             }
             else
             {
-                ObjModel.Scale -= ObjModel.Delta;
+                Scene.SelectedModel.Scale -= Scene.SelectedModel.Delta;
             }
+            
+            Scene.UpdateSelectedModel();
         }
     }
     
@@ -110,66 +124,78 @@ public partial class MainWindow
     
     private void ImagePanel_OnMouseMove(object sender, MouseEventArgs e)
     {
-        if (_isRotating && ObjModel != null)
+        if (_isRotating && Scene.SelectedModel != null)
         {
-            Point currentPos = e.GetPosition(ImagePanel);
+            Point currentPos = e.GetPosition(ImgDisplay);
             Vector delta = currentPos - _lastMousePos;
-
-            // Если нажата клавиша Shift, вращаем по оси Z, иначе по X и Y.
+    
+            // Если нажата клавиша Shift — вращаем по оси Z, иначе по X и Y.
             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                ObjModel.Rotation = new Vector3(
-                    ObjModel.Rotation.X,
-                    ObjModel.Rotation.Y,
-                    ObjModel.Rotation.Z - (float)delta.X * RotateSensitivity);
+                Scene.SelectedModel.Rotation = new Vector3(
+                    Scene.SelectedModel.Rotation.X,
+                    Scene.SelectedModel.Rotation.Y,
+                    Scene.SelectedModel.Rotation.Z - (float)delta.X * RotateSensitivity);
             }
             else
             {
-                ObjModel.Rotation = new Vector3(
-                    ObjModel.Rotation.X + (float)delta.Y * RotateSensitivity,
-                    ObjModel.Rotation.Y + (float)delta.X * RotateSensitivity,
-                    ObjModel.Rotation.Z);
+                Scene.SelectedModel.Rotation = new Vector3(
+                    Scene.SelectedModel.Rotation.X + (float)delta.Y * RotateSensitivity,
+                    Scene.SelectedModel.Rotation.Y + (float)delta.X * RotateSensitivity,
+                    Scene.SelectedModel.Rotation.Z);
             }
             _lastMousePos = currentPos;
+    
+            Scene.UpdateSelectedModel();
         }
     }
 
+    private void ImagePanel_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // При правом клике пытаемся выделить модель
+        var clickPoint = e.GetPosition(ImgDisplay);
+        var pickedModel = Scene.PickModel(clickPoint);
+        Scene.SelectedModel = pickedModel;
+    }
+    
     private void ImagePanel_KeyDown(object sender, KeyEventArgs e)
     {
-        if (ObjModel is null) return;
+        if (Scene.SelectedModel == null) return;
 
-        var optimalStep = ObjModel.GetOptimalTranslationStep();
+        var step = Scene.SelectedModel.GetOptimalTranslationStep();
         
         switch (e.Key)
         {
             case Key.Right:
-                ObjModel.Translation += new Vector3(optimalStep.X, 0, 0);
+                Scene.SelectedModel.Translation += new Vector3(step.X, 0, 0);
                 break;
             case Key.Left:
-                ObjModel.Translation += new Vector3(-optimalStep.X, 0, 0);
+                Scene.SelectedModel.Translation += new Vector3(-step.X, 0, 0);
                 break;
             case Key.Up:
-                ObjModel.Translation += new Vector3(0, optimalStep.Y, 0);
+                Scene.SelectedModel.Translation += new Vector3(0, step.Y, 0);
                 break;
             case Key.Down:
-                ObjModel.Translation += new Vector3(0, -optimalStep.Y, 0);
+                Scene.SelectedModel.Translation += new Vector3(0, -step.Y, 0);
                 break;
             case Key.S:
-                ObjModel.Translation += new Vector3(0, 0, optimalStep.Z);
+                Scene.SelectedModel.Translation += new Vector3(0, 0, -step.Z);
                 break;
             case Key.W:
-                ObjModel.Translation += new Vector3(0, 0, -optimalStep.Z);
+                Scene.SelectedModel.Translation += new Vector3(0, 0, step.Z);
                 break;
         }
+    
+        Scene.UpdateSelectedModel();
     }
-
+    
     private void ForegroundColor_OnClick(object sender, RoutedEventArgs e)
     {
         var dialog = new System.Windows.Forms.ColorDialog();
         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             ForegroundSelectedColor = Color.FromArgb(dialog.Color.A, dialog.Color.R, dialog.Color.G, dialog.Color.B);
-            RedrawModel(); 
+            RedrawScene(); 
         }
     }
 
@@ -179,27 +205,28 @@ public partial class MainWindow
         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             BackgroundSelectedColor = Color.FromArgb(dialog.Color.A, dialog.Color.R, dialog.Color.G, dialog.Color.B);
-            RedrawModel(); 
+            RedrawScene(); 
         }
     }
     
     private void UpdateModelInfo()
     {
-        if (ObjModel == null) return;
-
-        double rotXDeg = NormalizeAngle(ObjModel.Rotation.X * (180.0 / Math.PI));
-        double rotYDeg = NormalizeAngle(ObjModel.Rotation.Y * (180.0 / Math.PI));
-        double rotZDeg = NormalizeAngle(ObjModel.Rotation.Z * (180.0 / Math.PI));
-
-        string info = $"Vertices: {ObjModel.OriginalVertices.Count}\n" +
-                      $"Faces: {ObjModel.Faces.Count}\n" +
-                      $"Scale: {ObjModel.Scale:F10}\n" +
-                      $"Delta: {ObjModel.Delta:F10}\n" +
-                      $"Translation: ({ObjModel.Translation.X:F2}, {ObjModel.Translation.Y:F2}, {ObjModel.Translation.Z:F2})\n" +
+        if (Scene.SelectedModel == null) return;
+    
+        var model = Scene.SelectedModel;
+        double rotXDeg = NormalizeAngle(model.Rotation.X * (180.0 / Math.PI));
+        double rotYDeg = NormalizeAngle(model.Rotation.Y * (180.0 / Math.PI));
+        double rotZDeg = NormalizeAngle(model.Rotation.Z * (180.0 / Math.PI));
+    
+        string info = $"Vertices: {model.OriginalVertices.Count}\n" +
+                      $"Faces: {model.Faces.Count}\n" +
+                      $"Scale: {model.Scale:F10}\n" +
+                      $"Delta: {model.Delta:F10}\n" +
+                      $"Translation: ({model.Translation.X:F2}, {model.Translation.Y:F2}, {model.Translation.Z:F2})\n" +
                       $"Rotation: (X:{rotXDeg:F0}°, Y:{rotYDeg:F0}°, Z:{rotZDeg:F0}°)\n" +
-                      $"Model Size: (X: {ObjModel.Max.X - ObjModel.Min.X:F2}, Y: {ObjModel.Max.Y - ObjModel.Min.Y:F2}, Z: {ObjModel.Max.Z - ObjModel.Min.Z:F2});";
+                      $"Model Size: (X: {model.Max.X - model.Min.X:F2}, Y: {model.Max.Y - model.Min.Y:F2}, Z: {model.Max.Z - model.Min.Z:F2});";
         ModelInfoText.Text = info;
-        
+    
         double NormalizeAngle(double angle)
         {
             angle %= 360;

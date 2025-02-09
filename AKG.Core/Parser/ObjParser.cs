@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO;
 using System.Numerics;
+using AKG.Core.Objects;
 
 namespace AKG.Core.Parser;
 
@@ -192,6 +193,7 @@ public static class ObjParser
 
         model.Min = min;
         model.Max = max;
+        model.Scale = scale;
         model.Delta = delta;
         model.TransformedVertices = new Vector4[model.OriginalVertices.Count];
         

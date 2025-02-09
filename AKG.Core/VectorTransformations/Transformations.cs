@@ -1,4 +1,5 @@
 using System.Numerics;
+using AKG.Core.Objects;
 using AKG.Core.Parser;
 
 namespace AKG.Core.VectorTransformations;
@@ -126,107 +127,5 @@ public static class Transformations
         viewportMatrix = Matrix4x4.Transpose(viewportMatrix);
 
         return viewportMatrix;
-    }
-    
-    /// <summary>
-    /// Применяет матричное преобразование ко всем вершинам модели.
-    /// </summary>
-    /// <param name="model">Модель, вершины которой необходимо преобразовать</param>
-    /// <param name="transform">Матрица преобразования</param>
-    public static void ApplyWorldTransformation(this ObjModel model, Matrix4x4 transform)
-    {
-        int count = model.OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            // Преобразуем исходную вершину и записываем в TransformedVertices по индексу i.
-            model.TransformedVertices[i] = Vector4.Transform(model.OriginalVertices[i], transform);
-        });
-    }
-    
-    /// <summary>
-    /// Применяет матричное преобразование вида (view transformation) ко всем вершинам модели.
-    /// </summary>
-    /// <param name="model">Модель, вершины которой необходимо преобразовать</param>
-    /// <param name="viewMatrix">Матрица преобразования вида</param>
-    public static void ApplyViewTransformation(this ObjModel model, Matrix4x4 viewMatrix)
-    {
-        int count = model.OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewMatrix);
-        });
-    }
-    
-    /// <summary>
-    /// Применяет матричное преобразование координат из
-    /// пространства наблюдателя в пространство проекции ко всем вершинам модели.
-    /// </summary>
-    public static void ApplyTransformationProjection(this ObjModel model, Matrix4x4 transform)
-    {
-        int count = model.OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            var v = Vector4.Transform(model.TransformedVertices[i], transform);
-            if (v.W > model.ZNear) 
-            {
-                v /= v.W;
-            }
-            
-            /*if (v.W != 0)
-            {
-                v /= v.W;
-            }*/
-
-            model.TransformedVertices[i] = v;
-        });
-    }
-
-    /// <summary>
-    /// Применяет данное преобразование ко всем вершинам модели.
-    /// </summary>
-    /// <param name="model">Модель, вершины которой будут преобразованы</param>
-    /// <param name="viewportMatrix">Матрица преобразования окна просмотра</param>
-    public static void ApplyViewportTransformation(this ObjModel model, Matrix4x4 viewportMatrix)
-    {
-        int count = model.OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
-        });
-        /*for (int i = 0; i < model.OriginalVertices.Count; i++)
-        {
-            // Находятся в диапазоне [-1; 1], * на Height / 2, => надо + 1???
-            /*var vertice = model.TransformedVertices[i];
-            vertice.X = vertice.X + 1;
-            vertice.Y = -vertice.Y + 1;
-            model.TransformedVertices[i] = vertice;#1#
-
-            model.TransformedVertices[i] = Vector4.Transform(model.TransformedVertices[i], viewportMatrix);
-        }*/
-    }
-
-    /// <summary>
-    /// Применяет преобразование к вершинам модели после перемножений матриц World x View x Projection x Viewport
-    /// </summary>
-    /// <param name="model">Модль, вершины которой будут преобразованы</param>
-    /// <param name="finalTransform">Матрица, финального преобразования</param>
-    public static void ApplyFinalTransformation(this ObjModel model, Matrix4x4 finalTransform)
-    {
-        int count = model.OriginalVertices.Count;
-        Parallel.For(0, count, i =>
-        {
-            var v = Vector4.Transform(model.OriginalVertices[i], finalTransform);
-            if (v.W > model.ZNear) 
-            {
-                v /= v.W;
-            }
-            
-            /*if (v.W != 0)
-            {
-                v /= v.W;
-            }*/
-
-            model.TransformedVertices[i] = v;
-        });
     }
 }
