@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using AKG.Core.Objects;
 using AKG.Core.Parser;
@@ -35,6 +36,7 @@ public partial class MainWindow
         {
             RedrawScene();
             UpdateModelInfo();
+            DrawSelectionHighlight();
         };
     }
     
@@ -55,29 +57,16 @@ public partial class MainWindow
                 var loadedModel = ObjParser.Parse(dlg.FileName!);
                 Wb = new WriteableBitmap(Scene.CanvasWidth, Scene.CanvasHeight, 96, 96, PixelFormats.Bgra32, null);
                 ImgDisplay.Source = Wb;
+                ImgDisplay.Effect = new DropShadowEffect();
 
                 Scene.Models.Add(loadedModel);
                 Scene.SelectedModel = loadedModel;
                 Scene.UpdateSelectedModel();
-                
-                //Scene.UpdateSelectedModel();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка загрузки файла: " + ex.Message);
             }
-        }
-    }
-    
-    private void RedrawScene()
-    {
-        if (Wb == null) return;
-        
-        WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
-
-        foreach (var model in Scene.Models)
-        {
-            WireframeRenderer.DrawWireframe(model, Wb, ForegroundSelectedColor);
         }
     }
     
@@ -156,6 +145,7 @@ public partial class MainWindow
         var clickPoint = e.GetPosition(ImgDisplay);
         var pickedModel = Scene.PickModel(clickPoint);
         Scene.SelectedModel = pickedModel;
+        Scene.UpdateSelectedModel();
     }
     
     private void ImagePanel_KeyDown(object sender, KeyEventArgs e)
@@ -207,6 +197,25 @@ public partial class MainWindow
             BackgroundSelectedColor = Color.FromArgb(dialog.Color.A, dialog.Color.R, dialog.Color.G, dialog.Color.B);
             RedrawScene(); 
         }
+    }
+    
+    private void RedrawScene()
+    {
+        if (Wb == null) return;
+        
+        WireframeRenderer.ClearBitmap(Wb, BackgroundSelectedColor);
+
+        foreach (var model in Scene.Models)
+        {
+            WireframeRenderer.DrawWireframe(model, Wb, ForegroundSelectedColor);
+        }
+    }
+    
+    private void DrawSelectionHighlight()
+    {
+        if (Scene.SelectedModel is null || Wb is null) return;
+        
+        WireframeRenderer.Draw3DSelectionHighlight(Scene, Scene.SelectedModel, Wb, Colors.Aqua);
     }
     
     private void UpdateModelInfo()

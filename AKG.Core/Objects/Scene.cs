@@ -94,20 +94,45 @@ public class Scene
     /// <returns>Найденная модель или null</returns>
     public ObjModel? PickModel(Point clickPoint)
     {
-        // Перебираем модели, можно выбрать ту, чья проецированная область содержит clickPoint
+        List<ObjModel> candidates = [];
+
+        // Собираем все модели, чей bounding box содержит clickPoint.
         foreach (var model in Models)
         {
             Rect bb = GetScreenBoundingBox(model);
             if (bb.Contains(clickPoint))
-                return model;
+                candidates.Add(model);
         }
-        return null;
+    
+        if (candidates.Count == 0)
+            return null;
+
+        // Для каждого кандидата вычисляем параметр глубины.
+        // Например, можно взять среднее значение z-координаты его пересчитанных вершин.
+        // (Обратите внимание, что система координат после перспективного преобразования может требовать корректировки критериев.)
+        candidates.Sort((a, b) =>
+        {
+            var depthA = GetModelAverageDepth(a);
+            var depthB = GetModelAverageDepth(b);
+            return depthA.CompareTo(depthB);
+        });
+    
+        // Если в вашей системе меньшие z (или большее, в зависимости от соглашений) означает, что объект ближе,
+        // можно выбрать, например, последний элемент (наиболее удалённый) или предложить пользователю циклически переключаться.
+        return candidates[^1];
+        
+        float GetModelAverageDepth(ObjModel model)
+        {
+            return model.TransformedVertices.Length == 0
+                ? float.MaxValue
+                : model.TransformedVertices.Sum(v => v.Z) / model.TransformedVertices.Length;
+        }
     }
     
     /// <summary>
     /// Вычисляет bounding box для модели на основе её пересчитанных экранных координат (TransformedVertices).
     /// </summary>
-    private Rect GetScreenBoundingBox(ObjModel model)
+    public Rect GetScreenBoundingBox(ObjModel model)
     {
         if (model.TransformedVertices.Length == 0)
             return Rect.Empty;
