@@ -84,13 +84,27 @@ public class MainViewModel : INotifyPropertyChanged
     // Комманды для цветовой палитры
     public ICommand PickForegroundColorCommand { get; }
     public ICommand PickBackgroundColorCommand { get; }
+    
+    public ICommand ToggleModelInfoCommand { get; }
 
     // Поля для отслеживания состояния вращения
     private bool _isRotating;
     private Point _lastMousePos;
     private float RotateSensitivity => MathF.PI / 360.0f;
 
-    private ColorPickerService ColorPickerService { get; init; } 
+    private ColorPickerService ColorPickerService { get; init; }
+
+    private bool _isModelInfoVisible;
+
+    public bool IsModelInfoVisible
+    {
+        get => _isModelInfoVisible;
+        set
+        {
+            _isModelInfoVisible = value;
+            OnPropertyChanged(nameof(IsModelInfoVisible));
+        }
+    }
 
     public MainViewModel()
     {
@@ -127,6 +141,11 @@ public class MainViewModel : INotifyPropertyChanged
             {
                 BackgroundColor = color.Value;
             }
+        });
+
+        ToggleModelInfoCommand = new RelayCommand(_ =>
+        {
+            IsModelInfoVisible = !IsModelInfoVisible;
         });
     }
 

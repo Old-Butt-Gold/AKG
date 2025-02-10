@@ -19,9 +19,4 @@ public partial class MainWindow
             vm.Scene.CanvasWidth = (int)ImagePanel.ActualWidth;
         }
     }
-
-    private void ToggleModelInfoPopup(object sender, RoutedEventArgs e)
-    {
-        ModelInfoPopup.IsOpen = !ModelInfoPopup.IsOpen;
-    }
 }

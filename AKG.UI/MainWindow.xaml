@@ -11,6 +11,13 @@
     <Window.DataContext>
         <viewModels:MainViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <DataTemplate x:Key="ModelInfoTemplate">
+            <Border Background="LightGray" Padding="5">
+                <TextBlock Text="{Binding SelectedModelInfo}" TextWrapping="Wrap"/>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -29,12 +36,10 @@
                 <TextBlock Text="Background Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <Button Focusable="False" Content="Pick Color" Command="{Binding PickBackgroundColorCommand}" Width="100" Height="30"/>
             </StackPanel>
-            <Button Focusable="False" Content="Model Info" ClickMode="Press" Click="ToggleModelInfoPopup" Margin="10" Padding="5"/>
+            <Button Focusable="False" Content="Model Info" ClickMode="Press" Command="{Binding ToggleModelInfoCommand}" Margin="10" Padding="5"/>
             
-            <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="False" StaysOpen="False">
-                <Border Background="White" BorderBrush="Black" BorderThickness="1" Padding="10">
-                    <TextBlock Text="{Binding SelectedModelInfo}" TextWrapping="Wrap"/>
-                </Border>
+            <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="{Binding IsModelInfoVisible}" StaysOpen="False">
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModelInfoTemplate}"/>
             </Popup>
         </StackPanel>
         
