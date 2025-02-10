@@ -20,23 +20,7 @@ public class Scene
     public Matrix4x4 GetViewportMatrix() =>
         Transformations.CreateViewportMatrix(CanvasWidth, CanvasHeight);
     
-    // Добавляем свойство для выбранной модели с событием
-    private ObjModel? _selectedModel;
-    public ObjModel? SelectedModel
-    {
-        get => _selectedModel;
-        set
-        {
-            if (_selectedModel != value)
-            {
-                _selectedModel = value;
-                SelectedModelChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-    }
-    
-    // Событие, вызываемое при изменении выбранной модели.
-    public event EventHandler? SelectedModelChanged;
+    public ObjModel? SelectedModel { get; set; }
     
     /// <summary>
     /// Для каждой модели рассчитывает итоговую матрицу преобразования:
@@ -54,7 +38,6 @@ public class Scene
             UpdateModelTransform(model, view, projection, viewport);
         }
         
-        Redraw();
     }
     
     /// <summary>
@@ -71,7 +54,6 @@ public class Scene
 
         UpdateModelTransform(SelectedModel, view, projection, viewport);
         
-        Redraw();
     }
     
     private void UpdateModelTransform(ObjModel model, Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
@@ -151,10 +133,5 @@ public class Scene
         }
     
         return new Rect(minX, minY, maxX - minX, maxY - minY);
-    }
-
-    public void Redraw()
-    {
-        SelectedModelChanged?.Invoke(this, EventArgs.Empty);
     }
 }

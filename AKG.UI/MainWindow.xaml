@@ -4,8 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AKG.UI"
+        xmlns:viewModels="clr-namespace:AKG.UI.MVVM.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded">
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -13,8 +18,9 @@
         </Grid.RowDefinitions>
         
         <StackPanel Grid.Row="0" Name="StackPanel" Orientation="Horizontal" Background="LightGray" Margin="5">
-            <Button Focusable="False" x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Click="LoadFile_OnClick"/>
-            <Button Focusable="False" x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Click="FileClear_OnClick"/>
+            <Button Focusable="False" x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Command="{Binding LoadFileCommand}"/>
+            <Button Focusable="False" x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Command="{Binding ClearSceneCommand}"/>
+            <Button Focusable="False" Content="Edit Camera" Margin="5" Padding="5" Command="{Binding EditCameraCommand}"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                 <TextBlock Text="Foreground Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <Button Focusable="False" Content="Pick Color" Click="ForegroundColor_OnClick" Width="100" Height="30" Margin="0 0 5 0"/>
@@ -27,19 +33,34 @@
             
             <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="False" StaysOpen="False">
                 <Border Background="White" BorderBrush="Black" BorderThickness="1" Padding="10">
-                    <TextBlock x:Name="ModelInfoText" TextWrapping="Wrap" Width="Auto" Height="Auto"/>
+                    <TextBlock Text="{Binding SelectedModelInfo}" TextWrapping="Wrap"/>
                 </Border>
             </Popup>
         </StackPanel>
         
-        <StackPanel Focusable="True" Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    MouseWheel="ImagePanel_OnMouseWheel"
-                    MouseLeftButtonDown="ImagePanel_OnMouseLeftButtonDown"
-                    MouseLeftButtonUp="ImagePanel_OnMouseLeftButtonUp"
-                    KeyDown="ImagePanel_KeyDown"
-                    MouseMove="ImagePanel_OnMouseMove"
-                    MouseRightButtonDown="ImagePanel_OnMouseRightButtonDown">
-            <Image x:Name="ImgDisplay" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <StackPanel Focusable="True" Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseWheel">
+                    <i:InvokeCommandAction Command="{Binding MouseWheelCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseMove">
+                    <i:InvokeCommandAction Command="{Binding MouseMoveCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseLeftButtonDown">
+                    <i:InvokeCommandAction Command="{Binding MouseLeftButtonDownCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseLeftButtonUp">
+                    <i:InvokeCommandAction Command="{Binding MouseLeftButtonUpCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseRightButtonDown">
+                    <i:InvokeCommandAction Command="{Binding MouseRightButtonDownCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="KeyDown">
+                    <i:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <Image Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   Source="{Binding WriteableBitmap}"/>
         </StackPanel>
     </Grid>
 </Window>
