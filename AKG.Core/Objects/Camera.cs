@@ -10,7 +10,7 @@ public class Camera
     public Vector3 Up { get; set; } = Vector3.UnitY;
     public float Fov { get; set; } = MathF.PI / 4.0f;
     public float Aspect { get; set; } = 16f / 9f;
-    public float ZNear { get; set; } = 1f;
+    public float ZNear { get; set; } = 0.01f;
     public float ZFar { get; set; } = 100f;
 
     public Matrix4x4 GetViewMatrix() =>

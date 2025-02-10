@@ -1,7 +1,5 @@
-using System.Drawing;
 using System.Numerics;
 using AKG.Core.Parser;
-using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Objects;
 
@@ -82,7 +80,7 @@ public class ObjModel
         Parallel.For(0, count, i =>
         {
             var v = Vector4.Transform(OriginalVertices[i], finalTransform);
-            if (v.W > camera.ZNear) 
+            if (v.W > camera.ZNear && v.W < camera.ZFar) 
             {
                 v /= v.W;
             }

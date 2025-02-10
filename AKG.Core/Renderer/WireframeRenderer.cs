@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using AKG.Core.Objects;
-using AKG.Core.Parser;
 using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Renderer;
@@ -14,10 +13,11 @@ public static class WireframeRenderer
     /// Рисует проволочную 3D модель с использованием алгоритма Брезенхэма для растеризации линий.
     /// Рисование производится на WriteableBitmap, которая затем может быть установлена, например, как Source для Image.
     /// </summary>
-    /// <param name="model">Объект модели с заполненным списком TransformedVertices</param>
-    /// <param name="wb">WriteableBitmap, куда будут записаны пиксели</param>
-    /// <param name="color">Цвет линий</param>
-    public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color)
+    /// <param name="model">Объект модели, в котором уже заполнены TransformedVertices</param>
+    /// <param name="wb">WriteableBitmap, куда будет производиться отрисовка</param>
+    /// <param name="color">Цвет линий (ARGB)</param>
+    /// <param name="camera">Камера для проверки диапазона z</param>
+    public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color, Camera camera)
     {
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
         int intColor = color.ColorToIntBGRA();
@@ -54,9 +54,19 @@ public static class WireframeRenderer
                     int y0 = (int)Math.Round(model.TransformedVertices[index1].Y);
                     int x1 = (int)Math.Round(model.TransformedVertices[index2].X);
                     int y1 = (int)Math.Round(model.TransformedVertices[index2].Y);
-
-                    // Рисуем линию алгоритмом Брезенхэма
-                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor);
+                    
+                    float z0 = model.TransformedVertices[index1].Z;
+                    float z1 = model.TransformedVertices[index2].Z;
+                    
+                    // Если обе точки вне экрана или вне диапазона по z – можно пропустить
+                    // (эта проверка может быть не полной – основное отсечение происходит ниже)
+                    if ((x0 >= width && x1 >= width) || (x0 <= 0 && x1 <= 0) || (y0 >= height && y1 >= height) ||
+                        (y0 <= 0 && y1 <= 0) || (z0 < camera.ZNear || z1 < camera.ZNear) || (z0 > camera.ZFar || z1 > camera.ZFar))
+                    {
+                        continue;
+                    }
+                    
+                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1,intColor);
                 }
             }
         }
@@ -88,7 +98,6 @@ public static class WireframeRenderer
 
         while (true)
         {
-            // Если координаты внутри экрана, установим пиксель
             if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
             {
                 buffer[y0 * width + x0] = color;
@@ -167,7 +176,7 @@ public static class WireframeRenderer
         for (int i = 0; i < 8; i++)
         {
             Vector4 v = Vector4.Transform(corners[i], finalTransform);
-            if (v.W > scene.Camera.ZNear)
+            if (v.W > scene.Camera.ZNear && v.W < scene.Camera.ZFar)
             {
                 v /= v.W; 
             }
@@ -196,6 +205,16 @@ public static class WireframeRenderer
                 int y0 = (int)Math.Round(screenCorners[edge[0]].Y);
                 int x1 = (int)Math.Round(screenCorners[edge[1]].X);
                 int y1 = (int)Math.Round(screenCorners[edge[1]].Y);
+                
+                float z0 = model.TransformedVertices[edge[0]].Z;
+                float z1 = model.TransformedVertices[edge[1]].Z;
+                
+                if ((x0 >= width && x1 >= width) || (x0 <= 0 && x1 <= 0) || (y0 >= height && y1 >= height) ||
+                    (y0 <= 0 && y1 <= 0) || (z0 < scene.Camera.ZNear || z1 < scene.Camera.ZNear) || (z0 > scene.Camera.ZFar || z1 > scene.Camera.ZFar))
+                {
+                    continue;
+                }
+                
                 DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor);
             }
 

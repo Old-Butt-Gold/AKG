@@ -330,7 +330,7 @@ public class MainViewModel : INotifyPropertyChanged
         
         foreach (var model in Scene.Models)
         {
-            WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor);
+            WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor, Scene.Camera);
         }
         
         if (Scene.SelectedModel is not null && WriteableBitmap is not null)
