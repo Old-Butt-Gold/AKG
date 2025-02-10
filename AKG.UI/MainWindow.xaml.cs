@@ -8,7 +8,6 @@ public partial class MainWindow
     public MainWindow()
     {
         InitializeComponent();
-        WindowState = WindowState.Maximized;
     }
     
     private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)

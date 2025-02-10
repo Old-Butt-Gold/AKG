@@ -7,7 +7,7 @@
         xmlns:viewModels="clr-namespace:AKG.UI.MVVM.ViewModels"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded">
+        Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded" WindowState="Maximized">
     <Window.DataContext>
         <viewModels:MainViewModel/>
     </Window.DataContext>

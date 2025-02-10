@@ -280,6 +280,17 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (Scene.SelectedModel == null || parameter is not KeyEventArgs e)
             return;
+        
+        if (e.Key == Key.Delete)
+        {
+            Scene.Models.Remove(Scene.SelectedModel);
+            
+            Scene.SelectedModel = Scene.Models.Count > 0 ? Scene.Models[0] : null;
+            
+            UpdateView();
+            OnPropertyChanged(nameof(Scene));
+            return;
+        }
 
         var step = Scene.SelectedModel.GetOptimalTranslationStep();
         switch (e.Key)
