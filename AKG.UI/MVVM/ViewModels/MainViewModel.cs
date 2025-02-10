@@ -8,6 +8,7 @@ using AKG.Core.Objects;
 using AKG.Core.Parser;
 using AKG.Core.Renderer;
 using AKG.UI.MVVM.Commands;
+using AKG.UI.Services.Implementations;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Vector = System.Windows.Vector;
 
@@ -80,13 +81,20 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand MouseRightButtonDownCommand { get; }
     public ICommand KeyDownCommand { get; }
     
+    // Комманды для цветовой палитры
+    public ICommand PickForegroundColorCommand { get; }
+    public ICommand PickBackgroundColorCommand { get; }
+
     // Поля для отслеживания состояния вращения
     private bool _isRotating;
     private Point _lastMousePos;
     private float RotateSensitivity => MathF.PI / 360.0f;
 
+    private ColorPickerService ColorPickerService { get; init; } 
+
     public MainViewModel()
     {
+        ColorPickerService = new();
         Scene.Camera = new Camera();
 
         Scene.CanvasWidth = 800;
@@ -102,6 +110,24 @@ public class MainViewModel : INotifyPropertyChanged
         MouseLeftButtonUpCommand = new RelayCommand(_ => OnMouseLeftButtonUp());
         MouseRightButtonDownCommand = new RelayCommand(OnMouseRightButtonDown);
         KeyDownCommand = new RelayCommand(OnKeyDown);
+
+        PickForegroundColorCommand = new RelayCommand(_ =>
+        {
+            var color = ColorPickerService.PickColor();
+            if (color != null)
+            {
+                ForegroundColor = color.Value;
+            }
+        });
+        
+        PickBackgroundColorCommand = new RelayCommand(_ =>
+        {
+            var color = ColorPickerService.PickColor();
+            if (color != null)
+            {
+                BackgroundColor = color.Value;
+            }
+        });
     }
 
     private void LoadFile()
