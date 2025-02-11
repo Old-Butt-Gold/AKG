@@ -31,44 +31,43 @@ public static class WireframeRenderer
             int width = wb.PixelWidth;
             int height = wb.PixelHeight;
 
-            // Для каждой грани модели
-            foreach (var face in model.Faces)
+            Parallel.ForEach(model.Faces, face =>
             {
                 int count = face.Vertices.Count;
                 if (count < 2)
-                    continue;
+                    return; // Пропускаем, если грань не имеет хотя бы двух вершин
 
                 for (int i = 0; i < count; i++)
                 {
-                    // Индексы в файле OBJ начинаются с 1, поэтому вычитаем 1
+                    // Вычисляем индексы вершин (в OBJ индексы начинаются с 1)
                     int index1 = face.Vertices[i].VertexIndex - 1;
                     int index2 = face.Vertices[(i + 1) % count].VertexIndex - 1;
 
-                    // Проверяем диапазон индексов
+                    // Проверяем корректность индексов
                     if (index1 < 0 || index1 >= model.TransformedVertices.Length ||
                         index2 < 0 || index2 >= model.TransformedVertices.Length)
                         continue;
 
-                    // Получаем экранные координаты (используем double для вычислений, затем преобразуем к int)
+                    // Вычисляем экранные координаты вершин
                     int x0 = (int)Math.Round(model.TransformedVertices[index1].X);
                     int y0 = (int)Math.Round(model.TransformedVertices[index1].Y);
                     int x1 = (int)Math.Round(model.TransformedVertices[index2].X);
                     int y1 = (int)Math.Round(model.TransformedVertices[index2].Y);
-                    
                     float z0 = model.TransformedVertices[index1].Z;
                     float z1 = model.TransformedVertices[index2].Z;
-                    
-                    // Если обе точки вне экрана или вне диапазона по z – можно пропустить
-                    // (эта проверка может быть не полной – основное отсечение происходит ниже)
-                    if ((x0 >= width && x1 >= width) || (x0 <= 0 && x1 <= 0) || (y0 >= height && y1 >= height) ||
-                        (y0 <= 0 && y1 <= 0) || (z0 < camera.ZNear || z1 < camera.ZNear) || (z0 > camera.ZFar || z1 > camera.ZFar))
+
+                    // Если обе точки явно вне экрана или вне диапазона z – пропускаем
+                    if ((x0 >= width && x1 >= width) || (x0 <= 0 && x1 <= 0) ||
+                        (y0 >= height && y1 >= height) || (y0 <= 0 && y1 <= 0) ||
+                        (z0 < camera.ZNear || z1 < camera.ZNear) || (z0 > camera.ZFar || z1 > camera.ZFar))
                     {
                         continue;
                     }
-                    
-                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1,intColor);
+
+                    // Отрисовываем линию с использованием алгоритма Брезенхэма (все записи будут в один и тот же цвет)
+                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor);
                 }
-            }
+            });
         }
 
         // Сообщаем системе, что изменился весь буфер
