@@ -390,10 +390,12 @@ public class MainViewModel : INotifyPropertyChanged
         
         WireframeRenderer.ClearBitmap(WriteableBitmap, BackgroundColor);
         
+        Rasterizer.ClearZBuffer(Scene.CanvasWidth, Scene.CanvasHeight, Scene.Camera);
+        
         foreach (var model in Scene.Models)
         {
-            //TriangleRasterizer.FillTriangles(model, WriteableBitmap, ForegroundColor);
-            WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor, Scene.Camera);
+            Rasterizer.DrawFilledTriangle(model, WriteableBitmap, ForegroundColor, Scene.Camera);
+            //WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor, Scene.Camera);
         }
         
         if (Scene.SelectedModel is not null && WriteableBitmap is not null)

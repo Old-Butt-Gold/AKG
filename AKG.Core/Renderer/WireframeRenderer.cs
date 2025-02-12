@@ -121,7 +121,7 @@ public static class WireframeRenderer
     
     public static void ClearBitmap(WriteableBitmap wb, Color clearColor)
     {
-        int intColor = (clearColor.A << 24) | (clearColor.R << 16) | (clearColor.G << 8) | clearColor.B;
+        int intColor = clearColor.ColorToIntBGRA();
 
         wb.Lock();
 
