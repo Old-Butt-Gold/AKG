@@ -8,10 +8,10 @@ namespace AKG.Core.Objects;
 public class Scene
 {
     // Список моделей, отображаемых на холсте.
-    public List<ObjModel> Models { get; } = new();
+    public List<ObjModel> Models { get; } = [];
         
     // Камера для сцены.
-    public Camera Camera { get; set; } = new Camera();
+    public Camera Camera { get; set; } = new();
         
     // Размеры холста (например, размер WriteableBitmap).
     public int CanvasWidth { get; set; }

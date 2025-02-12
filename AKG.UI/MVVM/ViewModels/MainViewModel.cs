@@ -9,6 +9,7 @@ using AKG.Core.Parser;
 using AKG.Core.Renderer;
 using AKG.UI.MVVM.Commands;
 using AKG.UI.Services.Implementations;
+using AKG.UI.Services.Interfaces;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Vector = System.Windows.Vector;
 
@@ -91,7 +92,7 @@ public class MainViewModel : INotifyPropertyChanged
     private Point _lastMousePos;
     private float RotateSensitivity => MathF.PI / 360.0f;
 
-    private ColorPickerService ColorPickerService { get; init; }
+    private IColorPickerService ColorPickerService { get; init; }
 
     private bool _isModelInfoVisible;
 
@@ -107,7 +108,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel()
     {
-        ColorPickerService = new();
+        ColorPickerService = new ColorPickerService();
         Scene.Camera = new Camera();
 
         Scene.CanvasWidth = 800;
@@ -162,7 +163,6 @@ public class MainViewModel : INotifyPropertyChanged
                 // Добавляем модель в сцену и делаем её выбранной
                 Scene.Models.Add(loadedModel);
                 Scene.SelectedModel = loadedModel;
-                Scene.UpdateSelectedModel();
                 UpdateView();
                 OnPropertyChanged(nameof(Scene));
             }
@@ -177,6 +177,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         Scene.Models.Clear();
         Scene.SelectedModel = null;
+        Scene.Camera = new();
         UpdateView();
         OnPropertyChanged(nameof(Scene));
     }
@@ -191,8 +192,6 @@ public class MainViewModel : INotifyPropertyChanged
         // Показываем окно как модальное
         if (cameraWindow.ShowDialog() == true)
         {
-            // После закрытия окна обновляем сцену (например, пересчитываем матрицы)
-            Scene.UpdateAllModels();
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
@@ -200,14 +199,27 @@ public class MainViewModel : INotifyPropertyChanged
     
     private void OnMouseWheel(object? parameter)
     {
-        if (Scene.SelectedModel != null && parameter is MouseWheelEventArgs e)
+        if (parameter is MouseWheelEventArgs e)
         {
-            if (e.Delta > 0)
-                Scene.SelectedModel.Scale += Scene.SelectedModel.Delta;
+            if (Scene.SelectedModel != null && 
+                (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+            {
+                if (e.Delta > 0)
+                    Scene.SelectedModel.Scale += Scene.SelectedModel.Delta;
+                else
+                    Scene.SelectedModel.Scale -= Scene.SelectedModel.Delta;
+            }
             else
-                Scene.SelectedModel.Scale -= Scene.SelectedModel.Delta;
+            {
+                Scene.Camera.Radius -= e.Delta / 1000.0f;
+                if (Scene.Camera.Radius < Scene.Camera.ZNear)
+                    Scene.Camera.Radius = Scene.Camera.ZNear;
+                if (Scene.Camera.Radius > Scene.Camera.ZFar)
+                    Scene.Camera.Radius = Scene.Camera.ZFar;
+            }
+            
+            e.Handled = true;
 
-            Scene.UpdateSelectedModel();
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
@@ -215,29 +227,55 @@ public class MainViewModel : INotifyPropertyChanged
     
     private void OnMouseMove(object? parameter)
     {
-        if (Scene.SelectedModel != null && parameter is MouseEventArgs e)
+        if (parameter is MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (Scene.SelectedModel != null)
             {
-                Point currentPos = e.GetPosition(null);
-                Vector delta = currentPos - _lastMousePos;
-                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                // Вращение модели
+                if (e.LeftButton == MouseButtonState.Pressed && e.RightButton != MouseButtonState.Pressed)
                 {
-                    Scene.SelectedModel.Rotation = new Vector3(
-                        Scene.SelectedModel.Rotation.X,
-                        Scene.SelectedModel.Rotation.Y,
-                        Scene.SelectedModel.Rotation.Z - (float)delta.X * RotateSensitivity);
-                }
-                else
-                {
-                    Scene.SelectedModel.Rotation = new Vector3(
-                        Scene.SelectedModel.Rotation.X + (float)delta.Y * RotateSensitivity,
-                        Scene.SelectedModel.Rotation.Y + (float)delta.X * RotateSensitivity,
-                        Scene.SelectedModel.Rotation.Z);
-                }
+                    Point currentPos = e.GetPosition(null);
+                    Vector delta = currentPos - _lastMousePos;
+                    if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    {
+                        Scene.SelectedModel.Rotation = new Vector3(
+                            Scene.SelectedModel.Rotation.X,
+                            Scene.SelectedModel.Rotation.Y,
+                            Scene.SelectedModel.Rotation.Z - (float)delta.X * RotateSensitivity);
+                    }
+                    else
+                    {
+                        Scene.SelectedModel.Rotation = new Vector3(
+                            Scene.SelectedModel.Rotation.X + (float)delta.Y * RotateSensitivity,
+                            Scene.SelectedModel.Rotation.Y + (float)delta.X * RotateSensitivity,
+                            Scene.SelectedModel.Rotation.Z);
+                    }
 
+                    _lastMousePos = currentPos;
+                
+                    UpdateView();
+                    OnPropertyChanged(nameof(Scene));
+                }
+            }
+            
+            // Вращение камеры
+            if (e.RightButton == MouseButtonState.Pressed && e.LeftButton != MouseButtonState.Pressed)
+            {
+                var currentPos = e.GetPosition(null);
+                
+                float xOffset = (float)(currentPos.X - _lastMousePos.X);
+                float yOffset = (float)(currentPos.Y - _lastMousePos.Y);
+
+
+                Scene.Camera.Zeta -= yOffset * 0.005f;
+                Scene.Camera.Phi += xOffset * 0.005f;
+                
+                if (Scene.Camera.Zeta > Math.PI)
+                    Scene.Camera.Zeta = (float)Math.PI - 0.01f;
+                if (Scene.Camera.Zeta < 0)
+                    Scene.Camera.Zeta = 0.01f;
+                
                 _lastMousePos = currentPos;
-                Scene.UpdateSelectedModel();
                 UpdateView();
                 OnPropertyChanged(nameof(Scene));
             }
@@ -261,7 +299,8 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (parameter is MouseButtonEventArgs e)
         {
-            Point clickPoint = e.GetPosition(null);
+            _lastMousePos = e.GetPosition(null);
+            Point clickPoint = _lastMousePos;
             var pickedModel = Scene.PickModel(clickPoint);
             Scene.SelectedModel = pickedModel;
             UpdateView();
@@ -277,8 +316,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (e.Key == Key.Delete)
         {
             Scene.Models.Remove(Scene.SelectedModel);
-            
-            Scene.SelectedModel = Scene.Models.Count > 0 ? Scene.Models[0] : null;
+            Scene.SelectedModel = Scene.Models.FirstOrDefault();
             
             UpdateView();
             OnPropertyChanged(nameof(Scene));
@@ -288,26 +326,37 @@ public class MainViewModel : INotifyPropertyChanged
         var step = Scene.SelectedModel.GetOptimalTranslationStep();
         switch (e.Key)
         {
-            case Key.Right:
+            case Key.Right when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(step.X, 0, 0);
                 break;
-            case Key.Left:
+            case Key.Left when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(-step.X, 0, 0);
                 break;
-            case Key.Up:
+            case Key.Up when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(0, step.Y, 0);
                 break;
-            case Key.Down:
+            case Key.Down when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(0, -step.Y, 0);
                 break;
-            case Key.S:
+            case Key.S when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(0, 0, -step.Z);
                 break;
-            case Key.W:
+            case Key.W when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
                 Scene.SelectedModel.Translation += new Vector3(0, 0, step.Z);
                 break;
+            case Key.Left:
+                Scene.Camera.Target += new Vector3(-0.5f, 0, 0);
+                break;
+            case Key.Right:
+                Scene.Camera.Target += new Vector3(0.5f, 0, 0);
+                break;
+            case Key.Up:
+                Scene.Camera.Target += new Vector3(0.0f, 0.5f, 0);
+                break;
+            case Key.Down:
+                Scene.Camera.Target += new Vector3(0.0f, -0.5f, 0);
+                break;
         }
-        Scene.UpdateSelectedModel();
         UpdateView();
         OnPropertyChanged(nameof(Scene));
     }
@@ -319,6 +368,18 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (WriteableBitmap == null) return;
 
+        Scene.Camera.Eye = new Vector3(
+            Scene.Camera.Radius * (float)Math.Cos(Scene.Camera.Phi) * (float)Math.Sin(Scene.Camera.Zeta),
+            Scene.Camera.Radius * (float)Math.Cos(Scene.Camera.Zeta),
+            Scene.Camera.Radius * (float)Math.Sin(Scene.Camera.Phi) * (float)Math.Sin(Scene.Camera.Zeta));
+        
+        /*if (Scene.SelectedModel != null)
+        {
+            Scene.UpdateSelectedModel();
+        }*/
+        
+        Scene.UpdateAllModels();
+        
         WireframeRenderer.ClearBitmap(WriteableBitmap, BackgroundColor);
         
         foreach (var model in Scene.Models)

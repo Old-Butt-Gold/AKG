@@ -18,6 +18,9 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
     private float _aspect;
     private float _zNear;
     private float _zFar;
+    private float _radius;
+    private float _zeta;
+    private float _phi;
 
     public CameraSettingsViewModel(Camera camera)
     {
@@ -29,6 +32,9 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _aspect = camera.Aspect;
         _zNear = camera.ZNear;
         _zFar = camera.ZFar;
+        _radius = camera.Radius;
+        _zeta = camera.Zeta;
+        _phi = camera.Phi;
     }
 
     public Vector3 Eye
@@ -66,6 +72,24 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         get => _zFar;
         set { _zFar = value; OnPropertyChanged(nameof(ZFar)); }
     }
+    
+    public float Radius
+    {
+        get => _radius;
+        set { _radius = value; OnPropertyChanged(nameof(Radius)); }
+    }
+    
+    public float Zeta
+    {
+        get => _zeta;
+        set { _zeta = value; OnPropertyChanged(nameof(Zeta)); }
+    }
+    
+    public float Phi
+    {
+        get => _phi;
+        set { _phi = value; OnPropertyChanged(nameof(Phi)); }
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
     
@@ -78,6 +102,9 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _camera.Aspect = Aspect;
         _camera.ZNear = ZNear;
         _camera.ZFar = ZFar;
+        _camera.Radius = Radius;
+        _camera.Zeta = Zeta;
+        _camera.Phi = Phi;
     }
     
     protected void OnPropertyChanged(string propertyName) =>
