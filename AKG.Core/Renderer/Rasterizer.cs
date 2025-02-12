@@ -59,13 +59,14 @@ public static class Rasterizer
 
             Vector3 edge1 = worldV1 - worldV0;
             Vector3 edge2 = worldV2 - worldV0;
+            
+            // Эту нормаль бы сохранять где-то на будущее
             Vector3 normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
 
             // Backface culling: если треугольник обращён от камеры, отбраковываем грань
             if (Vector3.Dot(normal, camera.Eye - worldV0) <= 0) return;
 
             // Расчет интенсивности освещения по модели Ламберта
-            // (Lambert.LightDir задается в отдельном классе Lighting)
             var shadedColor = color.ApplyLambert(normal, camera.LambertLight);
 
             for (int j = 1; j < face.Vertices.Count - 1; j++)
@@ -101,15 +102,18 @@ public static class Rasterizer
     /// </summary>
     private static unsafe void DrawFilledTriangle(Vector3 v0, Vector3 v1, Vector3 v2, Color color, int* buffer, int width, int height)
     {
-        // Определяем ограничивающий прямоугольник
-        int minX = (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X)));
-        int maxX = (int)Math.Ceiling(Math.Max(v0.X, Math.Max(v1.X, v2.X)));
-        int minY = (int)Math.Floor(Math.Min(v0.Y, Math.Min(v1.Y, v2.Y)));
-        int maxY = (int)Math.Ceiling(Math.Max(v0.Y, Math.Max(v1.Y, v2.Y)));
+        // Определяем ограничивающий прямоугольник (обрамлены Math.Max и Math.Min, чтобы не уходили за экран)
+        int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
+        int maxX = Math.Min(width - 1, (int)Math.Ceiling(Math.Max(v0.X, Math.Max(v1.X, v2.X))));
+        int minY = Math.Max(0, (int)Math.Floor(Math.Min(v0.Y, Math.Min(v1.Y, v2.Y))));
+        int maxY = Math.Min(height - 1, (int)Math.Ceiling(Math.Max(v0.Y, Math.Max(v1.Y, v2.Y))));
+
         
         // Вычисляем знаменатель барицентрических координат
         float denom = (v1.Y - v2.Y) * (v0.X - v2.X) + (v2.X - v1.X) * (v0.Y - v2.Y);
         if (Math.Abs(denom) < float.Epsilon) return; // Вырожденный треугольник
+        
+        float invDenom = 1.0f / denom;
         
         for (var y = minY; y <= maxY; y++)
         {
@@ -122,8 +126,8 @@ public static class Rasterizer
                     continue;
 
                 // Вычисляем барицентрические координаты: alpha, beta, gamma
-                float alpha = ((v1.Y - v2.Y) * (x - v2.X) + (v2.X - v1.X) * (y - v2.Y)) / denom;
-                float beta  = ((v2.Y - v0.Y) * (x - v2.X) + (v0.X - v2.X) * (y - v2.Y)) / denom;
+                float alpha = ((v1.Y - v2.Y) * (x - v2.X) + (v2.X - v1.X) * (y - v2.Y)) * invDenom;
+                float beta  = ((v2.Y - v0.Y) * (x - v2.X) + (v0.X - v2.X) * (y - v2.Y)) * invDenom;
                 float gamma = 1 - alpha - beta;
                 
                 // Если точка внутри треугольника (включая границы)
