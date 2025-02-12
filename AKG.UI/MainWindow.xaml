@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:AKG.UI"
         xmlns:viewModels="clr-namespace:AKG.UI.MVVM.ViewModels"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:objects="clr-namespace:AKG.Core.Objects;assembly=AKG.Core"
         mc:Ignorable="d"
         Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded" WindowState="Maximized"
         FocusManager.FocusedElement="{Binding ElementName=ImagePanel}">
@@ -42,6 +43,11 @@
             <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="{Binding IsModelInfoVisible}" StaysOpen="False">
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModelInfoTemplate}"/>
             </Popup>
+            <ComboBox SelectedValue="{Binding SelectedRenderMode}" SelectedValuePath="Tag" Margin="5">
+                <ComboBoxItem Content="Wireframe" Tag="{x:Static objects:RenderMode.Wireframe}"/>
+                <ComboBoxItem Content="Filled Triangles" Tag="{x:Static objects:RenderMode.FilledTriangles}"/>
+            </ComboBox>
+
         </StackPanel>
         
         <StackPanel Focusable="True" Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

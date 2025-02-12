@@ -95,6 +95,19 @@ public class MainViewModel : INotifyPropertyChanged
     private IColorPickerService ColorPickerService { get; init; }
 
     private bool _isModelInfoVisible;
+    
+    private RenderMode _selectedRenderMode;
+    public RenderMode SelectedRenderMode
+    {
+        get => _selectedRenderMode;
+        set
+        {
+            _selectedRenderMode = value;
+            UpdateView();
+            OnPropertyChanged(nameof(SelectedRenderMode));
+        }
+    }
+
 
     public bool IsModelInfoVisible
     {
@@ -146,6 +159,8 @@ public class MainViewModel : INotifyPropertyChanged
         {
             IsModelInfoVisible = !IsModelInfoVisible;
         });
+
+        SelectedRenderMode = RenderMode.Wireframe;
     }
 
     private void LoadFile()
@@ -371,39 +386,13 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Scene));
         }
     }
-
-    /// <summary>
-    /// Вызывает методы перерисовки: очищает холст, отрисовывает объекты и выделение.
-    /// </summary>
+    
     public void UpdateView()
     {
-        if (WriteableBitmap == null) return;
-
-        Scene.Camera.ChangeEye();
+        RendererFacade.Render(Scene, WriteableBitmap, BackgroundColor, ForegroundColor, SelectedRenderMode);
         
-        /*if (Scene.SelectedModel != null)
-        {
-            Scene.UpdateSelectedModel();
-        }*/
-        
-        Scene.UpdateAllModels();
-        
-        WireframeRenderer.ClearBitmap(WriteableBitmap, BackgroundColor);
-        
-        Rasterizer.ClearZBuffer(Scene.CanvasWidth, Scene.CanvasHeight, Scene.Camera);
-        
-        foreach (var model in Scene.Models)
-        {
-            Rasterizer.DrawFilledTriangle(model, WriteableBitmap, ForegroundColor, Scene.Camera);
-            //WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor, Scene.Camera);
-        }
-        
-        if (Scene.SelectedModel is not null && WriteableBitmap is not null)
-            WireframeRenderer.Draw3DSelectionHighlight(Scene, Scene.SelectedModel, WriteableBitmap, Colors.Aqua);
-
         UpdateSelectedModelInfo();
         
-        // Сообщаем, что обновился WriteableBitmap
         OnPropertyChanged(nameof(WriteableBitmap));
     }
     

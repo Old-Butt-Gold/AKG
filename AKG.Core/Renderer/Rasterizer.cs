@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AKG.Core.Extensions;
 using AKG.Core.Objects;
 using AKG.Core.VectorTransformations;
 
@@ -65,7 +66,7 @@ public static class Rasterizer
 
             // Расчет интенсивности освещения по модели Ламберта
             // (Lambert.LightDir задается в отдельном классе Lighting)
-            Color shadedColor = LambertLighting.ApplyLambert(color, normal);
+            var shadedColor = color.ApplyLambert(normal, camera.LambertLight);
 
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {

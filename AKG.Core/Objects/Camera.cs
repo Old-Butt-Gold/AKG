@@ -16,6 +16,8 @@ public class Camera
     public float Radius { get; set; } = 5;
     public float Zeta { get; set; } = (float)Math.PI / (float)2.3;
     public float Phi { get; set; } = (float)Math.PI / 2;
+    
+    public Vector3 LambertLight { get; set; } = -new Vector3(1, 1, 2);
 
     public Matrix4x4 GetViewMatrix() =>
         Transformations.CreateViewMatrix(Eye, Target, Up);

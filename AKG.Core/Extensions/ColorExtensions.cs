@@ -1,26 +1,24 @@
 ﻿using System.Numerics;
 using System.Windows.Media;
 
-namespace AKG.Core.Objects;
+namespace AKG.Core.Extensions;
 
-/// <summary>
-/// Статический класс, отвечающий за модель освещения Ламберта.
-/// Здесь задается направление источника света, а также реализована функция, возвращающая затененный цвет.
-/// </summary>
-public static class LambertLighting
+public static class ColorExtensions
 {
-    // Направление источника света (например, направлено сверху и немного сбоку)
-    public static Vector3 LambertLight = -new Vector3(1, 1, 2);
-
+    public static int ColorToIntBGRA(this Color color)
+    {
+        return (color.B << 0) | (color.G << 8) | (color.R << 16) | (color.A << 24);
+    }
+    
     /// <summary>
     /// Применяет модель Ламберта к базовому цвету на основе нормали.
     /// Вычисляется интенсивность освещения как абсолютное значение скалярного произведения нормали и
     /// направления света (после нормализации). Итоговый цвет – базовый цвет, умноженный на интенсивность.
     /// </summary>
-    public static Color ApplyLambert(Color baseColor, Vector3 normal)
+    public static Color ApplyLambert(this Color baseColor, Vector3 normal, Vector3 lambertLight)
     {
         // Нормализуем направление света
-        Vector3 lightDir = Vector3.Normalize(LambertLight);
+        Vector3 lightDir = Vector3.Normalize(lambertLight);
         // Интенсивность – косинус угла между нормалью и направлением света (от 0 до 1)
         float intensity = MathF.Max(Vector3.Dot(normal, -lightDir), 0);
         // Применяем интенсивность к каждому цветовому каналу (A остаётся неизменным)
