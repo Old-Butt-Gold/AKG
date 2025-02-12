@@ -77,7 +77,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand MouseWheelCommand { get; }
     public ICommand MouseMoveCommand { get; }
     public ICommand MouseLeftButtonDownCommand { get; }
-    public ICommand MouseLeftButtonUpCommand { get; }
+    //public ICommand MouseLeftButtonUpCommand { get; }
     public ICommand MouseRightButtonDownCommand { get; }
     public ICommand KeyDownCommand { get; }
     
@@ -88,7 +88,6 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ToggleModelInfoCommand { get; }
 
     // Поля для отслеживания состояния вращения
-    private bool _isRotating;
     private Point _lastMousePos;
     private float RotateSensitivity => MathF.PI / 360.0f;
 
@@ -121,7 +120,6 @@ public class MainViewModel : INotifyPropertyChanged
         MouseWheelCommand = new RelayCommand(OnMouseWheel);
         MouseMoveCommand = new RelayCommand(OnMouseMove);
         MouseLeftButtonDownCommand = new RelayCommand(OnMouseLeftButtonDown);
-        MouseLeftButtonUpCommand = new RelayCommand(_ => OnMouseLeftButtonUp());
         MouseRightButtonDownCommand = new RelayCommand(OnMouseRightButtonDown);
         KeyDownCommand = new RelayCommand(OnKeyDown);
 
@@ -179,19 +177,16 @@ public class MainViewModel : INotifyPropertyChanged
     {
         Scene.Models.Clear();
         Scene.SelectedModel = null;
-        Scene.Models.Clear();
         UpdateView();
         OnPropertyChanged(nameof(Scene));
     }
 
     private void EditCamera()
     {
-        // Создаём новый ViewModel для настроек камеры, передавая текущую камеру
-        var cameraVm = new CameraSettingsViewModel(Scene.Camera);
         // Создаём окно для редактирования параметров камеры
         var cameraWindow = new CameraSettingsWindow
         {
-            DataContext = cameraVm
+            DataContext = new CameraSettingsViewModel(Scene.Camera)
         };
         // Показываем окно как модальное
         if (cameraWindow.ShowDialog() == true)
@@ -220,28 +215,32 @@ public class MainViewModel : INotifyPropertyChanged
     
     private void OnMouseMove(object? parameter)
     {
-        if (_isRotating && Scene.SelectedModel != null && parameter is MouseEventArgs e)
+        if (Scene.SelectedModel != null && parameter is MouseEventArgs e)
         {
-            Point currentPos = e.GetPosition(null);
-            Vector delta = currentPos - _lastMousePos;
-            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
-                Scene.SelectedModel.Rotation = new Vector3(
-                    Scene.SelectedModel.Rotation.X,
-                    Scene.SelectedModel.Rotation.Y,
-                    Scene.SelectedModel.Rotation.Z - (float)delta.X * RotateSensitivity);
+                Point currentPos = e.GetPosition(null);
+                Vector delta = currentPos - _lastMousePos;
+                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                {
+                    Scene.SelectedModel.Rotation = new Vector3(
+                        Scene.SelectedModel.Rotation.X,
+                        Scene.SelectedModel.Rotation.Y,
+                        Scene.SelectedModel.Rotation.Z - (float)delta.X * RotateSensitivity);
+                }
+                else
+                {
+                    Scene.SelectedModel.Rotation = new Vector3(
+                        Scene.SelectedModel.Rotation.X + (float)delta.Y * RotateSensitivity,
+                        Scene.SelectedModel.Rotation.Y + (float)delta.X * RotateSensitivity,
+                        Scene.SelectedModel.Rotation.Z);
+                }
+
+                _lastMousePos = currentPos;
+                Scene.UpdateSelectedModel();
+                UpdateView();
+                OnPropertyChanged(nameof(Scene));
             }
-            else
-            {
-                Scene.SelectedModel.Rotation = new Vector3(
-                    Scene.SelectedModel.Rotation.X + (float)delta.Y * RotateSensitivity,
-                    Scene.SelectedModel.Rotation.Y + (float)delta.X * RotateSensitivity,
-                    Scene.SelectedModel.Rotation.Z);
-            }
-            _lastMousePos = currentPos;
-            Scene.UpdateSelectedModel();
-            UpdateView();
-            OnPropertyChanged(nameof(Scene));
         }
     }
 
@@ -250,18 +249,12 @@ public class MainViewModel : INotifyPropertyChanged
         // Для начала вращения – сохраняем позицию мыши и выставляем флаг
         if (parameter is MouseButtonEventArgs e)
         {
-            _isRotating = true;
             _lastMousePos = e.GetPosition(null);
             if (e.OriginalSource is UIElement uiElement)
             {
                 uiElement.Focus();
             }
         }
-    }
-
-    private void OnMouseLeftButtonUp()
-    {
-        _isRotating = false;
     }
     
     private void OnMouseRightButtonDown(object? parameter)
@@ -322,7 +315,7 @@ public class MainViewModel : INotifyPropertyChanged
     /// <summary>
     /// Вызывает методы перерисовки: очищает холст, отрисовывает объекты и выделение.
     /// </summary>
-    private void UpdateView()
+    public void UpdateView()
     {
         if (WriteableBitmap == null) return;
 
@@ -330,6 +323,7 @@ public class MainViewModel : INotifyPropertyChanged
         
         foreach (var model in Scene.Models)
         {
+            //TriangleRasterizer.FillTriangles(model, WriteableBitmap, ForegroundColor);
             WireframeRenderer.DrawWireframe(model, WriteableBitmap, ForegroundColor, Scene.Camera);
         }
         
