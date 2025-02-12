@@ -22,4 +22,13 @@ public class Camera
 
     public Matrix4x4 GetProjectionMatrix() =>
         Transformations.CreatePerspectiveProjection(Fov, Aspect, ZNear, ZFar);
+
+    public void ChangeEye()
+    {
+        Eye = new Vector3(
+            Radius * (float)Math.Cos(Phi) * (float)Math.Sin(Zeta),
+            Radius * (float)Math.Cos(Zeta),
+            Radius * (float)Math.Sin(Phi) * (float)Math.Sin(Zeta));
+
+    }
 }

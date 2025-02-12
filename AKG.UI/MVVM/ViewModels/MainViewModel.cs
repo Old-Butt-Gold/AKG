@@ -307,60 +307,71 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Scene));
         }
     }
-    
+
     private void OnKeyDown(object? parameter)
     {
-        if (Scene.SelectedModel == null || parameter is not KeyEventArgs e)
-            return;
-        
-        if (e.Key == Key.Delete)
+        if (parameter is KeyEventArgs e)
         {
-            Scene.Models.Remove(Scene.SelectedModel);
-            Scene.SelectedModel = Scene.Models.FirstOrDefault();
-            
+            if (Scene.SelectedModel != null)
+            {
+                if (e.Key == Key.Delete)
+                {
+                    Scene.Models.Remove(Scene.SelectedModel);
+                    Scene.SelectedModel = Scene.Models.FirstOrDefault();
+
+                    UpdateView();
+                    OnPropertyChanged(nameof(Scene));
+                    return;
+                }
+
+                var step = Scene.SelectedModel.GetOptimalTranslationStep();
+
+                switch (e.Key)
+                {
+                    case Key.Right:
+                        Scene.SelectedModel.Translation += new Vector3(step.X, 0, 0);
+                        break;
+                    case Key.Left:
+                        Scene.SelectedModel.Translation += new Vector3(-step.X, 0, 0);
+                        break;
+                    case Key.Up:
+                        Scene.SelectedModel.Translation += new Vector3(0, step.Y, 0);
+                        break;
+                    case Key.Down:
+                        Scene.SelectedModel.Translation += new Vector3(0, -step.Y, 0);
+                        break;
+                    case Key.S:
+                        Scene.SelectedModel.Translation += new Vector3(0, 0, -step.Z);
+                        break;
+                    case Key.W:
+                        Scene.SelectedModel.Translation += new Vector3(0, 0, step.Z);
+                        break;
+                }
+            }
+            else
+            {
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        Scene.Camera.Target += new Vector3(-0.5f, 0, 0);
+                        break;
+                    case Key.Right:
+                        Scene.Camera.Target += new Vector3(0.5f, 0, 0);
+                        break;
+                    case Key.Up:
+                        Scene.Camera.Target += new Vector3(0.0f, 0.5f, 0);
+                        break;
+                    case Key.Down:
+                        Scene.Camera.Target += new Vector3(0.0f, -0.5f, 0);
+                        break;
+                }
+            }
+
             UpdateView();
             OnPropertyChanged(nameof(Scene));
-            return;
         }
-
-        var step = Scene.SelectedModel.GetOptimalTranslationStep();
-        switch (e.Key)
-        {
-            case Key.Right when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(step.X, 0, 0);
-                break;
-            case Key.Left when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(-step.X, 0, 0);
-                break;
-            case Key.Up when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(0, step.Y, 0);
-                break;
-            case Key.Down when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(0, -step.Y, 0);
-                break;
-            case Key.S when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(0, 0, -step.Z);
-                break;
-            case Key.W when e.KeyboardDevice.Modifiers == ModifierKeys.Shift:
-                Scene.SelectedModel.Translation += new Vector3(0, 0, step.Z);
-                break;
-            case Key.Left:
-                Scene.Camera.Target += new Vector3(-0.5f, 0, 0);
-                break;
-            case Key.Right:
-                Scene.Camera.Target += new Vector3(0.5f, 0, 0);
-                break;
-            case Key.Up:
-                Scene.Camera.Target += new Vector3(0.0f, 0.5f, 0);
-                break;
-            case Key.Down:
-                Scene.Camera.Target += new Vector3(0.0f, -0.5f, 0);
-                break;
-        }
-        UpdateView();
-        OnPropertyChanged(nameof(Scene));
     }
-    
+
     /// <summary>
     /// Вызывает методы перерисовки: очищает холст, отрисовывает объекты и выделение.
     /// </summary>
@@ -368,10 +379,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (WriteableBitmap == null) return;
 
-        Scene.Camera.Eye = new Vector3(
-            Scene.Camera.Radius * (float)Math.Cos(Scene.Camera.Phi) * (float)Math.Sin(Scene.Camera.Zeta),
-            Scene.Camera.Radius * (float)Math.Cos(Scene.Camera.Zeta),
-            Scene.Camera.Radius * (float)Math.Sin(Scene.Camera.Phi) * (float)Math.Sin(Scene.Camera.Zeta));
+        Scene.Camera.ChangeEye();
         
         /*if (Scene.SelectedModel != null)
         {
