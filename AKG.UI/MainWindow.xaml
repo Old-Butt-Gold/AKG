@@ -50,10 +50,11 @@
 
         </StackPanel>
         
-        <StackPanel Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="1" Name="ImagePanel" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             
-            <Image Focusable="True" Name="ImgDisplay" Stretch="None" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                   Source="{Binding WriteableBitmap}">
+            <Image Focusable="True" Name="ImgDisplay" SnapsToDevicePixels="True"
+                   Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
+                   Source="{Binding WriteableBitmap}" Cursor="Hand">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseWheel">
                         <i:InvokeCommandAction Command="{Binding MouseWheelCommand}" PassEventArgsToCommand="True"/>

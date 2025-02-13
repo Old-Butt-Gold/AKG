@@ -44,7 +44,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Color _backgroundColor = Colors.White;
+    private Color _backgroundColor = Colors.LightGray;
 
     public Color BackgroundColor
     {
