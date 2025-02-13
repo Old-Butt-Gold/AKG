@@ -9,7 +9,7 @@
         xmlns:objects="clr-namespace:AKG.Core.Objects;assembly=AKG.Core"
         mc:Ignorable="d"
         Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded" WindowState="Maximized"
-        FocusManager.FocusedElement="{Binding ElementName=ImagePanel}">
+        FocusManager.FocusedElement="{Binding ElementName=ImgDisplay}">
     <Window.DataContext>
         <viewModels:MainViewModel/>
     </Window.DataContext>
@@ -26,7 +26,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <StackPanel Grid.Row="0" Name="StackPanel" Orientation="Horizontal" Background="LightGray" Margin="5">
+        <StackPanel Grid.Row="0" Name="StackPanel" Orientation="Horizontal" Background="LightGray">
             <Button Focusable="False" x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Command="{Binding LoadFileCommand}"/>
             <Button Focusable="False" x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Command="{Binding ClearSceneCommand}"/>
             <Button Focusable="False" Content="Edit Camera" Margin="5" Padding="5" Command="{Binding EditCameraCommand}"/>
@@ -43,33 +43,35 @@
             <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="{Binding IsModelInfoVisible}" StaysOpen="False">
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModelInfoTemplate}"/>
             </Popup>
-            <ComboBox SelectedValue="{Binding SelectedRenderMode}" SelectedValuePath="Tag" Margin="5">
+            <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Focusable="False" SelectedValue="{Binding SelectedRenderMode}" SelectedValuePath="Tag" Margin="5">
                 <ComboBoxItem Content="Wireframe" Tag="{x:Static objects:RenderMode.Wireframe}"/>
                 <ComboBoxItem Content="Filled Triangles" Tag="{x:Static objects:RenderMode.FilledTriangles}"/>
             </ComboBox>
 
         </StackPanel>
         
-        <StackPanel Focusable="True" Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseWheel">
-                    <i:InvokeCommandAction Command="{Binding MouseWheelCommand}" PassEventArgsToCommand="True"/>
-                </i:EventTrigger>
-                <i:EventTrigger EventName="MouseMove">
-                    <i:InvokeCommandAction Command="{Binding MouseMoveCommand}" PassEventArgsToCommand="True"/>
-                </i:EventTrigger>
-                <i:EventTrigger EventName="MouseLeftButtonDown">
-                    <i:InvokeCommandAction Command="{Binding MouseLeftButtonDownCommand}" PassEventArgsToCommand="True"/>
-                </i:EventTrigger>
-                <i:EventTrigger EventName="MouseRightButtonDown">
-                    <i:InvokeCommandAction Command="{Binding MouseRightButtonDownCommand}" PassEventArgsToCommand="True"/>
-                </i:EventTrigger>
-                <i:EventTrigger EventName="KeyDown">
-                    <i:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-            <Image Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                   Source="{Binding WriteableBitmap}"/>
+        <StackPanel Grid.Row="1" Name="ImagePanel" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            
+            <Image Focusable="True" Name="ImgDisplay" Stretch="None" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   Source="{Binding WriteableBitmap}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseWheel">
+                        <i:InvokeCommandAction Command="{Binding MouseWheelCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseMove">
+                        <i:InvokeCommandAction Command="{Binding MouseMoveCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                        <i:InvokeCommandAction Command="{Binding MouseLeftButtonDownCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseRightButtonDown">
+                        <i:InvokeCommandAction Command="{Binding MouseRightButtonDownCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="KeyDown">
+                        <i:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Image>
         </StackPanel>
     </Grid>
 </Window>

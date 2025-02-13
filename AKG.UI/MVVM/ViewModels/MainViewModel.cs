@@ -302,6 +302,7 @@ public class MainViewModel : INotifyPropertyChanged
         // Для начала вращения – сохраняем позицию мыши и выставляем флаг
         if (parameter is MouseButtonEventArgs e)
         {
+            
             _lastMousePos = e.GetPosition(null);
             if (e.OriginalSource is UIElement uiElement)
             {
