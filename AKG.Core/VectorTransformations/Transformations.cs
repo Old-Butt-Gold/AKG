@@ -19,21 +19,15 @@ public static class Transformations
     /// <returns>Итоговая матрица преобразования 4×4</returns>
     public static Matrix4x4 CreateWorldTransform(float scale, Matrix4x4 rotation, Vector3 translation)
     {
-        // Если нужен равномерный масштаб:
         var scaleMatrix = Matrix4x4.CreateScale(scale);
-
-        // Матрица перемещения:
+        
         var translationMatrix = Matrix4x4.CreateTranslation(translation);
 
         // Итоговая матрица (порядок: сначала масштаб, затем вращение, затем перевод)
         // Если представлять вершину в виде столбца (как у нас и в OpenGL), то итоговое преобразование: M = T * R * S.
-        var worldMatrix = translationMatrix * rotation * scaleMatrix; // сначала T, потом R, затем S
+        var worldMatrix = translationMatrix * rotation * scaleMatrix;
         
         return worldMatrix;
-        
-        /*Matrix4x4 rotation = Matrix4x4.CreateRotationY(MathF.PI / 2);  // 90° = PI/2 радиан
-        Matrix4x4 worldTransform = Transformations.CreateWorldTransform(model.Scale, rotation, new Vector3(0, 0, 10));
-        Transformations.ApplyTransformation(model, worldTransform);*/
     }
     
     /// <summary>
@@ -45,11 +39,6 @@ public static class Transformations
     /// <returns>Матрица вида (view matrix) 4×4</returns>
     public static Matrix4x4 CreateViewMatrix(Vector3 eye, Vector3 target, Vector3 up)
     {
-        // аналог метода Matrix4x4.CreateLookAt:
-        // eye – cameraPosition
-        // target – cameraTarget
-        // up – cameraUpVector
-        
         // Вычисляем базис камеры
         var zAxis = Vector3.Normalize(eye - target);  // Направлена от цели к камере
         var xAxis = Vector3.Normalize(Vector3.Cross(up, zAxis)); // Перпендикулярна up и zAxis
@@ -61,7 +50,7 @@ public static class Transformations
         float ty = -Vector3.Dot(yAxis, eye);
         float tz = -Vector3.Dot(zAxis, eye);
 
-        // Формируем матрицу вида (должна быть инверсирована из-за конструктора):
+        // Формируем матрицу вида (должна быть инверсирована из-за конструктора для векторов-столбцов):
         var view = new Matrix4x4(
             xAxis.X, xAxis.Y, xAxis.Z, tx,
             yAxis.X, yAxis.Y, yAxis.Z, ty,
@@ -99,7 +88,7 @@ public static class Transformations
             0,   0,   -1,   0
         );
 
-        // Надо инверсировать из-за конструктора
+        // Надо инверсировать из-за конструктора для векторов-столбцов
         perspective = Matrix4x4.Transpose(perspective);
 
         return perspective;
@@ -124,7 +113,7 @@ public static class Transformations
             0,          0,            0,  1
         );
 
-        // Инверсировать из-за конструктора
+        // Инверсировать из-за конструктора для векторов-столбцов
         viewportMatrix = Matrix4x4.Transpose(viewportMatrix);
 
         return viewportMatrix;

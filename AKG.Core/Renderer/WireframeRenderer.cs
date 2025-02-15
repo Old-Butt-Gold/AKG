@@ -21,7 +21,7 @@ public static class WireframeRenderer
     public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color, Camera camera)
     {
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
-        int intColor = color.ColorToIntBGRA();
+        int intColor = color.ColorToIntBgra();
 
         wb.Lock();
 
@@ -76,18 +76,6 @@ public static class WireframeRenderer
         wb.Unlock();
     }
     
-    /// <summary>
-    /// Рисует линию с помощью алгоритма Брезенхэма.
-    /// Работает с указателем на BackBuffer WriteableBitmap.
-    /// </summary>
-    /// <param name="buffer">Указатель на массив пикселей</param>
-    /// <param name="width">Ширина изображения (в пикселях)</param>
-    /// <param name="height">Высота изображения (в пикселях)</param>
-    /// <param name="x0">Начальная координата X</param>
-    /// <param name="y0">Начальная координата Y</param>
-    /// <param name="x1">Конечная координата X</param>
-    /// <param name="y1">Конечная координата Y</param>
-    /// <param name="color">Цвет линии в формате ARGB (целое число)</param>
     public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color)
     {
         int dx = Math.Abs(x1 - x0);
@@ -122,7 +110,7 @@ public static class WireframeRenderer
     
     public static void ClearBitmap(WriteableBitmap wb, Color clearColor)
     {
-        int intColor = clearColor.ColorToIntBGRA();
+        int intColor = clearColor.ColorToIntBgra();
 
         wb.Lock();
 
@@ -192,7 +180,7 @@ public static class WireframeRenderer
             [0, 4], [1, 5], [2, 6], [3, 7] // вертикальные ребра
         };
 
-        int intColor = highlightColor.ColorToIntBGRA();
+        int intColor = highlightColor.ColorToIntBgra();
         unsafe
         {
             wb.Lock();

@@ -22,11 +22,6 @@ public class Scene
     
     public ObjModel? SelectedModel { get; set; }
     
-    /// <summary>
-    /// Для каждой модели рассчитывает итоговую матрицу преобразования:
-    /// World (локальные параметры модели) * View (из камеры) * Projection (из камеры) * Viewport.
-    /// Затем обновляет трансформированные вершины модели.
-    /// </summary>
     public void UpdateAllModels()
     {
         var view = Camera.GetViewMatrix();
@@ -40,9 +35,6 @@ public class Scene
         
     }
     
-    /// <summary>
-    /// Обновляет трансформации только для выбранной модели.
-    /// </summary>
     public void UpdateSelectedModel()
     {
         if (SelectedModel is null)

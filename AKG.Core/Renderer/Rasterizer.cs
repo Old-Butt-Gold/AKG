@@ -11,12 +11,8 @@ namespace AKG.Core.Renderer;
 public static class Rasterizer
 {
     // Z-буфер: хранит глубину для каждого пикселя; 
-    // массив организован как [x, y] (строка, столбец)
     private static float[,]? _zBuffer;
     
-    /// <summary>
-    /// Инициализирует Z-буфер заданного размера, заполняя его значениями, равными камере.ZFar.
-    /// </summary>
     public static void ClearZBuffer(int width, int height, Camera camera)
     {
         _zBuffer ??= new float[width, height];
@@ -109,7 +105,6 @@ public static class Rasterizer
         int maxX = Math.Min(width - 1, (int)Math.Ceiling(Math.Max(v0.X, Math.Max(v1.X, v2.X))));
         int minY = Math.Max(0, (int)Math.Floor(Math.Min(v0.Y, Math.Min(v1.Y, v2.Y))));
         int maxY = Math.Min(height - 1, (int)Math.Ceiling(Math.Max(v0.Y, Math.Max(v1.Y, v2.Y))));
-
         
         // Вычисляем знаменатель барицентрических координат
         float denom = (v1.Y - v2.Y) * (v0.X - v2.X) + (v2.X - v1.X) * (v0.Y - v2.Y);
@@ -141,7 +136,7 @@ public static class Rasterizer
                     if (depth < _zBuffer![x, y])
                     {
                         _zBuffer[x, y] = depth;
-                        buffer[y * width + x] = color.ColorToIntBGRA();
+                        buffer[y * width + x] = color.ColorToIntBgra();
                     }
                 }
             }
