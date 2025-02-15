@@ -52,23 +52,7 @@ public static class Rasterizer
         {
             if (face.Vertices.Count < 3) return;
 
-            // Вычисляем нормаль грани (на основе первых трёх вершин) в мировых координатах
-            Vector3 worldV0 = Vector4.Transform(model.OriginalVertices[face.Vertices[0].VertexIndex - 1], world).AsVector3();
-            Vector3 worldV1 = Vector4.Transform(model.OriginalVertices[face.Vertices[1].VertexIndex - 1], world).AsVector3();
-            Vector3 worldV2 = Vector4.Transform(model.OriginalVertices[face.Vertices[2].VertexIndex - 1], world).AsVector3();
-
-            Vector3 edge1 = worldV1 - worldV0;
-            Vector3 edge2 = worldV2 - worldV0;
-            
-            // Эту нормаль бы сохранять где-то на будущее
-            Vector3 normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
-
-            // Backface culling: если треугольник обращён от камеры, отбраковываем грань
-            if (Vector3.Dot(normal, camera.Eye - worldV0) <= 0) return;
-
-            // Расчет интенсивности освещения по модели Ламберта
-            var shadedColor = color.ApplyLambert(normal, camera.LambertLight);
-
+            //Если грань содержит больше 3 вершин, выполняем трайангуляцию
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {
                 int idx0 = face.Vertices[0].VertexIndex - 1;
@@ -80,6 +64,24 @@ public static class Rasterizer
                     idx1 >= model.TransformedVertices.Length ||
                     idx2 >= model.TransformedVertices.Length)
                     continue;
+                
+                //Вычисляем нормаль треугольника в мировых координатах
+                Vector3 worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
+                Vector3 worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
+                Vector3 worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
+                
+                Vector3 edge1 = worldV1 - worldV0;
+                Vector3 edge2 = worldV2 - worldV0;
+                
+                // Эту нормаль бы сохранять где-то на будущее
+                Vector3 normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+
+                // Backface culling: если треугольник обращён от камеры, отбраковываем грань
+                Vector3 viewDirection = worldV0 - camera.Eye; // Вектор взгляда от камеры к вершине
+                if (Vector3.Dot(normal, viewDirection) > 0) continue; // Если скалярное произведение положительное, грань отвернута
+                
+                // Расчет интенсивности освещения по модели Ламберта
+                var shadedColor = color.ApplyLambert(normal, camera.LambertLight);
 
                 // Получаем экранные координаты (после всех преобразований)
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
