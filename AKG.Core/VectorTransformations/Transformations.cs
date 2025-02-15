@@ -53,7 +53,8 @@ public static class Transformations
         // Вычисляем базис камеры
         var zAxis = Vector3.Normalize(eye - target);  // Направлена от цели к камере
         var xAxis = Vector3.Normalize(Vector3.Cross(up, zAxis)); // Перпендикулярна up и zAxis
-        var yAxis = up; // Обычно up уже нормализован (иначе можно нормализовать yAxis)
+        // var yAxis = up; // Обычно up уже нормализован (иначе можно нормализовать yAxis) (У нас не нормализован из-за сферических координат Eye)
+        var yAxis = Vector3.Cross(zAxis, xAxis);
 
         // Вычисляем сдвиги: отрицательные скалярные произведения базисов на позицию камеры.
         float tx = -Vector3.Dot(xAxis, eye);

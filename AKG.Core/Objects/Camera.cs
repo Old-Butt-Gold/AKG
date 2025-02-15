@@ -8,7 +8,7 @@ public class Camera
     public Vector3 Eye { get; set; } = Vector3.Zero;
     public Vector3 Target { get; set; } = Vector3.Zero;
     public Vector3 Up { get; set; } = Vector3.UnitY;
-    public float Fov { get; set; } = MathF.PI / 4.0f;
+    public float Fov { get; set; } = MathF.PI / 2.0f;
     public float Aspect { get; set; } = 16f / 9f;
     public float ZNear { get; set; } = 0.01f;
     public float ZFar { get; set; } = 100f;
@@ -31,6 +31,5 @@ public class Camera
             Radius * (float)Math.Cos(Phi) * (float)Math.Sin(Zeta),
             Radius * (float)Math.Cos(Zeta),
             Radius * (float)Math.Sin(Phi) * (float)Math.Sin(Zeta));
-
     }
 }

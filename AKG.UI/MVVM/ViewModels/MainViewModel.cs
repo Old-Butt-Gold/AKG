@@ -285,9 +285,9 @@ public class MainViewModel : INotifyPropertyChanged
                 Scene.Camera.Zeta -= yOffset * 0.005f;
                 Scene.Camera.Phi += xOffset * 0.005f;
                 
-                if (Scene.Camera.Zeta > Math.PI)
+                if (Scene.Camera.Zeta >= Math.PI)
                     Scene.Camera.Zeta = (float)Math.PI - 0.01f;
-                if (Scene.Camera.Zeta < 0)
+                if (Scene.Camera.Zeta <= 0)
                     Scene.Camera.Zeta = 0.01f;
                 
                 _lastMousePos = currentPos;
