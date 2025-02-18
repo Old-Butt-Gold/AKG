@@ -45,7 +45,8 @@
             </Popup>
             <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Focusable="False" SelectedValue="{Binding SelectedRenderMode}" SelectedValuePath="Tag" Margin="5">
                 <ComboBoxItem Content="Wireframe" Tag="{x:Static objects:RenderMode.Wireframe}"/>
-                <ComboBoxItem Content="Filled Triangles" Tag="{x:Static objects:RenderMode.FilledTriangles}"/>
+                <ComboBoxItem Content="Filled Triangles Lambert" Tag="{x:Static objects:RenderMode.FilledTrianglesLambert}"/>
+                <ComboBoxItem Content="Filled Triangles Phong" Tag="{x:Static objects:RenderMode.FilledTrianglesPhong}"/>
             </ComboBox>
 
         </StackPanel>

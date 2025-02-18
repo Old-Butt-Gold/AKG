@@ -23,11 +23,18 @@ public static class RendererFacade
                     WireframeRenderer.DrawWireframe(model, wb, foregroundColor, scene.Camera);
                 }
                 break;
-            case RenderMode.FilledTriangles:
+            case RenderMode.FilledTrianglesLambert:
                 Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
                 foreach (var model in scene.Models)
                 {
                     Rasterizer.DrawFilledTriangleLambert(model, wb, foregroundColor, scene.Camera, scene.Lights);
+                }
+                break;
+            case RenderMode.FilledTrianglesPhong:
+                Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
+                foreach (var model in scene.Models)
+                {
+                    Rasterizer.DrawFilledTrianglePhong(model, wb, scene.Camera, scene.Lights);
                 }
                 break;
             default:

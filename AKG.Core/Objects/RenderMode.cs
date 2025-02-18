@@ -3,5 +3,6 @@
 public enum RenderMode
 {
     Wireframe,
-    FilledTriangles,
+    FilledTrianglesLambert,
+    FilledTrianglesPhong,
 }
