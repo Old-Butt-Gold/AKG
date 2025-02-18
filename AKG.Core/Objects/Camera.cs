@@ -56,11 +56,6 @@ public class Camera
     /// Диапазон: [0, 2π].
     /// </summary>
     public float Phi { get; set; } = (float)Math.PI / 2;
-    
-    /// <summary>
-    /// Вектор направления источника света для моделирования освещения по методу Ламберта.
-    /// </summary>
-    public Vector3 LambertLight { get; set; } = -new Vector3(1, 1, 2);
 
     public Matrix4x4 GetViewMatrix() =>
         Transformations.CreateViewMatrix(Eye, Target, Up);

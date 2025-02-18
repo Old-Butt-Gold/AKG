@@ -9,7 +9,10 @@ public class Scene
 {
     // Список моделей, отображаемых на холсте.
     public List<ObjModel> Models { get; } = [];
-        
+
+    // Список лучей/точек света, падающих на 3D объект
+    public List<Light> Lights { get; } = [];
+
     // Камера для сцены.
     public Camera Camera { get; set; } = new();
         

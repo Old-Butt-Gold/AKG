@@ -161,6 +161,7 @@ public class MainViewModel : INotifyPropertyChanged
         });
 
         SelectedRenderMode = RenderMode.Wireframe;
+        Scene.Lights.Add(new Light());
     }
 
     private void LoadFile()

@@ -21,7 +21,6 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
     private float _radius;
     private float _zeta;
     private float _phi;
-    private Vector3 _lambertLight;
 
     public CameraSettingsViewModel(Camera camera)
     {
@@ -36,7 +35,6 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _radius = camera.Radius;
         _zeta = camera.Zeta;
         _phi = camera.Phi;
-        _lambertLight = camera.LambertLight;
     }
 
     public Vector3 Eye
@@ -93,12 +91,6 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         set { _phi = value; OnPropertyChanged(nameof(Phi)); }
     }
     
-    public Vector3 LambertLight
-    {
-        get => _lambertLight;
-        set { _lambertLight = value; OnPropertyChanged(nameof(LambertLight)); }
-    }
-
     public event PropertyChangedEventHandler? PropertyChanged;
     
     public void CommitChanges()
@@ -113,7 +105,6 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _camera.Radius = Radius;
         _camera.Zeta = Zeta;
         _camera.Phi = Phi;
-        _camera.LambertLight = LambertLight;
     }
     
     protected void OnPropertyChanged(string propertyName) =>
