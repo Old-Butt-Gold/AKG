@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Windows.Media;
+using AKG.Core.Objects;
 
 namespace AKG.Core.Extensions;
 
@@ -15,16 +16,32 @@ public static class ColorExtensions
     /// Вычисляется интенсивность освещения как абсолютное значение скалярного произведения нормали и
     /// направления света (после нормализации). Итоговый цвет – базовый цвет, умноженный на интенсивность.
     /// </summary>
-    public static Color ApplyLambert(this Color baseColor, Vector3 normal, Vector3 lambertLight)
+    public static Color ApplyLambert(this Color baseColor, Vector3 normal, IEnumerable<Light> lambertLights)
     {
-        // Нормализуем направление света
-        Vector3 lightDir = Vector3.Normalize(lambertLight);
-        // Интенсивность – косинус угла между нормалью и направлением света (от 0 до 1)
-        float intensity = MathF.Max(Vector3.Dot(normal, -lightDir), 0);
-        // Применяем интенсивность к каждому цветовому каналу (A остаётся неизменным)
-        return Color.FromArgb(baseColor.A,
-            (byte)(baseColor.R * intensity),
-            (byte)(baseColor.G * intensity),
-            (byte)(baseColor.B * intensity));
+        float totalIntensity = 0f;
+        foreach (var light in lambertLights)
+        {
+            // Нормализуем направление света
+            Vector3 lightDir = Vector3.Normalize(light.Direction);
+            // Вычисляем интенсивность для данного источника
+            float intensity = MathF.Max(Vector3.Dot(normal, -lightDir), 0);
+            // Если требуется учитывать коэффициент диффузного отражения (Kd) из настроек источника, можно умножить:
+            // intensity *= light.Kd;
+            totalIntensity += intensity;
+        }
+        
+        // Ограничиваем суммарную интенсивность значением 1
+        totalIntensity = MathF.Min(totalIntensity, 1.0f);
+
+        return Color.FromArgb(
+            baseColor.A,
+            (byte)(baseColor.R * totalIntensity),
+            (byte)(baseColor.G * totalIntensity),
+            (byte)(baseColor.B * totalIntensity));
+    }
+    
+    public static Vector3 ToVector3(this Color color)
+    {
+        return new Vector3(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f);
     }
 }

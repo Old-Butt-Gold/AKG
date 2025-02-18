@@ -77,7 +77,7 @@ public static class Rasterizer
                 if (Vector3.Dot(normal, viewDirection) > 0) continue; // Если скалярное произведение положительное, грань отвернута
                 
                 // Расчет интенсивности освещения по модели Ламберта
-                var shadedColor = color.ApplyLambert(normal, lights[0].Direction);
+                var shadedColor = color.ApplyLambert(normal, lights);
 
                 // Получаем экранные координаты (после всех преобразований)
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
