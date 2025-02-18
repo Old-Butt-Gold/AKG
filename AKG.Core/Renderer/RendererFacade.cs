@@ -27,7 +27,7 @@ public static class RendererFacade
                 Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
                 foreach (var model in scene.Models)
                 {
-                    Rasterizer.DrawFilledTriangle(model, wb, foregroundColor, scene.Camera, scene.Lights);
+                    Rasterizer.DrawFilledTriangleLambert(model, wb, foregroundColor, scene.Camera, scene.Lights);
                 }
                 break;
             default:

@@ -6,19 +6,10 @@ namespace AKG.Core.Objects;
 public class Light
 {
     /// <summary>
-    /// Если IsDirectional == true, то используется Direction, иначе Position.
-    /// </summary>
-    public bool IsDirectional { get; set; } = true;
-    
-    /// <summary>
     /// Направление для направленного источника (например, солнечный свет)
+    /// Не нормализовано
     /// </summary>
-    public Vector3 Direction { get; set; } = Vector3.Normalize(new (-1, -1, -2));
-    
-    /// <summary>
-    /// Позиция для точечного источника
-    /// </summary>
-    public Vector3 Position { get; set; } = Vector3.Zero;
+    public Vector3 Direction { get; set; } = new (-1, -1, -2);
 
     // Цвета и интенсивности компонентов освещения
     public Color Ambient { get; set; } = Colors.Gray;

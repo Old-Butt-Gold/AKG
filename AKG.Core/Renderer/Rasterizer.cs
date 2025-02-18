@@ -29,7 +29,7 @@ public static class Rasterizer
     /// и рассчитывается интенсивность освещения по модели Ламберта.
     /// Затем вызывается метод, который заполняет треугольник с использованием Z-буфера.
     /// </summary>
-    public static unsafe void DrawFilledTriangle(ObjModel model, WriteableBitmap wb, Color color, Camera camera, List<Light> lights)
+    public static unsafe void DrawFilledTriangleLambert(ObjModel model, WriteableBitmap wb, Color color, Camera camera, List<Light> lights)
     {
         int width = wb.PixelWidth;
         int height = wb.PixelHeight;
@@ -85,7 +85,7 @@ public static class Rasterizer
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
 
                 // Растеризуем треугольник с заливкой и Z-тестом
-                DrawFilledTriangle(screenV0, screenV1, screenV2, shadedColor, buffer, width, height);
+                DrawFilledTriangleLambert(screenV0, screenV1, screenV2, shadedColor, buffer, width, height);
             }
         });
 
@@ -98,7 +98,7 @@ public static class Rasterizer
     /// Метод использует сканирующую линию с вычислением барицентрических координат для интерполяции глубины.
     /// Отбраковка невидимых фрагментов осуществляется с помощью Z-буфера.
     /// </summary>
-    private static unsafe void DrawFilledTriangle(Vector3 v0, Vector3 v1, Vector3 v2, Color color, int* buffer, int width, int height)
+    private static unsafe void DrawFilledTriangleLambert(Vector3 v0, Vector3 v1, Vector3 v2, Color color, int* buffer, int width, int height)
     {
         // Определяем ограничивающий прямоугольник (обрамлены Math.Max и Math.Min, чтобы не уходили за экран)
         int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
