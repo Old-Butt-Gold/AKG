@@ -101,16 +101,26 @@ public class ObjModel
                 var worldV0 = Vector4.Transform(OriginalVertices[idx0], world).AsVector3();
                 var worldV1 = Vector4.Transform(OriginalVertices[idx1], world).AsVector3();
                 var worldV2 = Vector4.Transform(OriginalVertices[idx2], world).AsVector3();
-
+                
+                // Проверяем на вырожденность треугольника
+                if (worldV0 == worldV1 || worldV1 == worldV2 || worldV0 == worldV2)
+                    continue;
+                
                 // Вычисляем нормаль данного треугольника (важен порядок вершин)
                 var edge1 = worldV1 - worldV0;
                 var edge2 = worldV2 - worldV0;
-                var triNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+                var triNormal = Vector3.Cross(edge1, edge2);
 
-                // Добавляем нормаль треугольника к каждой из вершин
-                AddFaceNormalToVertex(idx0, triNormal);
-                AddFaceNormalToVertex(idx1, triNormal);
-                AddFaceNormalToVertex(idx2, triNormal);
+                // Проверяем, что нормаль не является нулевой
+                if (triNormal.LengthSquared() > float.Epsilon)
+                {
+                    triNormal = Vector3.Normalize(triNormal);
+
+                    // Добавляем нормаль треугольника к каждой из вершин
+                    AddFaceNormalToVertex(idx0, triNormal);
+                    AddFaceNormalToVertex(idx1, triNormal);
+                    AddFaceNormalToVertex(idx2, triNormal);
+                }
             }
         });
 
