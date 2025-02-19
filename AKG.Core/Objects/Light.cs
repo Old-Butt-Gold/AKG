@@ -14,12 +14,12 @@ public class Light
     /// <summary>
     /// Амбиентная компонента освещения.
     /// </summary>
-    public Color Ambient { get; set; } = Colors.Red;
+    public Color Ambient { get; set; } = Colors.White;
 
     /// <summary>
     /// Диффузная компонента освещения.
     /// </summary>
-    public Color Diffuse { get; set; } = Colors.Green;
+    public Color Diffuse { get; set; } = Colors.Gray;
 
     /// <summary>
     /// Зеркальная компонента освещения.
@@ -29,22 +29,22 @@ public class Light
     /// <summary>
     /// Коэффициент фонового (амбиентного) освещения
     /// </summary>
-    public float Ka { get; set; } = 1.0f; //0.1f;
+    public float Ka { get; set; } = 0.1f;
     
     /// <summary>
     /// Коэффициент рассеянного (диффузного) освещения
     /// </summary>
-    public float Kd { get; set; } = 1.0f; //0.7f;
+    public float Kd { get; set; } = 1.0f;
     
     /// <summary>
     /// Коэффициент зеркального освещения
     /// </summary>
-    public float Ks { get; set; } = 1.0f; //0.2f;
+    public float Ks { get; set; } = 0.2f;
     
     /// <summary>
     /// Показатель блеска поверхности.
     /// </summary>
-    public float Shininess { get; set; } = 1.0f;  //32f;
+    public float Shininess { get; set; } = 32f;
 
     /// <summary>
     /// Вычисляет итоговый цвет фрагмента по модели Фонга с учетом нескольких источников света.
@@ -67,23 +67,16 @@ public class Light
         
         foreach (var light in lights)
         {
-            // 1. Амбиентная компонента (фоновое освещение)
-            // Рассчитывается как произведение коэффициента амбиентного освещения (Ka) и цвета амбиентного света
-            var ambientLight = light.Ambient.ToVector3();
-            ambient += ambientLight * light.Ka;
+            // 1. Амбиентная компонента
+            ambient += light.Ambient.ToVector3() * light.Ka;
             
             // 2. Диффузная компонента
             // Вычисляем направление от фрагмента к источнику света и нормализуем его
             // Нормализация необходима для корректного расчета углов между векторами
             var lightDir = Vector3.Normalize(light.Direction - fragWorld);
-            
             var NdotL = MathF.Max(Vector3.Dot(normal, lightDir), 0);
-            
-            // Добавляем диффузную компоненту, умноженную на коэффициент диффузного освещения (Kd)
             diffuse += light.Diffuse.ToVector3() * NdotL * light.Kd;
-
-            // Уже нормализовано
-            // Зеркальный цвет
+            
             /*var reflection = lightDir - 2 * Vector3.Dot(lightDir, normal) * normal;
 
             float rv = Vector3.Dot(-reflection, viewDirection);
