@@ -22,6 +22,8 @@ public static class Rasterizer
             _zBuffer[x, y] = initDepth;
     }
 
+    #region Lambert
+
     /// <summary>
     /// Растеризует (заполняет) треугольники для каждой грани модели.
     /// Для каждой грани, состоящей из 3+ вершин, применяется фан‑трайангуляция.
@@ -146,6 +148,14 @@ public static class Rasterizer
         }
     }
 
+    #endregion
+
+
+    // Поддерживаются два режима:
+    // FilledTrianglesPhong – вычисление цвета на уровне пикселя (обычное Фонговое затенение)
+    // FilledTrianglesAverageFaceNormalPhong – использование усреднённых нормалей вершин (Гуравское затенение)
+    #region FilledTrianglesPhong
+    
     /// <summary>
     /// Растеризует треугольники для каждой грани модели с применением фан-трайангуляции, backface culling и модели Фонга.
     /// Для каждой треугольной части вычисляются экранные координаты и, если треугольник видим (с учетом нормали),
@@ -204,28 +214,109 @@ public static class Rasterizer
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
 
-                // Для расчета затенения по Фонгу нужны нормали в вершинах.
-                // Если в модели заданы нормали для вершин, их можно получить так:
-                Vector3 n0 = (face.Vertices[0].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-                Vector3 n1 = (face.Vertices[j].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[j].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-                Vector3 n2 = (face.Vertices[j + 1].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-
-                // Отрисовываем треугольник с Фонговым затенением,
-                // передавая также мировые координаты вершин для вычисления viewDir на уровне пикселя
-                DrawFilledTrianglePhong(screenV0, screenV1, screenV2, n0, n1, n2, worldV0, worldV1, worldV2, buffer, width, height,
-                    lights, camera);
+                // Определяем нормали для затенения:
+                // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
+                var n0 = (face.Vertices[0].NormalIndex > 0)
+                        ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
+                        : faceNormal;
+                    var n1 = (face.Vertices[j].NormalIndex > 0)
+                        ? Vector4.Transform(model.Normals[face.Vertices[j].NormalIndex - 1], world).AsVector3()
+                        : faceNormal;
+                    var n2 = (face.Vertices[j + 1].NormalIndex > 0)
+                        ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
+                        : faceNormal;
+                
+                // Отрисовываем треугольник с Фонговым затенением.
+                DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
+                    n0, n1, n2, worldV0, worldV1, worldV2,
+                    buffer, width, height, lights, camera);
             }
         });
 
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
     }
+
+    #endregion
+
+    #region FilledTrianglesAverageFaceNormalPhong
+
+    /// <summary>
+    /// Растеризует треугольники для каждой грани модели с применением фан-трайангуляции, backface culling и модели Фонга.
+    /// Для каждой треугольной части вычисляются экранные координаты и, если треугольник видим (с учетом нормали),
+    /// происходит заполнение с использованием Z-буфера и вычислением цвета по модели Фонга.
+    /// </summary>
+    public static unsafe void FilledTrianglesAverageFaceNormalPhong(ObjModel model, WriteableBitmap wb,
+        Camera camera, List<Light> lights)
+    {
+        int width = wb.PixelWidth;
+        int height = wb.PixelHeight;
+
+        // Вычисляем мировую матрицу на основе масштабирования, вращения и трансляции модели
+        var world = Transformations.CreateWorldTransform(
+            model.Scale,
+            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
+            model.Translation);
+
+        wb.Lock();
+        int* buffer = (int*)wb.BackBuffer;
+
+        model.CalculateVertexNormals();
+        
+        // Для каждой грани модели (фан-трайангуляция)
+        Parallel.ForEach(model.Faces, face =>
+        {
+            if (face.Vertices.Count < 3) return;
+
+            // Для каждой треугольной части грани
+            for (int j = 1; j < face.Vertices.Count - 1; j++)
+            {
+                int idx0 = face.Vertices[0].VertexIndex - 1;
+                int idx1 = face.Vertices[j].VertexIndex - 1;
+                int idx2 = face.Vertices[j + 1].VertexIndex - 1;
+
+                if (idx0 < 0 || idx1 < 0 || idx2 < 0 ||
+                    idx0 >= model.TransformedVertices.Length ||
+                    idx1 >= model.TransformedVertices.Length ||
+                    idx2 >= model.TransformedVertices.Length)
+                    continue;
+
+                // Вычисляем мировые координаты вершин (для backface culling)
+                Vector3 worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
+                Vector3 worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
+                Vector3 worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
+
+                // Вычисляем нормаль треугольника (в мировых координатах)
+                Vector3 edge1 = worldV1 - worldV0;
+                Vector3 edge2 = worldV2 - worldV0;
+                Vector3 faceNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+
+                // Backface culling: если треугольник обращён от камеры, отбраковываем грань
+                Vector3 viewDirection = worldV0 - camera.Eye; // Вектор взгляда от камеры к вершине
+                if (Vector3.Dot(faceNormal, viewDirection) > 0)
+                    continue; // Если скалярное произведение положительное, грань отвернута
+
+                // Получаем экранные координаты (уже после всех преобразований)
+                Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
+                Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
+                Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
+
+                // Gouraud – используем усреднённые нормали
+                var n0 = model.VertexNormals[face.Vertices[0].VertexIndex - 1];
+                var n1 = model.VertexNormals[face.Vertices[j].VertexIndex - 1];
+                var n2 = model.VertexNormals[face.Vertices[j + 1].VertexIndex - 1];
+                
+                DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
+                    n0, n1, n2, worldV0, worldV1, worldV2,
+                    buffer, width, height, lights, camera);
+            }
+        });
+
+        wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
+        wb.Unlock();
+    }
+
+    #endregion
 
     /// <summary>
     /// Растеризует один треугольник с Фонговым затенением.

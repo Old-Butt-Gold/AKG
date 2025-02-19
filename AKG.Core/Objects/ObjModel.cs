@@ -1,5 +1,6 @@
 using System.Numerics;
 using AKG.Core.Parser;
+using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Objects;
 
@@ -18,6 +19,12 @@ public class ObjModel
     // Список вершин, которые будут использоваться для отображения (после применения преобразований).
     // Этот список обновляется в методе UpdateImage.
     public Vector4[] TransformedVertices { get; set; } = [];
+
+    // Счетчики количества граней, использующих каждую вершину.
+    public int[] Counters { get; set; } = [];
+
+    // Нормали вершин (рассчитываются путем усреднения нормалей граней).
+    public Vector3[] VertexNormals { get; set; } = [];
 
     // Vt
     // V – Необязательная координата для двухмерной текстуры, по умолчанию 0
@@ -55,7 +62,74 @@ public class ObjModel
 
     // Дополнительная величина, например, для шага перемещения
     public float Delta { get; set; }
+    
+    /// <summary>
+    /// Рассчитывает нормали вершин на основе нормалей граней.
+    /// </summary>
+    public void CalculateVertexNormals()
+    {
+        var world = Transformations.CreateWorldTransform(
+            Scale,
+            Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z),
+            Translation);
+        
+        // Инициализируем нормали и счетчики нулями
+        for (int i = 0; i < OriginalVertices.Count; i++)
+        {
+            VertexNormals[i] = Vector3.Zero;
+            Counters[i] = 0;
+        }
+        
+        // Для каждой грани выполняем фан-трайангуляцию
+        Parallel.ForEach(Faces, face =>
+        {
+            if (face.Vertices.Count < 3)
+                return;
+        
+            // Фан-трайангуляция: используем первую вершину как базовую и формируем треугольники
+            for (int j = 1; j < face.Vertices.Count - 1; j++)
+            {
+                int idx0 = face.Vertices[0].VertexIndex - 1;
+                int idx1 = face.Vertices[j].VertexIndex - 1;
+                int idx2 = face.Vertices[j + 1].VertexIndex - 1;
 
+                if (idx0 < 0 || idx1 < 0 || idx2 < 0 ||
+                    idx0 >= OriginalVertices.Count || idx1 >= OriginalVertices.Count || idx2 >= OriginalVertices.Count)
+                    continue;
+
+                // Преобразуем исходные вершины (без перспективного деления)
+                var worldV0 = Vector4.Transform(OriginalVertices[idx0], world).AsVector3();
+                var worldV1 = Vector4.Transform(OriginalVertices[idx1], world).AsVector3();
+                var worldV2 = Vector4.Transform(OriginalVertices[idx2], world).AsVector3();
+
+                // Вычисляем нормаль данного треугольника (важен порядок вершин)
+                var edge1 = worldV1 - worldV0;
+                var edge2 = worldV2 - worldV0;
+                var triNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+
+                // Добавляем нормаль треугольника к каждой из вершин
+                AddFaceNormalToVertex(idx0, triNormal);
+                AddFaceNormalToVertex(idx1, triNormal);
+                AddFaceNormalToVertex(idx2, triNormal);
+            }
+        });
+
+        // Усредняем нормали для каждой вершины
+        Parallel.For(0, VertexNormals.Length, i =>
+        {
+            if (Counters[i] > 0)
+            {
+                VertexNormals[i] = Vector3.Normalize(VertexNormals[i] / Counters[i]);
+            }
+        });
+
+        void AddFaceNormalToVertex(int idx, Vector3 normal)
+        {
+            VertexNormals[idx] += normal;
+            Counters[idx]++;
+        }
+    }
+    
     public Vector3 GetOptimalTranslationStep()
     {
         float dx = Max.X - Min.X;

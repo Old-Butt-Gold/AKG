@@ -4,5 +4,6 @@ public enum RenderMode
 {
     Wireframe,
     FilledTrianglesLambert,
-    FilledTrianglesPhong,
+    FilledTrianglesPhong,         
+    FilledTrianglesAverageFaceNormalPhong   // Фонговое затенение с вычислением цвета в вершинах (Гуравское)
 }

@@ -105,7 +105,7 @@ public class Light
             // добавляем спекулярную компоненту, возведенную в степень Shininess
             if (RdotV > 0)
             {
-                specular += light.Specular.ToVector3() * light.Ks * (float)Math.Pow(RdotV, light.Shininess);
+                specular += light.Specular.ToVector3() * light.Ks * MathF.Pow(RdotV, light.Shininess);
             }
         }
         

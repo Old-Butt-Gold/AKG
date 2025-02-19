@@ -196,6 +196,8 @@ public static class ObjParser
         model.Scale = scale;
         model.Delta = delta;
         model.TransformedVertices = new Vector4[model.OriginalVertices.Count];
+        model.Counters = new int[model.OriginalVertices.Count];
+        model.VertexNormals = new Vector3[model.OriginalVertices.Count];
         
         return model;
     }
