@@ -16,16 +16,6 @@ public class ObjModel
     // W – Дополнительная координата, по умолчанию 1
     public List<Vector4> OriginalVertices { get; } = [];
     
-    // Список вершин, которые будут использоваться для отображения (после применения преобразований).
-    // Этот список обновляется в методе UpdateImage.
-    public Vector4[] TransformedVertices { get; set; } = [];
-
-    // Счетчики количества граней, использующих каждую вершину.
-    public int[] Counters { get; set; } = [];
-
-    // Нормали вершин (рассчитываются путем усреднения нормалей граней).
-    public Vector3[] VertexNormals { get; set; } = [];
-
     // Vt
     // V – Необязательная координата для двухмерной текстуры, по умолчанию 0
     // W – Необязательная координата для трехмерной текстуры, по умолчанию 0
@@ -35,6 +25,21 @@ public class ObjModel
     // J – Y
     // K – Z
     public List<Vector3> Normals { get; } = [];
+    
+    /// <summary>
+    /// Список вершин, которые будут использоваться для отображения (после применения преобразований).
+    /// </summary>
+    public Vector4[] TransformedVertices { get; set; } = [];
+    
+    /// <summary>
+    /// Счетчики количества граней, использующих каждую вершину.
+    /// </summary>
+    public int[] Counters { get; set; } = [];
+    
+    /// <summary>
+    /// Нормали вершин (рассчитываются путем усреднения нормалей граней).
+    /// </summary>
+    public Vector3[] VertexNormals { get; set; } = [];
     
     // F/V/N список полигонов/граней
     public List<Face> Faces { get; } = [];
