@@ -31,6 +31,7 @@ public static class RendererFacade
                 }
                 break;
             case RenderMode.FilledTrianglesPhong:
+                // Используем готовые Normals из файлов
                 Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
                 foreach (var model in scene.Models)
                 {
@@ -38,6 +39,7 @@ public static class RendererFacade
                 }
                 break;
             case RenderMode.FilledTrianglesAverageFaceNormalPhong:
+                // Используем усредненные нормали поверхности всех полигонов
                 Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
                 foreach (var model in scene.Models)
                 {

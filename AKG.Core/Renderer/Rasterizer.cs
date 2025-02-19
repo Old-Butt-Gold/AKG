@@ -217,15 +217,15 @@ public static class Rasterizer
                 // Определяем нормали для затенения:
                 // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
                 var n0 = (face.Vertices[0].NormalIndex > 0)
-                        ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
-                        : faceNormal;
-                    var n1 = (face.Vertices[j].NormalIndex > 0)
-                        ? Vector4.Transform(model.Normals[face.Vertices[j].NormalIndex - 1], world).AsVector3()
-                        : faceNormal;
-                    var n2 = (face.Vertices[j + 1].NormalIndex > 0)
-                        ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
-                        : faceNormal;
-                
+                    ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
+                    : faceNormal;
+                var n1 = (face.Vertices[j].NormalIndex > 0)
+                    ? Vector4.Transform(model.Normals[face.Vertices[j].NormalIndex - 1], world).AsVector3()
+                    : faceNormal;
+                var n2 = (face.Vertices[j + 1].NormalIndex > 0)
+                    ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
+                    : faceNormal;
+
                 // Отрисовываем треугольник с Фонговым затенением.
                 DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
                     n0, n1, n2, worldV0, worldV1, worldV2,
