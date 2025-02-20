@@ -67,31 +67,25 @@ public class ObjModel
 
     // Дополнительная величина, например, для шага перемещения
     public float Delta { get; set; }
-    
+
     /// <summary>
     /// Рассчитывает нормали вершин на основе нормалей граней.
     /// </summary>
-    public void CalculateVertexNormals()
+    public void CalculateVertexNormals(Matrix4x4 world)
     {
-        var world = Transformations.CreateWorldTransform(
-            Scale,
-            Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z),
-            Translation);
-        
         // Инициализируем нормали и счетчики нулями
         for (int i = 0; i < OriginalVertices.Count; i++)
         {
             VertexNormals[i] = Vector3.Zero;
             Counters[i] = 0;
         }
-        
+
         // Для каждой грани выполняем фан-трайангуляцию
         Parallel.ForEach(Faces, face =>
         {
             if (face.Vertices.Count < 3)
                 return;
-        
-            // Фан-трайангуляция: используем первую вершину как базовую и формируем треугольники
+
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {
                 int idx0 = face.Vertices[0].VertexIndex - 1;
@@ -102,16 +96,16 @@ public class ObjModel
                     idx0 >= OriginalVertices.Count || idx1 >= OriginalVertices.Count || idx2 >= OriginalVertices.Count)
                     continue;
 
-                // Преобразуем исходные вершины (без перспективного деления)
+                // Преобразуем исходные вершины с учетом текущей мировой матрицы
                 var worldV0 = Vector4.Transform(OriginalVertices[idx0], world).AsVector3();
                 var worldV1 = Vector4.Transform(OriginalVertices[idx1], world).AsVector3();
                 var worldV2 = Vector4.Transform(OriginalVertices[idx2], world).AsVector3();
-                
+
                 // Проверяем на вырожденность треугольника
                 if (worldV0 == worldV1 || worldV1 == worldV2 || worldV0 == worldV2)
                     continue;
-                
-                // Вычисляем нормаль данного треугольника (важен порядок вершин)
+
+                // Вычисляем нормаль данного треугольника
                 var edge1 = worldV1 - worldV0;
                 var edge2 = worldV2 - worldV0;
                 var triNormal = Vector3.Cross(edge1, edge2);
@@ -144,7 +138,7 @@ public class ObjModel
             Counters[idx]++;
         }
     }
-    
+
     public Vector3 GetOptimalTranslationStep()
     {
         float dx = Max.X - Min.X;

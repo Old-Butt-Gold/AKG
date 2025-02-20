@@ -217,6 +217,17 @@ public static class Rasterizer
                 // Определяем нормали для затенения:
                 // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
                 var n0 = (face.Vertices[0].NormalIndex > 0)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[0].NormalIndex - 1], world)
+                    : faceNormal;
+                var n1 = (face.Vertices[j].NormalIndex > 0)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j].NormalIndex - 1], world)
+                    : faceNormal;
+                var n2 = (face.Vertices[j + 1].NormalIndex > 0)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world)
+                    : faceNormal;
+                
+                /* Было
+                 var n0 = (face.Vertices[0].NormalIndex > 0)
                     ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
                     : faceNormal;
                 var n1 = (face.Vertices[j].NormalIndex > 0)
@@ -225,6 +236,7 @@ public static class Rasterizer
                 var n2 = (face.Vertices[j + 1].NormalIndex > 0)
                     ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
                     : faceNormal;
+                 */
 
                 // Отрисовываем треугольник с Фонговым затенением.
                 DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
@@ -261,7 +273,7 @@ public static class Rasterizer
         wb.Lock();
         int* buffer = (int*)wb.BackBuffer;
 
-        model.CalculateVertexNormals();
+        model.CalculateVertexNormals(world);
         
         // Для каждой грани модели (фан-трайангуляция)
         Parallel.ForEach(model.Faces, face =>
@@ -300,11 +312,10 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
-
-                // Gouraud – используем усреднённые нормали
-                var n0 = model.VertexNormals[face.Vertices[0].VertexIndex - 1];
-                var n1 = model.VertexNormals[face.Vertices[j].VertexIndex - 1];
-                var n2 = model.VertexNormals[face.Vertices[j + 1].VertexIndex - 1];
+                
+                var n0 = model.VertexNormals[idx0];
+                var n1 = model.VertexNormals[idx1];
+                var n2 = model.VertexNormals[idx2];
                 
                 DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
                     n0, n1, n2, worldV0, worldV1, worldV2,
