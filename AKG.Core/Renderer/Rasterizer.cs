@@ -87,6 +87,16 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
+                
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+                    || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
+                {
+                    continue;
+                }
 
                 // Растеризуем треугольник с заливкой и Z-тестом
                 DrawFilledTriangleLambert(screenV0, screenV1, screenV2, shadedColor, buffer, width, height);
@@ -213,6 +223,16 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
+                
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+                    || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
+                {
+                    continue;
+                }
 
                 // Определяем нормали для затенения:
                 // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
@@ -312,6 +332,16 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
+                
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+                    || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
+                {
+                    continue;
+                }
                 
                 var n0 = model.VertexNormals[idx0];
                 var n1 = model.VertexNormals[idx1];
