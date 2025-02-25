@@ -44,6 +44,9 @@ public class ObjModel
     // F/V/N список полигонов/граней
     public List<Face> Faces { get; } = [];
     
+    // Словарь материалов
+    public Dictionary<string, Material>? Materials { get; set; }
+    
     // Bounding box (минимальные и максимальные координаты по X, Y, Z)
     public Vector4 Min { get; set; }
     public Vector4 Max { get; set; }

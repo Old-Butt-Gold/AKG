@@ -173,6 +173,10 @@ public class MainViewModel : INotifyPropertyChanged
             try
             {
                 var loadedModel = ObjParser.Parse(dlg.FileName!);
+                if (loadedModel.Materials is null)
+                {
+                    MessageBox.Show("Данные о mtl файле не найдены", "Внимание", MessageBoxButton.OK);
+                }
                 WriteableBitmap ??= new WriteableBitmap(
                     Scene.CanvasWidth, Scene.CanvasHeight, 96, 96, PixelFormats.Bgra32, null);
 

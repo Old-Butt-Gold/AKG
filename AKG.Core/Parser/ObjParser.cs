@@ -26,6 +26,10 @@ public static class ObjParser
         Vector4 max = new Vector4(float.MinValue, float.MinValue, float.MinValue, 1.0f);
 
         int lineIndex = 0;
+        
+        // Переменная для хранения текущего имени материала (из usemtl)
+        string currentMaterialName = string.Empty;
+        string currentMtlFileName = string.Empty;
 
         foreach (var line in File.ReadLines(filePath))
         {
@@ -92,6 +96,22 @@ public static class ObjParser
                     model.Normals.Add(new (i, j, k));
                     break;
                 }
+                case "usemtl": // Задает материал для последующих граней
+                {
+                    if (tokens.Length >= 2)
+                    {
+                        currentMaterialName = tokens[1];
+                    }
+                    break;
+                }
+                case "mtllib":
+                {
+                    if (tokens.Length >= 2)
+                    {
+                        currentMtlFileName = tokens[1];
+                    }
+                    break;
+                }
                 case "f": // Грань (полигон)
                 {
                     // Ожидается: f v1 v2 v3 ... (каждый v может быть v, v/vt, v//vn или v/vt/vn)
@@ -100,7 +120,10 @@ public static class ObjParser
                         throw new ArgumentException($"Неверный формат грани (требуется минимум 3 вершины) на ${lineIndex} строке");
                     }
 
-                    var face = new Face();
+                    var face = new Face
+                    {
+                        MaterialName = currentMaterialName
+                    };
 
                     for (int i = 1; i < tokens.Length; i++)
                     {
@@ -198,6 +221,23 @@ public static class ObjParser
         model.TransformedVertices = new Vector4[model.OriginalVertices.Count];
         model.Counters = new int[model.OriginalVertices.Count];
         model.VertexNormals = new Vector3[model.OriginalVertices.Count];
+        
+        // Попытка загрузить .mtl файл из той же папки
+        var mtlPath = Path.ChangeExtension(filePath, ".mtl");
+        if (File.Exists(mtlPath))
+        {
+            model.Materials = MtlParser.Parse(mtlPath);
+        }
+        else
+        {
+            // Если файл не найден, попробуем загрузить из папки mttlib
+            var mtlDirectory = Path.GetDirectoryName(filePath)!;
+            var mttlibPath = Path.Combine(mtlDirectory, currentMtlFileName);
+            if (File.Exists(mttlibPath))
+            {
+                model.Materials = MtlParser.Parse(mttlibPath);
+            }
+        }
         
         return model;
     }

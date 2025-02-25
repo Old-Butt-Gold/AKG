@@ -6,6 +6,9 @@ namespace AKG.Core.Parser;
 public class Face
 {
     public List<FaceVertex> Vertices { get; } = [];
+    
+    // Имя материала, применяемого к грани (записывается из usemtl)
+    public string MaterialName { get; set; } = string.Empty;
 
-    public override string ToString() => string.Join(" | ", Vertices);
+    public override string ToString() => $"Material – {MaterialName} : " + string.Join(" | ", Vertices);
 }
