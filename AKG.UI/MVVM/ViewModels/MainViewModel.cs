@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Input;
@@ -65,6 +66,21 @@ public class MainViewModel : INotifyPropertyChanged
         {
             _selectedModelInfo = value;
             OnPropertyChanged(nameof(SelectedModelInfo));
+        }
+    }
+    
+    // Свойство для отображения FPS
+    // Поля для FPS-счетчика
+    private int _frameCount = 0;
+    private readonly Stopwatch _fpsStopwatch = Stopwatch.StartNew();
+    private double _fps;
+    public double Fps
+    {
+        get => _fps;
+        set
+        {
+            _fps = value;
+            OnPropertyChanged(nameof(Fps));
         }
     }
 
@@ -400,6 +416,15 @@ public class MainViewModel : INotifyPropertyChanged
         UpdateSelectedModelInfo();
         
         OnPropertyChanged(nameof(WriteableBitmap));
+        
+        _frameCount++;
+        double elapsed = _fpsStopwatch.Elapsed.TotalSeconds;
+        if (elapsed >= 1.0)
+        {
+            Fps = _frameCount / elapsed;
+            _frameCount = 0;
+            _fpsStopwatch.Restart();
+        }
     }
     
     /// <summary>

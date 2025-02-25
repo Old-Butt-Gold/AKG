@@ -30,6 +30,7 @@
             <Button Focusable="False" x:Name="BtnLoad" Content="Load .obj" Margin="5" Padding="5" Command="{Binding LoadFileCommand}"/>
             <Button Focusable="False" x:Name="BtnClear" Content="Clear Screen" Margin="5" Padding="5" Command="{Binding ClearSceneCommand}"/>
             <Button Focusable="False" Content="Edit Camera" Margin="5" Padding="5" Command="{Binding EditCameraCommand}"/>
+            <TextBlock Text="{Binding Fps, StringFormat=FPS: {0:F1}}" VerticalAlignment="Center" Margin="15,0,5,0"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                 <TextBlock Text="Foreground Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <Button Focusable="False" Content="Pick Color" Command="{Binding PickForegroundColorCommand}" Width="100" Height="30" Margin="0 0 5 0"/>
