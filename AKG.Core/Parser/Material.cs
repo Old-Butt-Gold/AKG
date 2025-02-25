@@ -28,5 +28,5 @@ public class Material
     /// <summary>
     /// Путь к текстуре зеркальной карты MRAO (map_MRAO).
     /// </summary>
-    public string MraoMap { get; set; } = string.Empty;
+    public string SpecularMap { get; set; } = string.Empty;
 }

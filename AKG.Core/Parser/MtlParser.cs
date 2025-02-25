@@ -35,7 +35,7 @@ public static class MtlParser
                     break;
                 case "map_mrao":
                     if (current != null && parts.Length >= 2)
-                        current.MraoMap = GetFullPath(mtlDirectory, parts[1]);
+                        current.SpecularMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "map_ke":
                     if (current != null && parts.Length >= 2)

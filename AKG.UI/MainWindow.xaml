@@ -49,6 +49,7 @@
                 <ComboBoxItem Content="Filled Triangles Lambert" Tag="{x:Static objects:RenderMode.FilledTrianglesLambert}"/>
                 <ComboBoxItem Content="Filled Triangles Phong" Tag="{x:Static objects:RenderMode.FilledTrianglesPhong}"/>
                 <ComboBoxItem Content="Filled Triangles Average Face Normal Phong" Tag="{x:Static objects:RenderMode.FilledTrianglesAverageFaceNormalPhong}"/>
+                <ComboBoxItem Content="Texture" Tag="{x:Static objects:RenderMode.Texture}"/>
             </ComboBox>
 
         </StackPanel>

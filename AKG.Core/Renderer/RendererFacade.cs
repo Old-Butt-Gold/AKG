@@ -46,6 +46,22 @@ public static class RendererFacade
                     Rasterizer.FilledTrianglesAverageFaceNormalPhong(model, wb, scene.Camera, scene.Lights);
                 }
                 break;
+            case RenderMode.Texture:
+            {
+                Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
+                foreach (var model in scene.Models)
+                {
+                    if (model.Materials is null)
+                    {
+                        WireframeRenderer.DrawWireframe(model, wb, foregroundColor, scene.Camera);
+                    }
+                    else
+                    {
+                        Rasterizer.DrawTexturedTriangles(model, wb, scene.Camera, scene.Lights);
+                    }
+                }
+                break;
+            }
             default:
                 throw new NotSupportedException("Неизвестный режим рендеринга");
         }

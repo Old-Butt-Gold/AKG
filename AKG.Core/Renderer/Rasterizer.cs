@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using AKG.Core.Extensions;
 using AKG.Core.Objects;
+using AKG.Core.Parser;
 using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Renderer;
@@ -87,12 +88,12 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
-                
-                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
-                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
-                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
-                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
-                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width)
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0)
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height)
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0)
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear)
                     || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
                 {
                     continue;
@@ -164,8 +165,9 @@ public static class Rasterizer
     // Поддерживаются два режима:
     // FilledTrianglesPhong – вычисление цвета на уровне пикселя (обычное Фонговое затенение)
     // FilledTrianglesAverageFaceNormalPhong – использование усреднённых нормалей вершин (Гуравское затенение)
+
     #region FilledTrianglesPhong
-    
+
     /// <summary>
     /// Растеризует треугольники для каждой грани модели с применением фан-трайангуляции, backface culling и модели Фонга.
     /// Для каждой треугольной части вычисляются экранные координаты и, если треугольник видим (с учетом нормали),
@@ -223,12 +225,12 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
-                
-                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
-                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
-                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
-                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
-                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width)
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0)
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height)
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0)
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear)
                     || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
                 {
                     continue;
@@ -245,7 +247,7 @@ public static class Rasterizer
                 var n2 = (face.Vertices[j + 1].NormalIndex > 0)
                     ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world)
                     : faceNormal;
-                
+
                 /* Было
                  var n0 = (face.Vertices[0].NormalIndex > 0)
                     ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
@@ -294,7 +296,7 @@ public static class Rasterizer
         int* buffer = (int*)wb.BackBuffer;
 
         model.CalculateVertexNormals(world);
-        
+
         // Для каждой грани модели (фан-трайангуляция)
         Parallel.ForEach(model.Faces, face =>
         {
@@ -332,21 +334,21 @@ public static class Rasterizer
                 Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
                 Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
                 Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
-                
-                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width) 
-                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0) 
-                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height) 
-                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0) 
-                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear) 
+
+                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width)
+                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0)
+                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height)
+                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0)
+                    || (screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear)
                     || (screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar))
                 {
                     continue;
                 }
-                
+
                 var n0 = model.VertexNormals[idx0];
                 var n1 = model.VertexNormals[idx1];
                 var n2 = model.VertexNormals[idx2];
-                
+
                 DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
                     n0, n1, n2, worldV0, worldV1, worldV2,
                     buffer, width, height, lights, camera);
@@ -365,7 +367,7 @@ public static class Rasterizer
     /// интерполируется глубина, а также мировая позиция и нормаль, после чего вычисляется итоговый цвет фрагмента по модели Фонга.
     /// Отбраковка невидимых фрагментов производится с помощью Z-буфера.
     /// </summary>
-    private static unsafe void DrawFilledTrianglePhong(Vector3 v0, Vector3 v1, Vector3 v2, 
+    private static unsafe void DrawFilledTrianglePhong(Vector3 v0, Vector3 v1, Vector3 v2,
         Vector3 n0, Vector3 n1, Vector3 n2, Vector3 w0, Vector3 w1, Vector3 w2,
         int* buffer, int width, int height, List<Light> lights, Camera camera)
     {
@@ -409,10 +411,41 @@ public static class Rasterizer
                         // Нормализация нужна для расчета зеркальной составляющей.
                         var viewDirection = Vector3.Normalize(camera.Eye - fragWorld);
 
-                        buffer[y * width + x] = Light.ApplyPhongShading(lights, interpNormal, viewDirection, fragWorld).ColorToIntBgra();
+                        buffer[y * width + x] = Light.ApplyPhongShading(lights, interpNormal, viewDirection, fragWorld)
+                            .ColorToIntBgra();
                     }
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Объединённый метод, который для каждой грани модели (с фан‑трайангуляцией) 
+    /// вычисляет необходимые параметры и затем для каждого треугольника выполняет 
+    /// наложение текстур: диффузной карты, карты нормалей и зеркальной карты.
+    /// </summary>
+    /// <param name="model">Модель (объект ObjModel)</param>
+    /// <param name="wb">WriteableBitmap для отрисовки</param>
+    /// <param name="camera">Камера сцены</param>
+    /// <param name="lights">Список источников света</param>
+    public static unsafe void DrawTexturedTriangles(ObjModel model, WriteableBitmap wb, Camera camera,
+        System.Collections.Generic.List<Light> lights)
+    {
+        int width = wb.PixelWidth;
+        int height = wb.PixelHeight;
+
+        // 1. Вычисляем мировую матрицу для модели на основе её параметров (масштаб, вращение, трансляция)
+        var world = Transformations.CreateWorldTransform(
+            model.Scale,
+            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
+            model.Translation);
+
+        wb.Lock();
+        int* buffer = (int*)wb.BackBuffer;
+
+        
+
+        wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
+        wb.Unlock();
     }
 }
