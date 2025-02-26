@@ -522,6 +522,7 @@ public static class Rasterizer
                 BitmapImage? diffuseTex = null;
                 BitmapImage? normalTex = null;
                 BitmapImage? specularTex = null;
+                BitmapImage? emissiveTex = null;
                 if (model.Materials != null && !string.IsNullOrEmpty(face.MaterialName))
                 {
                     model.Materials.TryGetValue(face.MaterialName, out material);
@@ -535,11 +536,13 @@ public static class Rasterizer
                         normalTex = TextureLoader.Load(material.NormalMap);
                     if (!string.IsNullOrEmpty(material.SpecularMap))
                         specularTex = TextureLoader.Load(material.SpecularMap);
+                    if (!string.IsNullOrEmpty(material.EmissiveMap))
+                        emissiveTex = TextureLoader.Load(material.EmissiveMap);
                 }
 
                 // 10. Вызываем функцию отрисовки треугольника с наложением текстур
                 DrawFilledTriangleTexture(screenV0, screenV1, screenV2, n0, n1, n2, w0, w1, w2, uv0, uv1, uv2,
-                    buffer, width, height, lights, camera, diffuseTex, normalTex, specularTex, model);
+                    buffer, width, height, lights, camera, diffuseTex, normalTex, specularTex, emissiveTex, model);
             }
 
         });
@@ -556,7 +559,7 @@ public static class Rasterizer
         Vector3 n0, Vector3 n1, Vector3 n2, Vector3 w0, Vector3 w1, Vector3 w2,
         Vector3 uv0, Vector3 uv1, Vector3 uv2,
         int* buffer, int width, int height, List<Light> lights, Camera camera,
-        BitmapImage? diffuseTex, BitmapImage? normalTex, BitmapImage? specularTex, ObjModel model)
+        BitmapImage? diffuseTex, BitmapImage? normalTex, BitmapImage? specularTex, BitmapImage? emissiveTex, ObjModel? model)
     {
         // Ограничивающий прямоугольник (не выходит за пределы экрана)
         int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
@@ -666,10 +669,25 @@ public static class Rasterizer
                         var phong = Vector3.Clamp(ambient + diffuse + specular, Vector3.Zero,
                             new Vector3(255, 255, 255));
                         var finalColor = Color.FromArgb(255, (byte)phong.X, (byte)phong.Y, (byte)phong.Z);
+                        
+                        if (emissiveTex != null)
+                        {
+                            Color emissiveColor = TextureSampler.Sample(emissiveTex, uv.X, uv.Y);
+                            finalColor = AddColors(finalColor, emissiveColor);
+                        }
+                        
                         buffer[y * width + x] = finalColor.ColorToIntBgra();
                     }
                 }
             }
+        }
+        
+        static Color AddColors(Color c1, Color c2)
+        {
+            var r = (byte)Math.Min(c1.R + c2.R, 255);
+            var g = (byte)Math.Min(c1.G + c2.G, 255);
+            var b = (byte)Math.Min(c1.B + c2.B, 255);
+            return Color.FromArgb(255, r, g, b);
         }
     }
 
