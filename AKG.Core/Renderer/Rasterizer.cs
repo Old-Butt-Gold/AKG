@@ -445,6 +445,7 @@ public static class Rasterizer
 
         // 2. Проходим по каждой грани модели (с фан‑трайангуляцией)
         Parallel.ForEach(model.Faces, face =>
+            //foreach (var face in model.Faces)
         {
             if (face.Vertices.Count < 3) return;
 
@@ -452,6 +453,8 @@ public static class Rasterizer
             // используя первую вершину и пары последовательных вершин
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {
+                var uv = model.TextureCoords[face.Vertices[0].TextureIndex - 1]; // разделить на W еще 
+
                 int idx0 = face.Vertices[0].VertexIndex - 1;
                 int idx1 = face.Vertices[j].VertexIndex - 1;
                 int idx2 = face.Vertices[j + 1].VertexIndex - 1;
@@ -584,9 +587,13 @@ public static class Rasterizer
                     if (depth < _zBuffer![x, y])
                     {
                         _zBuffer[x, y] = depth;
+                        
+                        // Перспективная коррекция текстурных координат
+                        var uv = ComputePerspectiveCorrectUV(uv0, v0.Z, uv1, v1.Z, uv2, v2.Z, alpha, beta, gamma);
 
-                        // Интерполируем UV-координаты
-                        Vector3 uv = alpha * uv0 + beta * uv1 + gamma * uv2;
+                        // Линейная интерполяция uv
+                        // var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
+
                         // Интерполируем мировую позицию фрагмента
                         Vector3 fragWorld = alpha * w0 + beta * w1 + gamma * w2;
                         // Интерполируем нормаль фрагмента
@@ -616,7 +623,10 @@ public static class Rasterizer
                         // Базовый цвет по модели Фонга (с учетом амбиентной, диффузной и спекулярной составляющих)
                         Color baseColor = Colors.White;
                         if (diffuseTex != null)
+                        {
                             baseColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
+                        }
+
                         // Согласно условиям, коэффициенты амбиентного (ka) и диффузного (kd) освещения берутся из texel'а диффузной карты:
                         var baseAmbient = baseColor.ToVector3();
                         var baseDiffuse = baseAmbient;
@@ -625,7 +635,8 @@ public static class Rasterizer
                         if (specularTex != null)
                         {
                             var specColor = TextureSampler.Sample(specularTex, uv.X, uv.Y);
-                            ks = specColor.R / 255f; // предполагается, что красный канал хранит значение в диапазоне [0,1]
+                            ks = specColor.R /
+                                 255f; // предполагается, что красный канал хранит значение в диапазоне [0,1]
                         }
 
 
@@ -661,4 +672,43 @@ public static class Rasterizer
             }
         }
     }
+
+    /// <summary>
+    /// Вычисляет финальные текстурные координаты с перспективной коррекцией.
+    /// Для каждой вершины вычисляется обратная глубина (r = 1/z) и скорректированные UV (uv' = uv * r).
+    /// Это позволяет правильно отобразить текстуру даже на поверхностях, расположенных под углом к камере.
+    /// </summary>
+    /// <param name="uv0">Исходные UV для первой вершины (Vector2, X = u, Y = v)</param>
+    /// <param name="z0">Глубина первой вершины</param>
+    /// <param name="uv1">Исходные UV для второй вершины</param>
+    /// <param name="z1">Глубина второй вершины</param>
+    /// <param name="uv2">Исходные UV для третьей вершины</param>
+    /// <param name="z2">Глубина третьей вершины</param>
+    /// <param name="alpha">Барицентрический коэффициент для первой вершины</param>
+    /// <param name="beta">Барицентрический коэффициент для второй вершины</param>
+    /// <param name="gamma">Барицентрический коэффициент для третьей вершины</param>
+    /// <returns>Финальные текстурные координаты (FinalUV) с учетом перспективной коррекции</returns>
+    private static Vector3 ComputePerspectiveCorrectUV(Vector3 uv0, float z0, 
+        Vector3 uv1, float z1, Vector3 uv2, float z2, 
+        float alpha, float beta, float gamma)
+    {
+        // Вычисляем обратные глубины для каждой вершины
+        float r0 = 1f / z0;
+        float r1 = 1f / z1;
+        float r2 = 1f / z2;
+
+        // Корректируем UV, умножая их на обратную глубину
+        var uv0Corr = uv0 * r0;
+        var uv1Corr = uv1 * r1;
+        var uv2Corr = uv2 * r2;
+
+        // Интерполируем обратную глубину по барицентрическим коэффициентам
+        float rInterp = alpha * r0 + beta * r1 + gamma * r2;
+        // Интерполируем скорректированные UV
+        var uvInterp = alpha * uv0Corr + beta * uv1Corr + gamma * uv2Corr;
+
+        // Финальные UV получаются делением интерполированного значения на интерполированное 1/z
+        return uvInterp / rInterp;
+    }
+
 }
