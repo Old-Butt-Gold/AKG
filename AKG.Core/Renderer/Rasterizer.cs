@@ -614,41 +614,41 @@ public static class Rasterizer
                         var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
 
                         // Базовый цвет по модели Фонга (с учетом амбиентной, диффузной и спекулярной составляющих)
+                        Color baseColor = Colors.White;
+                        if (diffuseTex != null)
+                            baseColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
+                        // Согласно условиям, коэффициенты амбиентного (ka) и диффузного (kd) освещения берутся из texel'а диффузной карты:
+                        var baseAmbient = baseColor.ToVector3();
+                        var baseDiffuse = baseAmbient;
+
+                        float ks = 1.0f;
+                        if (specularTex != null)
+                        {
+                            var specColor = TextureSampler.Sample(specularTex, uv.X, uv.Y);
+                            ks = specColor.R / 255f; // предполагается, что красный канал хранит значение в диапазоне [0,1]
+                        }
+
+
                         var ambient = Vector3.Zero;
                         var diffuse = Vector3.Zero;
                         var specular = Vector3.Zero;
-                        var baseDiffuse = lights[0].Diffuse.ToVector3(); // по умолчанию
-                        var baseAmbient = lights[0].Ambient.ToVector3();
-                        float ks = lights[0].Ks;
-
-                        if (diffuseTex != null)
-                        {
-                            var diffColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
-                            baseDiffuse = diffColor.ToVector3();
-                            baseAmbient = baseDiffuse;
-                        }
-
-                        if (specularTex != null)
-                        {
-                            Color specColor = TextureSampler.Sample(specularTex, uv.X, uv.Y);
-                            ks = specColor.R / 255f;
-                        }
-
-
                         foreach (var light in lights)
                         {
                             // Амбиент
-                            ambient += baseAmbient * light.Ka;
+                            var ambientColor = diffuseTex is null ? light.Ambient.ToVector3() : baseAmbient;
+                            ambient += ambientColor * light.Ka;
                             // Диффузная
+                            var diffuseColor = diffuseTex is null ? light.Diffuse.ToVector3() : baseDiffuse;
                             Vector3 lightDir = Vector3.Normalize(light.Direction - fragWorld);
                             float NdotL = MathF.Max(Vector3.Dot(interpNormal, lightDir), 0);
-                            diffuse += baseDiffuse * NdotL * light.Kd;
+                            diffuse += diffuseColor * NdotL * light.Kd;
                             // Спекулярная
+                            var finalKs = normalTex is null ? light.Ks : ks;
                             Vector3 reflection = Vector3.Reflect(-lightDir, interpNormal);
                             float RdotV = MathF.Max(Vector3.Dot(reflection, viewDir), 0);
                             if (RdotV > 0)
                             {
-                                specular += light.Specular.ToVector3() * ks * MathF.Pow(RdotV, light.Shininess);
+                                specular += light.Specular.ToVector3() * finalKs * MathF.Pow(RdotV, light.Shininess);
                             }
                         }
 
