@@ -453,8 +453,6 @@ public static class Rasterizer
             // используя первую вершину и пары последовательных вершин
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {
-                var uv = model.TextureCoords[face.Vertices[0].TextureIndex - 1]; // разделить на W еще 
-
                 int idx0 = face.Vertices[0].VertexIndex - 1;
                 int idx1 = face.Vertices[j].VertexIndex - 1;
                 int idx2 = face.Vertices[j + 1].VertexIndex - 1;
