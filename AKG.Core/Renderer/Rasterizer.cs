@@ -687,7 +687,7 @@ public static class Rasterizer
             var r = (byte)Math.Min(c1.R + c2.R, 255);
             var g = (byte)Math.Min(c1.G + c2.G, 255);
             var b = (byte)Math.Min(c1.B + c2.B, 255);
-            return Color.FromArgb(255, r, g, b);
+            return Color.FromArgb(c2.A, r, g, b);
         }
     }
 

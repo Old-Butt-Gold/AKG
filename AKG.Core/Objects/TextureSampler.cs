@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System.Collections.Concurrent;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace AKG.Core.Objects;
@@ -6,7 +7,7 @@ namespace AKG.Core.Objects;
 public static class TextureSampler
 {
     // Кэш для хранения массивов пикселей по каждой текстуре.
-    private static readonly Dictionary<BitmapImage, byte[]> _textureCache = [];
+    private static readonly ConcurrentDictionary<BitmapImage, byte[]> _textureCache = [];
 
     /// <summary>
     /// Выбирает (sample) цвет из текстуры по заданным координатам u и v.
