@@ -1,11 +1,12 @@
-﻿using System.IO;
+﻿using System.Collections.Concurrent;
+using System.IO;
 using System.Windows.Media.Imaging;
 
 namespace AKG.Core.Objects;
 
 public static class TextureLoader
 {
-    private static readonly Dictionary<string, BitmapImage> _cache = new();
+    private static readonly ConcurrentDictionary<string, BitmapImage> _cache = new();
 
     public static BitmapImage? Load(string path)
     {
