@@ -517,30 +517,15 @@ public static class Rasterizer
 
                 // 9. Загружаем текстуры из материала (если материал задан)
                 Material? material = null;
-                BitmapImage? diffuseTex = null;
-                BitmapImage? normalTex = null;
-                BitmapImage? specularTex = null;
-                BitmapImage? emissiveTex = null;
+                
                 if (model.Materials != null && !string.IsNullOrEmpty(face.MaterialName))
                 {
                     model.Materials.TryGetValue(face.MaterialName, out material);
                 }
-
-                if (material != null)
-                {
-                    if (!string.IsNullOrEmpty(material.DiffuseMap))
-                        diffuseTex = TextureLoader.Load(material.DiffuseMap);
-                    if (!string.IsNullOrEmpty(material.NormalMap))
-                        normalTex = TextureLoader.Load(material.NormalMap);
-                    if (!string.IsNullOrEmpty(material.SpecularMap))
-                        specularTex = TextureLoader.Load(material.SpecularMap);
-                    if (!string.IsNullOrEmpty(material.EmissiveMap))
-                        emissiveTex = TextureLoader.Load(material.EmissiveMap);
-                }
-
+                
                 // 10. Вызываем функцию отрисовки треугольника с наложением текстур
                 DrawFilledTriangleTexture(screenV0, screenV1, screenV2, n0, n1, n2, w0, w1, w2, uv0, uv1, uv2,
-                    buffer, width, height, lights, camera, diffuseTex, normalTex, specularTex, emissiveTex, model);
+                    buffer, width, height, lights, camera, material, model);
             }
 
         });
@@ -555,10 +540,28 @@ public static class Rasterizer
     /// </summary>
     private static unsafe void DrawFilledTriangleTexture(Vector3 v0, Vector3 v1, Vector3 v2,
         Vector3 n0, Vector3 n1, Vector3 n2, Vector3 w0, Vector3 w1, Vector3 w2,
-        Vector3 uv0, Vector3 uv1, Vector3 uv2,
-        int* buffer, int width, int height, List<Light> lights, Camera camera,
-        BitmapImage? diffuseTex, BitmapImage? normalTex, BitmapImage? specularTex, BitmapImage? emissiveTex, ObjModel? model)
+        Vector3 uv0, Vector3 uv1, Vector3 uv2, int* buffer, int width, int height, List<Light> lights, 
+        Camera camera, Material? material, ObjModel model)
     {
+        BitmapImage? diffuseTex = null;
+        BitmapImage? normalTex = null;
+        BitmapImage? mraoTex = null;
+        BitmapImage? emissiveTex = null;
+        BitmapImage? bumpTex = null;
+        if (material != null)
+        {
+            if (!string.IsNullOrEmpty(material.DiffuseMap))
+                diffuseTex = TextureLoader.Load(material.DiffuseMap);
+            if (!string.IsNullOrEmpty(material.NormalMap))
+                normalTex = TextureLoader.Load(material.NormalMap);
+            if (!string.IsNullOrEmpty(material.SpecularMap))
+                mraoTex = TextureLoader.Load(material.SpecularMap);
+            if (!string.IsNullOrEmpty(material.EmissiveMap))
+                emissiveTex = TextureLoader.Load(material.EmissiveMap);
+            if (!string.IsNullOrEmpty(material.BumpMap))
+                bumpTex = TextureLoader.Load(material.BumpMap);
+        }
+        
         // Ограничивающий прямоугольник (не выходит за пределы экрана)
         int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
         int maxX = Math.Min(width - 1, (int)Math.Ceiling(Math.Max(v0.X, Math.Max(v1.X, v2.X))));
@@ -590,7 +593,7 @@ public static class Rasterizer
                         _zBuffer[x, y] = depth;
                         
                         // Перспективная коррекция текстурных координат
-                        var uv = ComputePerspectiveCorrectUV(uv0, v0.Z, uv1, v1.Z, uv2, v2.Z, alpha, beta, gamma);
+                        var uv = ComputePerspectiveCorrectUv(uv0, v0.Z, uv1, v1.Z, uv2, v2.Z, alpha, beta, gamma);
 
                         // Линейная интерполяция uv
                         // var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
@@ -603,7 +606,7 @@ public static class Rasterizer
                         // Если задана карта нормалей, заменяем интерполированную нормаль
                         if (normalTex != null)
                         {
-                            Color normColor = TextureSampler.Sample(normalTex, uv.X, uv.Y);
+                            var normColor = TextureSampler.Sample(normalTex, uv.X, uv.Y);
                             var mapNormal = new Vector3(
                                 (normColor.R / 255f) * 2f - 1f,
                                 (normColor.G / 255f) * 2f - 1f,
@@ -613,8 +616,23 @@ public static class Rasterizer
                             // Применяем вращение модели к нормали (если требуется)
                             var rotation = Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X,
                                 model.Rotation.Z);
-                            mapNormal = Vector3.TransformNormal(mapNormal, rotation);
-                            interpNormal = mapNormal;
+                            interpNormal = Vector3.TransformNormal(mapNormal, rotation);
+                        }
+                        
+                        // Если задана карта рельефа, заменяем интерполированную нормаль
+                        if (bumpTex != null)
+                        {
+                            const float deltaUv = 1.0f;
+                            float heightCenter = GetBumpHeight(bumpTex, uv.X, uv.Y);
+                            float heightRight = GetBumpHeight(bumpTex, uv.X + deltaUv, uv.Y);
+                            float heightUp = GetBumpHeight(bumpTex, uv.X, uv.Y + deltaUv);
+                            float dU = (heightRight - heightCenter) / deltaUv;
+                            float dV = (heightUp - heightCenter) / deltaUv;
+                            // Для простоты используем фиксированные касательные и битангенциальные векторы
+                            Vector3 tangent = new Vector3(1, 0, 0);
+                            Vector3 bitangent = new Vector3(0, 1, 0);
+                            Vector3 perturbedNormal = interpNormal + dU * tangent + dV * bitangent;
+                            interpNormal = Vector3.Normalize(perturbedNormal);
                         }
 
                         // Вычисляем вектор взгляда (от фрагмента к камере)
@@ -633,11 +651,16 @@ public static class Rasterizer
                         var baseDiffuse = baseAmbient;
 
                         float ks = 1.0f;
-                        if (specularTex != null)
+                        if (mraoTex != null)
                         {
-                            var specColor = TextureSampler.Sample(specularTex, uv.X, uv.Y);
-                            ks = specColor.R /
-                                 255f; // предполагается, что красный канал хранит значение в диапазоне [0,1]
+                            Color mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
+    
+                            // Предположим:
+                            // R канал - Metallic
+                            // G канал - Roughness
+                            // B канал - Ambient Occlusion
+                            float metallic = mraoColor.R / 255f;
+                            ks = metallic;
                         }
 
 
@@ -652,15 +675,15 @@ public static class Rasterizer
                             // Диффузная
                             var diffuseColor = diffuseTex is null ? light.Diffuse.ToVector3() : baseDiffuse;
                             Vector3 lightDir = Vector3.Normalize(light.Direction - fragWorld);
-                            float NdotL = MathF.Max(Vector3.Dot(interpNormal, lightDir), 0);
-                            diffuse += diffuseColor * NdotL * light.Kd;
+                            float ndotL = MathF.Max(Vector3.Dot(interpNormal, lightDir), 0);
+                            diffuse += diffuseColor * ndotL * light.Kd;
                             // Спекулярная
                             var finalKs = normalTex is null ? light.Ks : ks;
                             Vector3 reflection = Vector3.Reflect(-lightDir, interpNormal);
-                            float RdotV = MathF.Max(Vector3.Dot(reflection, viewDir), 0);
-                            if (RdotV > 0)
+                            float rdotV = MathF.Max(Vector3.Dot(reflection, viewDir), 0);
+                            if (rdotV > 0)
                             {
-                                specular += light.Specular.ToVector3() * finalKs * MathF.Pow(RdotV, light.Shininess);
+                                specular += light.Specular.ToVector3() * finalKs * MathF.Pow(rdotV, light.Shininess);
                             }
                         }
 
@@ -704,7 +727,7 @@ public static class Rasterizer
     /// <param name="beta">Барицентрический коэффициент для второй вершины</param>
     /// <param name="gamma">Барицентрический коэффициент для третьей вершины</param>
     /// <returns>Финальные текстурные координаты (FinalUV) с учетом перспективной коррекции</returns>
-    private static Vector3 ComputePerspectiveCorrectUV(Vector3 uv0, float z0, 
+    private static Vector3 ComputePerspectiveCorrectUv(Vector3 uv0, float z0, 
         Vector3 uv1, float z1, Vector3 uv2, float z2, 
         float alpha, float beta, float gamma)
     {
@@ -725,6 +748,17 @@ public static class Rasterizer
 
         // Финальные UV получаются делением интерполированного значения на интерполированное 1/z
         return uvInterp / rInterp;
+    }
+    
+    /// <summary>
+    /// Пример вспомогательного метода для bump mapping. Получает высоту из bump-текстуры по UV.
+    /// </summary>
+    private static float GetBumpHeight(BitmapImage bumpTex, float u, float v)
+    {
+        // Выбираем цвет из bump-текстуры
+        Color c = TextureSampler.Sample(bumpTex, u, v);
+        // Преобразуем в яркость (среднее значение каналов)
+        return (c.R + c.G + c.B) / (3f * 255f);
     }
 
 }

@@ -30,10 +30,15 @@ public static class MtlParser
                         current.DiffuseMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "norm":
+                case "map_norm": // карта нормалей
                     if (current != null && parts.Length >= 2)
                         current.NormalMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
-                case "map_mrao":
+                case "map_bump": // карта рельефа
+                    if (current != null && parts.Length >= 2)
+                        current.BumpMap = GetFullPath(mtlDirectory, parts[1]);
+                    break;
+                case "map_mrao": // (metallic - roughness - ambient occlusion)
                     if (current != null && parts.Length >= 2)
                         current.SpecularMap = GetFullPath(mtlDirectory, parts[1]);
                     break;

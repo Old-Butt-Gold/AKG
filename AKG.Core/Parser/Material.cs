@@ -26,7 +26,13 @@ public class Material
     public string NormalMap { get; set; } = string.Empty;
 
     /// <summary>
-    /// Путь к текстуре зеркальной карты MRAO (map_MRAO).
+    /// Путь к текстуре карты MRAO (map_MRAO) (metallic-roughness-ambient occlusion).
     /// </summary>
     public string SpecularMap { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Путь к bump-карте (map_bump или bump).
+    /// Bump-карта используется для имитации рельефа поверхности путем изменения нормалей на основе градаций яркости.
+    /// </summary>
+    public string BumpMap { get; set; } = string.Empty;
 }
