@@ -622,7 +622,7 @@ public static class Rasterizer
                         // Если задана карта рельефа, заменяем интерполированную нормаль
                         if (bumpTex != null)
                         {
-                            const float deltaUv = 1.0f;
+                            float deltaUv = material!.BumpScale;
                             float heightCenter = GetBumpHeight(bumpTex, uv.X, uv.Y);
                             float heightRight = GetBumpHeight(bumpTex, uv.X + deltaUv, uv.Y);
                             float heightUp = GetBumpHeight(bumpTex, uv.X, uv.Y + deltaUv);

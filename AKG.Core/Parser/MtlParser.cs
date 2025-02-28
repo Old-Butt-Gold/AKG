@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 
 namespace AKG.Core.Parser;
 
@@ -35,8 +36,21 @@ public static class MtlParser
                         current.NormalMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "map_bump": // карта рельефа
-                    if (current != null && parts.Length >= 2)
-                        current.BumpMap = GetFullPath(mtlDirectory, parts[1]);
+                    if (current != null)
+                    {
+                        // Если после map_bump присутствует параметр "-bm"
+                        if (parts.Length >= 4 && parts[1].ToLowerInvariant() == "-bm")
+                        {
+                            // parts[2] - коэффициент, parts[3] - путь к текстуре
+                            current.BumpScale = float.Parse(parts[2], CultureInfo.InvariantCulture);
+                            current.BumpMap = GetFullPath(mtlDirectory, parts[3]);
+                        }
+                        else if (parts.Length >= 2)
+                        {
+                            // Если нет параметра -bm, просто берем путь
+                            current.BumpMap = GetFullPath(mtlDirectory, parts[1]);
+                        }
+                    }
                     break;
                 case "map_mrao": // (metallic - roughness - ambient occlusion)
                     if (current != null && parts.Length >= 2)
