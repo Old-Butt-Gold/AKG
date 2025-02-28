@@ -647,8 +647,8 @@ public static class Rasterizer
                         }
 
                         // Согласно условиям, коэффициенты амбиентного (ka) и диффузного (kd) освещения берутся из texel'а диффузной карты:
+                        var baseDiffuse = baseColor.ToVector3();
                         var baseAmbient = baseColor.ToVector3();
-                        var baseDiffuse = baseAmbient;
 
                         float ks = 1.0f;
                         if (mraoTex != null)
