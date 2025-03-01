@@ -1,7 +1,5 @@
 ﻿using System.Numerics;
 using System.Windows.Media;
-using AKG.Core.Extensions;
-using AKG.Core.Parser;
 
 namespace AKG.Core.Objects;
 
