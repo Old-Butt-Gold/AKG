@@ -427,6 +427,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         
         UpdateAxisWidget();
+        UpdateModelRotationWidget();
     }
     
     private Point _axisXEnd = new(70, 50);
@@ -495,6 +496,83 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isModelSelected;
+    public bool IsModelSelected
+    {
+        get => _isModelSelected;
+        set
+        {
+            _isModelSelected = value;
+            OnPropertyChanged(nameof(IsModelSelected));
+        }
+    }
+
+    private Point _modelAxisXEnd = new(112.5, 67.5);
+    public Point ModelAxisXEnd
+    {
+        get => _modelAxisXEnd;
+        set
+        {
+            _modelAxisXEnd = value;
+            OnPropertyChanged(nameof(ModelAxisXEnd));
+        }
+    }
+
+    private Point _modelAxisYEnd = new Point(50, 30);
+    public Point ModelAxisYEnd
+    {
+        get => _modelAxisYEnd;
+        set
+        {
+            _modelAxisYEnd = value;
+            OnPropertyChanged(nameof(ModelAxisYEnd));
+        }
+    }
+
+    private Point _modelAxisZEnd = new(45, 75);
+    public Point ModelAxisZEnd
+    {
+        get => _modelAxisZEnd;
+        set
+        {
+            _modelAxisZEnd = value;
+            OnPropertyChanged(nameof(ModelAxisZEnd));
+        }
+    }
+
+    private Point _modelAxisXText = new(112.5, 67.5);
+    public Point ModelAxisXText
+    {
+        get => _modelAxisXText;
+        set
+        {
+            _modelAxisXText = value;
+            OnPropertyChanged(nameof(ModelAxisXText));
+        }
+    }
+
+    private Point _modelAxisYText = new(67.5, 37.5);
+    public Point ModelAxisYText
+    {
+        get => _modelAxisYText;
+        set
+        {
+            _modelAxisYText = value;
+            OnPropertyChanged(nameof(ModelAxisYText));
+        }
+    }
+
+    private Point _modelAxisZText = new(37.5, 67.5);
+    public Point ModelAxisZText
+    {
+        get => _modelAxisZText;
+        set
+        {
+            _modelAxisZText = value;
+            OnPropertyChanged(nameof(ModelAxisZText));
+        }
+    }
+    
     private void UpdateAxisWidget()
     {
         var camera = Scene.Camera;
@@ -516,6 +594,36 @@ public class MainViewModel : INotifyPropertyChanged
         AxisZText = new Point(AxisZEnd.X + axisZ.X * textOffset, AxisZEnd.Y - axisZ.Y * textOffset);
     }
     
+    private void UpdateModelRotationWidget()
+    {
+        IsModelSelected = Scene.SelectedModel != null;
+    
+        if (Scene.SelectedModel == null) return;
+
+        var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
+            Scene.SelectedModel.Rotation.Y,
+            Scene.SelectedModel.Rotation.X,
+            Scene.SelectedModel.Rotation.Z
+        );
+
+        var axisX = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitX, rotationMatrix));
+        var axisY = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, rotationMatrix));
+        var axisZ = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, rotationMatrix));
+        
+        const double scale = 60;
+        const double textOffset = 5;
+
+        ModelAxisXEnd = new Point(75 + axisX.X * scale, 75 - axisX.Y * scale);
+        ModelAxisYEnd = new Point(75 + axisY.X * scale, 75 - axisY.Y * scale);
+        ModelAxisZEnd = new Point(75 + axisZ.X * scale, 75 - axisZ.Y * scale);
+
+        ModelAxisXText = new Point(ModelAxisXEnd.X + axisX.X * textOffset, ModelAxisXEnd.Y - axisX.Y * textOffset);
+
+        ModelAxisYText = new Point(ModelAxisYEnd.X + axisY.X * textOffset, ModelAxisYEnd.Y - axisY.Y * textOffset);
+
+        ModelAxisZText = new Point(ModelAxisZEnd.X + axisZ.X * textOffset, ModelAxisZEnd.Y - axisZ.Y * textOffset);
+    }
+    
     /// <summary>
     /// Обновляет строку с информацией о выбранной модели.
     /// </summary>
@@ -527,9 +635,9 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
         var model = Scene.SelectedModel;
-        double rotXDeg = NormalizeAngle(model.Rotation.X * (180.0 / Math.PI));
-        double rotYDeg = NormalizeAngle(model.Rotation.Y * (180.0 / Math.PI));
-        double rotZDeg = NormalizeAngle(model.Rotation.Z * (180.0 / Math.PI));
+        double rotXDeg = NormalizeAngle(model.Rotation.X * (180.0 / MathF.PI));
+        double rotYDeg = NormalizeAngle(model.Rotation.Y * (180.0 / MathF.PI));
+        double rotZDeg = NormalizeAngle(model.Rotation.Z * (180.0 / MathF.PI));
 
         SelectedModelInfo =
             $"Vertices: {model.OriginalVertices.Count}\n" +
@@ -551,9 +659,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    // Реализация INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
-    
 
     protected void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
