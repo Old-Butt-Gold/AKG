@@ -1,10 +1,17 @@
-﻿namespace AKG.Core.Parser;
+﻿using System.Numerics;
+using System.Windows.Media;
+using AKG.Core.Extensions;
+
+namespace AKG.Core.Parser;
 
 /// <summary>
 /// Класс, описывающий свойства материала.
 /// </summary>
 public class Material
 {
+    private static readonly Material _defaultMaterial = new();
+
+    public static Material DefaultMaterial => _defaultMaterial;
     /// <summary>
     /// Имя материала.
     /// </summary>
@@ -36,10 +43,55 @@ public class Material
     /// </summary>
     public string BumpMap { get; set; } = string.Empty;
     
+    // Коэффициенты (берутся из .mtl)
+    
     /// <summary>
     /// Коэффициент масштабирования bump‑карты, задающий интенсивность рельефа.
     /// Если строка содержит параметр “-bm”, его значение записывается сюда.
     /// По умолчанию 1.0 (без усиления).
     /// </summary>
     public float BumpScale { get; set; } = 1.0f;
+    
+    /// <summary>
+    /// Коэффициент фонового (амбиентного) освещения
+    /// </summary>
+    public Vector3 Ka { get; set; } = new(0.1f);
+    
+    /// <summary>
+    /// Коэффициент рассеянного (диффузного) освещения
+    /// </summary>
+    public Vector3 Kd { get; set; } = new(1.0f);
+    
+    /// <summary>
+    /// Коэффициент зеркального освещения
+    /// </summary>
+    public Vector3 Ks { get; set; } = new(0.2f);
+    
+    /// <summary>
+    /// Эмиссивная компонента
+    /// </summary>
+    public Vector3 Ke { get; set; } = new(1.0f);
+    
+    /// <summary>
+    /// Показатель блеска поверхности. (NS)
+    /// </summary>
+    public float Shininess { get; set; } = 32f;
+    
+    // Эти должны изменяться для каждого пикселя грани (face), в теории
+    // (на практике, ломается из-за кучи потоков, с одним все норм, но медленнее)
+    
+    /// <summary>
+    /// Амбиентная компонента освещения.
+    /// </summary>
+    public Vector3 AmbientColor { get; set; } = Colors.Black.ToVector3();
+    
+    /// <summary>
+    /// Диффузная компонента освещения.
+    /// </summary>
+    public Vector3 DiffuseColor { get; set; } = Colors.Gray.ToVector3();
+    
+    /// <summary>
+    /// Зеркальная компонента освещения.
+    /// </summary>
+    public Vector3 SpecularColor { get; set; } = Colors.White.ToVector3();
 }

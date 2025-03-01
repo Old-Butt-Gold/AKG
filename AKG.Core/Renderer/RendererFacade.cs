@@ -51,14 +51,7 @@ public static class RendererFacade
                 Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
                 foreach (var model in scene.Models)
                 {
-                    if (model.Materials is null)
-                    {
-                        WireframeRenderer.DrawWireframe(model, wb, foregroundColor, scene.Camera);
-                    }
-                    else
-                    {
-                        Rasterizer.DrawTexturedTriangles(model, wb, scene.Camera, scene.Lights);
-                    }
+                    Rasterizer.DrawTexturedTriangles(model, wb, scene.Camera, scene.Lights);
                 }
                 break;
             }

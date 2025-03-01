@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using System.Numerics;
 
 namespace AKG.Core.Parser;
 
@@ -60,6 +61,31 @@ public static class MtlParser
                     if (current != null && parts.Length >= 2)
                         current.EmissiveMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
+                case "ka":
+                    if (current != null && parts.Length >= 4)
+                        current.Ka = ParseVector3(parts);
+                    break;
+                case "kd":
+                    if (current != null && parts.Length >= 4)
+                        current.Kd = ParseVector3(parts);
+                    break;
+                case "ks":
+                    if (current != null && parts.Length >= 4)
+                        current.Ks = ParseVector3(parts);
+                    break;
+                case "ke":
+                    if (current != null && parts.Length >= 4)
+                        current.Ke = ParseVector3(parts);
+                    break;
+                // Коэффициенты
+                case "ns":
+                    if (current != null && parts.Length >= 2)
+                        current.Shininess = float.Parse(parts[1], CultureInfo.InvariantCulture);
+                    break;
+                case "ni":
+                case "d":
+                    // Параметры прозрачности (пока не обрабатываем)
+                    break;
             }
         }
 
@@ -72,5 +98,13 @@ public static class MtlParser
     private static string GetFullPath(string baseDirectory, string relativePath)
     {
         return Path.Combine(baseDirectory, relativePath);
+    }
+    
+    private static Vector3 ParseVector3(string[] parts)
+    {
+        return new Vector3(
+            float.Parse(parts[1], CultureInfo.InvariantCulture),
+            float.Parse(parts[2], CultureInfo.InvariantCulture),
+            float.Parse(parts[3], CultureInfo.InvariantCulture));
     }
 }

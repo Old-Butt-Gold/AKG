@@ -24,14 +24,7 @@ public static class Rasterizer
     }
 
     #region Lambert
-
-    /// <summary>
-    /// Растеризует (заполняет) треугольники для каждой грани модели.
-    /// Для каждой грани, состоящей из 3+ вершин, применяется фан‑трайангуляция.
-    /// Для каждой треугольной части производится backface culling (с использованием нормали)
-    /// и рассчитывается интенсивность освещения по модели Ламберта.
-    /// Затем вызывается метод, который заполняет треугольник с использованием Z-буфера.
-    /// </summary>
+    
     public static unsafe void DrawFilledTriangleLambert(ObjModel model, WriteableBitmap wb, Color color, Camera camera,
         List<Light> lights)
     {
@@ -82,12 +75,12 @@ public static class Rasterizer
                     continue; // Если скалярное произведение положительное, грань отвернута
 
                 // Расчет интенсивности освещения по модели Ламберта
-                var shadedColor = color.ApplyLambert(normal, lights);
+                var shadedColor = Light.ApplyLambert(lights, normal, color);
 
                 // Получаем экранные координаты (после всех преобразований)
-                Vector3 screenV0 = model.TransformedVertices[idx0].AsVector3();
-                Vector3 screenV1 = model.TransformedVertices[idx1].AsVector3();
-                Vector3 screenV2 = model.TransformedVertices[idx2].AsVector3();
+                var screenV0 = model.TransformedVertices[idx0].AsVector3();
+                var screenV1 = model.TransformedVertices[idx1].AsVector3();
+                var screenV2 = model.TransformedVertices[idx2].AsVector3();
 
                 if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width)
                     || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0)
@@ -160,8 +153,7 @@ public static class Rasterizer
     }
 
     #endregion
-
-
+    
     // Поддерживаются два режима:
     // FilledTrianglesPhong – вычисление цвета на уровне пикселя (обычное Фонговое затенение)
     // FilledTrianglesAverageFaceNormalPhong – использование усреднённых нормалей вершин (Гуравское затенение)
@@ -411,8 +403,12 @@ public static class Rasterizer
                         // Нормализация нужна для расчета зеркальной составляющей.
                         var viewDirection = Vector3.Normalize(camera.Eye - fragWorld);
 
-                        buffer[y * width + x] = Light.ApplyPhongShading(lights, interpNormal, viewDirection, fragWorld)
-                            .ColorToIntBgra();
+                        var material = Material.DefaultMaterial;
+                        
+                        buffer[y * width + x] = 
+                            Light.ApplyPhongShading(lights, interpNormal, viewDirection, fragWorld, 
+                                material.AmbientColor, material.Ka, material.DiffuseColor, material.Kd, 
+                                material.SpecularColor, material.Ks, material.Shininess).ToColor().ColorToIntBgra();
                     }
                 }
             }
@@ -509,29 +505,27 @@ public static class Rasterizer
                 var n2 = (face.Vertices[j + 1].NormalIndex > 0)
                     ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world)
                     : faceNormal;
-
-                // 8. Мировые координаты фрагментов (для расчёта вектора взгляда)
-                var w0 = worldV0;
-                var w1 = worldV1;
-                var w2 = worldV2;
-
-                // 9. Загружаем текстуры из материала (если материал задан)
-                Material? material = null;
                 
-                if (model.Materials != null && !string.IsNullOrEmpty(face.MaterialName))
-                {
-                    model.Materials.TryGetValue(face.MaterialName, out material);
-                }
                 
-                // 10. Вызываем функцию отрисовки треугольника с наложением текстур
-                DrawFilledTriangleTexture(screenV0, screenV1, screenV2, n0, n1, n2, w0, w1, w2, uv0, uv1, uv2,
-                    buffer, width, height, lights, camera, material, model);
+                // 8. Вызываем функцию отрисовки треугольника с наложением текстур
+                DrawFilledTriangleTexture(screenV0, screenV1, screenV2, n0, n1, n2, worldV0, worldV1, worldV2, uv0, uv1, uv2,
+                    buffer, width, height, lights, camera, GetFaceMaterial(model, face), model);
             }
 
         });
 
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
+    }
+    
+    private static Material GetFaceMaterial(ObjModel model, Face face)
+    {
+        if (model.Materials != null && 
+            model.Materials.TryGetValue(face.MaterialName, out var mat))
+        {
+            return mat;
+        }
+        return Material.DefaultMaterial; // Материал по умолчанию
     }
 
     /// <summary>
@@ -541,26 +535,13 @@ public static class Rasterizer
     private static unsafe void DrawFilledTriangleTexture(Vector3 v0, Vector3 v1, Vector3 v2,
         Vector3 n0, Vector3 n1, Vector3 n2, Vector3 w0, Vector3 w1, Vector3 w2,
         Vector3 uv0, Vector3 uv1, Vector3 uv2, int* buffer, int width, int height, List<Light> lights, 
-        Camera camera, Material? material, ObjModel model)
+        Camera camera, Material material, ObjModel model)
     {
-        BitmapImage? diffuseTex = null;
-        BitmapImage? normalTex = null;
-        BitmapImage? mraoTex = null;
-        BitmapImage? emissiveTex = null;
-        BitmapImage? bumpTex = null;
-        if (material != null)
-        {
-            if (!string.IsNullOrEmpty(material.DiffuseMap))
-                diffuseTex = TextureLoader.Load(material.DiffuseMap);
-            if (!string.IsNullOrEmpty(material.NormalMap))
-                normalTex = TextureLoader.Load(material.NormalMap);
-            if (!string.IsNullOrEmpty(material.SpecularMap))
-                mraoTex = TextureLoader.Load(material.SpecularMap);
-            if (!string.IsNullOrEmpty(material.EmissiveMap))
-                emissiveTex = TextureLoader.Load(material.EmissiveMap);
-            if (!string.IsNullOrEmpty(material.BumpMap))
-                bumpTex = TextureLoader.Load(material.BumpMap);
-        }
+        var diffuseTex = !string.IsNullOrEmpty(material.DiffuseMap) ? TextureLoader.Load(material.DiffuseMap) : null;
+        var normalTex = !string.IsNullOrEmpty(material.NormalMap) ? TextureLoader.Load(material.NormalMap) : null;
+        var mraoTex = !string.IsNullOrEmpty(material.SpecularMap) ? TextureLoader.Load(material.SpecularMap) : null;
+        var emissiveTex = !string.IsNullOrEmpty(material.EmissiveMap) ? TextureLoader.Load(material.EmissiveMap) : null;
+        var bumpTex = !string.IsNullOrEmpty(material.BumpMap) ? TextureLoader.Load(material.BumpMap) : null;
         
         // Ограничивающий прямоугольник (не выходит за пределы экрана)
         int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
@@ -599,9 +580,9 @@ public static class Rasterizer
                         // var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
 
                         // Интерполируем мировую позицию фрагмента
-                        Vector3 fragWorld = alpha * w0 + beta * w1 + gamma * w2;
+                        var fragWorld = alpha * w0 + beta * w1 + gamma * w2;
                         // Интерполируем нормаль фрагмента
-                        Vector3 interpNormal = Vector3.Normalize(alpha * n0 + beta * n1 + gamma * n2);
+                        var interpNormal = Vector3.Normalize(alpha * n0 + beta * n1 + gamma * n2);
 
                         // Если задана карта нормалей, заменяем интерполированную нормаль
                         if (normalTex != null)
@@ -614,101 +595,66 @@ public static class Rasterizer
                             mapNormal = Vector3.Normalize(mapNormal);
 
                             // Применяем вращение модели к нормали (если требуется)
-                            var rotation = Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X,
-                                model.Rotation.Z);
+                            var rotation = Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z);
                             interpNormal = Vector3.TransformNormal(mapNormal, rotation);
                         }
-                        
-                        // Если задана карта рельефа, заменяем интерполированную нормаль
+
+                        // Если задана bump-карта, корректируем нормаль с учётом рельефа
                         if (bumpTex != null)
                         {
-                            float deltaUv = material!.BumpScale;
+                            float deltaUv = material.BumpScale;
                             float heightCenter = GetBumpHeight(bumpTex, uv.X, uv.Y);
                             float heightRight = GetBumpHeight(bumpTex, uv.X + deltaUv, uv.Y);
                             float heightUp = GetBumpHeight(bumpTex, uv.X, uv.Y + deltaUv);
                             float dU = (heightRight - heightCenter) / deltaUv;
                             float dV = (heightUp - heightCenter) / deltaUv;
                             // Для простоты используем фиксированные касательные и битангенциальные векторы
-                            Vector3 tangent = new Vector3(1, 0, 0);
-                            Vector3 bitangent = new Vector3(0, 1, 0);
-                            Vector3 perturbedNormal = interpNormal + dU * tangent + dV * bitangent;
+                            var tangent = new Vector3(1, 0, 0);
+                            var bitangent = new Vector3(0, 1, 0);
+                            var perturbedNormal = interpNormal + dU * tangent + dV * bitangent;
                             interpNormal = Vector3.Normalize(perturbedNormal);
                         }
+                        
+                        var diffuseColor = material.DiffuseColor;
+                        var ks = material.Ks;
 
                         // Вычисляем вектор взгляда (от фрагмента к камере)
                         // Нормализация нужна для расчета зеркальной составляющей.
                         var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
 
-                        // Базовый цвет по модели Фонга (с учетом амбиентной, диффузной и спекулярной составляющих)
-                        Color baseColor = Colors.White;
+                        // Создаём локальные копии для диффузного и амбиентного цвета
                         if (diffuseTex != null)
                         {
-                            baseColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
+                            var texColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
+                            diffuseColor = texColor.ToVector3();
                         }
-
-                        // Согласно условиям, коэффициенты амбиентного (ka) и диффузного (kd) освещения берутся из texel'а диффузной карты:
-                        var baseDiffuse = baseColor.ToVector3();
-                        var baseAmbient = baseColor.ToVector3();
-
-                        float ks = 1.0f;
+                        
                         if (mraoTex != null)
                         {
-                            Color mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
-    
-                            // Предположим:
+                            var mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
                             // R канал - Metallic
                             // G канал - Roughness
                             // B канал - Ambient Occlusion
-                            float metallic = mraoColor.R / 255f;
-                            ks = metallic;
+                            var metallic = mraoColor.R / 255f;
+                            ks = new Vector3(metallic);
                         }
 
-
-                        var ambient = Vector3.Zero;
-                        var diffuse = Vector3.Zero;
-                        var specular = Vector3.Zero;
-                        foreach (var light in lights)
-                        {
-                            // Амбиент
-                            var ambientColor = diffuseTex is null ? light.Ambient.ToVector3() : baseAmbient;
-                            ambient += ambientColor * light.Ka;
-                            // Диффузная
-                            var diffuseColor = diffuseTex is null ? light.Diffuse.ToVector3() : baseDiffuse;
-                            Vector3 lightDir = Vector3.Normalize(light.Direction - fragWorld);
-                            float ndotL = MathF.Max(Vector3.Dot(interpNormal, lightDir), 0);
-                            diffuse += diffuseColor * ndotL * light.Kd;
-                            // Спекулярная
-                            var finalKs = normalTex is null ? light.Ks : ks;
-                            Vector3 reflection = Vector3.Reflect(-lightDir, interpNormal);
-                            float rdotV = MathF.Max(Vector3.Dot(reflection, viewDir), 0);
-                            if (rdotV > 0)
-                            {
-                                specular += light.Specular.ToVector3() * finalKs * MathF.Pow(rdotV, light.Shininess);
-                            }
-                        }
-
-                        var phong = Vector3.Clamp(ambient + diffuse + specular, Vector3.Zero,
-                            new Vector3(255, 255, 255));
-                        var finalColor = Color.FromArgb(255, (byte)phong.X, (byte)phong.Y, (byte)phong.Z);
+                        var lighting = Light.ApplyPhongShading(lights, interpNormal, viewDir, fragWorld,
+                            material.AmbientColor, material.Ka, diffuseColor, material.Kd, material.SpecularColor, ks,
+                            material.Shininess);
                         
                         if (emissiveTex != null)
                         {
-                            Color emissiveColor = TextureSampler.Sample(emissiveTex, uv.X, uv.Y);
-                            finalColor = AddColors(finalColor, emissiveColor);
+                            var emissive = TextureSampler.Sample(emissiveTex, uv.X, uv.Y).ToVector3();
+                            lighting += emissive * material.Ke;
                         }
                         
-                        buffer[y * width + x] = finalColor.ColorToIntBgra();
+                        lighting = Vector3.Clamp(lighting, Vector3.Zero, new Vector3(255, 255, 255));
+                        
+                        buffer[y * width + x] = lighting.ToColor().ColorToIntBgra();
                     }
                 }
             }
-        }
-        
-        static Color AddColors(Color c1, Color c2)
-        {
-            var r = (byte)Math.Min(c1.R + c2.R, 255);
-            var g = (byte)Math.Min(c1.G + c2.G, 255);
-            var b = (byte)Math.Min(c1.B + c2.B, 255);
-            return Color.FromArgb(c2.A, r, g, b);
         }
     }
 
