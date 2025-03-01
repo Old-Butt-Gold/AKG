@@ -425,6 +425,95 @@ public class MainViewModel : INotifyPropertyChanged
             _frameCount = 0;
             _fpsStopwatch.Restart();
         }
+        
+        UpdateAxisWidget();
+    }
+    
+    private Point _axisXEnd = new(70, 50);
+    public Point AxisXEnd
+    {
+        get => _axisXEnd;
+        set
+        {
+            _axisXEnd = value;
+            OnPropertyChanged(nameof(AxisXEnd));
+        }
+    }
+
+    private Point _axisYEnd = new(50, 30);
+    public Point AxisYEnd
+    {
+        get => _axisYEnd;
+        set
+        {
+            _axisYEnd = value;
+            OnPropertyChanged(nameof(AxisYEnd));
+        }
+    }
+
+    private Point _axisZEnd = new(45, 75);
+    public Point AxisZEnd
+    {
+        get => _axisZEnd;
+        set
+        {
+            _axisZEnd = value;
+            OnPropertyChanged(nameof(AxisZEnd));
+        }
+    }
+
+    private Point _axisXText = new(112.5, 67.5);
+    public Point AxisXText
+    {
+        get => _axisXText;
+        set
+        {
+            _axisXText = value;
+            OnPropertyChanged(nameof(AxisXText));
+        }
+    }
+
+    private Point _axisYText = new(67.5, 37.5);
+    public Point AxisYText
+    {
+        get => _axisYText;
+        set
+        {
+            _axisYText = value;
+            OnPropertyChanged(nameof(AxisYText));
+        }
+    }
+
+    private Point _axisZText = new(37.5, 67.5);
+    public Point AxisZText
+    {
+        get => _axisZText;
+        set
+        {
+            _axisZText = value;
+            OnPropertyChanged(nameof(AxisZText));
+        }
+    }
+
+    private void UpdateAxisWidget()
+    {
+        var camera = Scene.Camera;
+        var viewMatrix = camera.GetViewMatrix();
+    
+        var axisX = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitX, viewMatrix));
+        var axisY = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, viewMatrix));
+        var axisZ = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, viewMatrix));
+
+        const double scale = 60;
+        const double textOffset = 5;
+
+        AxisXEnd = new Point(75 + axisX.X * scale, 75 - axisX.Y * scale);
+        AxisYEnd = new Point(75 + axisY.X * scale, 75 - axisY.Y * scale);
+        AxisZEnd = new Point(75 + axisZ.X * scale, 75 - axisZ.Y * scale);
+
+        AxisXText = new Point(AxisXEnd.X + axisX.X * textOffset, AxisXEnd.Y - axisX.Y * textOffset);
+        AxisYText = new Point(AxisYEnd.X + axisY.X * textOffset, AxisYEnd.Y - axisY.Y * textOffset);
+        AxisZText = new Point(AxisZEnd.X + axisZ.X * textOffset, AxisZEnd.Y - axisZ.Y * textOffset);
     }
     
     /// <summary>

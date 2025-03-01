@@ -78,5 +78,38 @@
                 </i:Interaction.Triggers>
             </Image>
         </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Vertical"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" ZIndex="1">
+            <TextBlock Text="Camera AXIS" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14" ></TextBlock>
+            <Canvas Margin="10" Width="150" Height="150">
+            
+                <Ellipse Width="150" Height="150" Stroke="Gray" Fill="#33000000"/>
+    
+                <Line Stroke="Red" X1="75" Y1="75" 
+                      X2="{Binding AxisXEnd.X}" Y2="{Binding AxisXEnd.Y}"
+                      StrokeThickness="3" StrokeEndLineCap="Round"/>
+    
+                <Line Stroke="Green" X1="75" Y1="75" 
+                      X2="{Binding AxisYEnd.X}" Y2="{Binding AxisYEnd.Y}"
+                      StrokeThickness="3" StrokeEndLineCap="Round"/>
+    
+                <Line Stroke="Blue" X1="75" Y1="75" 
+                      X2="{Binding AxisZEnd.X}" Y2="{Binding AxisZEnd.Y}"
+                      StrokeThickness="3" StrokeEndLineCap="Round"/>
+    
+                <TextBlock Text="X" Foreground="Red" FontWeight="Bold"
+                           Canvas.Left="{Binding AxisXText.X}" 
+                           Canvas.Top="{Binding AxisXText.Y}"/>
+    
+                <TextBlock Text="Y" Foreground="Green" FontWeight="Bold"
+                           Canvas.Left="{Binding AxisYText.X}" 
+                           Canvas.Top="{Binding AxisYText.Y}"/>
+    
+                <TextBlock Text="Z" Foreground="Blue" FontWeight="Bold"
+                           Canvas.Left="{Binding AxisZText.X}" 
+                           Canvas.Top="{Binding AxisZText.Y}"/>
+            </Canvas>
+        </StackPanel>
+        
     </Grid>
 </Window>
