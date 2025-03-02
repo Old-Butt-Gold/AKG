@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Concurrent;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -549,6 +550,8 @@ public static class Rasterizer
         int minY = Math.Max(0, (int)Math.Floor(Math.Min(v0.Y, Math.Min(v1.Y, v2.Y))));
         int maxY = Math.Min(height - 1, (int)Math.Ceiling(Math.Max(v0.Y, Math.Max(v1.Y, v2.Y))));
 
+        var rotation = Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z);
+        
         // Вычисляем знаменатель барицентрических координат
         float denom = (v1.Y - v2.Y) * (v0.X - v2.X) + (v2.X - v1.X) * (v0.Y - v2.Y);
         if (Math.Abs(denom) < float.Epsilon) return; // Вырожденный треугольник
@@ -593,9 +596,8 @@ public static class Rasterizer
                                 (normColor.G / 255f) * 2f - 1f,
                                 (normColor.B / 255f) * 2f - 1f);
                             mapNormal = Vector3.Normalize(mapNormal);
-
+                            
                             // Применяем вращение модели к нормали (если требуется)
-                            var rotation = Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z);
                             interpNormal = Vector3.TransformNormal(mapNormal, rotation);
                         }
 
