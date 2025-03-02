@@ -600,28 +600,33 @@ public class MainViewModel : INotifyPropertyChanged
     
         if (Scene.SelectedModel == null) return;
 
-        var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
+        var modelRotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
             Scene.SelectedModel.Rotation.Y,
             Scene.SelectedModel.Rotation.X,
             Scene.SelectedModel.Rotation.Z
         );
 
-        var axisX = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitX, rotationMatrix));
-        var axisY = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, rotationMatrix));
-        var axisZ = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, rotationMatrix));
+        // Определяем локальные оси модели в мировом пространстве
+        var localAxisX = Vector3.TransformNormal(Vector3.UnitX, modelRotationMatrix);
+        var localAxisY = Vector3.TransformNormal(Vector3.UnitY, modelRotationMatrix);
+        var localAxisZ = Vector3.TransformNormal(Vector3.UnitZ, modelRotationMatrix);
+
+        // Преобразуем оси в координаты, учитывающие ориентацию камеры
+        var viewMatrix = Scene.Camera.GetViewMatrix();
+        var screenAxisX = Vector3.Normalize(Vector3.TransformNormal(localAxisX, viewMatrix));
+        var screenAxisY = Vector3.Normalize(Vector3.TransformNormal(localAxisY, viewMatrix));
+        var screenAxisZ = Vector3.Normalize(Vector3.TransformNormal(localAxisZ, viewMatrix));
         
         const double scale = 60;
         const double textOffset = 5;
 
-        ModelAxisXEnd = new Point(75 + axisX.X * scale, 75 - axisX.Y * scale);
-        ModelAxisYEnd = new Point(75 + axisY.X * scale, 75 - axisY.Y * scale);
-        ModelAxisZEnd = new Point(75 + axisZ.X * scale, 75 - axisZ.Y * scale);
+        ModelAxisXEnd = new Point(75 + screenAxisX.X * scale, 75 - screenAxisX.Y * scale);
+        ModelAxisYEnd = new Point(75 + screenAxisY.X * scale, 75 - screenAxisY.Y * scale);
+        ModelAxisZEnd = new Point(75 + screenAxisZ.X * scale, 75 - screenAxisZ.Y * scale);
 
-        ModelAxisXText = new Point(ModelAxisXEnd.X + axisX.X * textOffset, ModelAxisXEnd.Y - axisX.Y * textOffset);
-
-        ModelAxisYText = new Point(ModelAxisYEnd.X + axisY.X * textOffset, ModelAxisYEnd.Y - axisY.Y * textOffset);
-
-        ModelAxisZText = new Point(ModelAxisZEnd.X + axisZ.X * textOffset, ModelAxisZEnd.Y - axisZ.Y * textOffset);
+        ModelAxisXText = new Point(ModelAxisXEnd.X + screenAxisX.X * textOffset, ModelAxisXEnd.Y - screenAxisX.Y * textOffset);
+        ModelAxisYText = new Point(ModelAxisYEnd.X + screenAxisY.X * textOffset, ModelAxisYEnd.Y - screenAxisY.Y * textOffset);
+        ModelAxisZText = new Point(ModelAxisZEnd.X + screenAxisZ.X * textOffset, ModelAxisZEnd.Y - screenAxisZ.Y * textOffset);
     }
     
     /// <summary>
