@@ -75,7 +75,21 @@ public class Material
     /// <summary>
     /// Показатель блеска поверхности. (NS)
     /// </summary>
-    public float Shininess { get; set; } = 32f;
+    public float Shininess { get; set; } = 64f;
+
+    /// <summary>
+    /// Параметр металличности материала (от 0 до 1).
+    /// Если задан, влияет на отражательные свойства поверхности.
+    /// </summary>
+    /// metallic
+    public float Pm { get; set; } = 0.0f;
+
+    /// <summary>
+    /// Параметр шероховатости материала (от 0 до 1).
+    /// Определяет рассеянность бликов: больше значение – менее резкий блеск.
+    /// </summary>
+    /// roughness
+    public float Pr { get; set; } = 0.0f;
     
     // Эти должны изменяться для каждого пикселя грани (face), в теории
     // (на практике, ломается из-за кучи потоков, с одним все норм, но медленнее)
@@ -94,4 +108,6 @@ public class Material
     /// Зеркальная компонента освещения.
     /// </summary>
     public Vector3 SpecularColor { get; set; } = Colors.White.ToVector3();
+    
+    
 }

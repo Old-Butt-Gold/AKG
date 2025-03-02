@@ -82,9 +82,13 @@ public static class MtlParser
                     if (current != null && parts.Length >= 2)
                         current.Shininess = float.Parse(parts[1], CultureInfo.InvariantCulture);
                     break;
-                case "ni":
-                case "d":
-                    // Параметры прозрачности (пока не обрабатываем)
+                case "pm":
+                    if (current != null && parts.Length >= 2)
+                        current.Pm = float.Parse(parts[1], CultureInfo.InvariantCulture);
+                    break;
+                case "pr":
+                    if (current != null && parts.Length >= 2)
+                        current.Pr = float.Parse(parts[1], CultureInfo.InvariantCulture);
                     break;
             }
         }

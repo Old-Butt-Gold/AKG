@@ -13,25 +13,6 @@ public class Light
     public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
     
     public float Intensity { get; set; } = 1.0f;
-
-    public static Vector3 CalculateLightContribution(
-        Light light, Vector3 normal, Vector3 viewDirection,
-        Vector3 fragWorld, Vector3 diffuseColor, Vector3 kd, Vector3 specularColor, 
-        Vector3 ks, float shininess)
-    {
-        var lightDir = Vector3.Normalize(light.Direction - fragWorld);
-        
-        // Diffuse
-        var diff = MathF.Max(Vector3.Dot(normal, lightDir), 0);
-        var diffuse = light.Color * diffuseColor * diff * kd;
-
-        // Specular
-        var reflectDir = Vector3.Reflect(-lightDir, normal);
-        var spec = MathF.Pow(MathF.Max(Vector3.Dot(viewDirection, reflectDir), 0), shininess);
-        var specular = light.Color * specularColor * spec * ks;
-
-        return (diffuse + specular) * light.Intensity;
-    }
     
     public static Vector3 ApplyPhongShading(
         List<Light> lights,
@@ -45,9 +26,18 @@ public class Light
 
         foreach (var light in lights)
         {
-            lighting += CalculateLightContribution(
-                light, normal, viewDirection, fragWorld, 
-                diffuseColor, kd, specularColor, ks, shininess);
+            var lightDir = Vector3.Normalize(light.Direction - fragWorld);
+        
+            // Diffuse
+            var diff = MathF.Max(Vector3.Dot(normal, lightDir), 0);
+            var diffuse = light.Color * diffuseColor * diff * kd;
+
+            // Specular
+            var reflectDir = Vector3.Reflect(-lightDir, normal);
+            var spec = MathF.Pow(MathF.Max(Vector3.Dot(viewDirection, reflectDir), 0), shininess);
+            var specular = light.Color * specularColor * spec * ks;
+
+            lighting += (diffuse + specular) * light.Intensity;
         }
 
         lighting = Vector3.Clamp(lighting, Vector3.Zero, new Vector3(255, 255, 255));

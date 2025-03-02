@@ -616,11 +616,6 @@ public static class Rasterizer
                         }
                         
                         var diffuseColor = material.DiffuseColor;
-                        var ks = material.Ks;
-
-                        // Вычисляем вектор взгляда (от фрагмента к камере)
-                        // Нормализация нужна для расчета зеркальной составляющей.
-                        var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
 
                         // Создаём локальные копии для диффузного и амбиентного цвета
                         if (diffuseTex != null)
@@ -629,19 +624,36 @@ public static class Rasterizer
                             diffuseColor = texColor.ToVector3();
                         }
                         
+                        var metallic = material.Pm;
+                        var roughness = material.Pr;
+
+                        // Если mrao‑текстура задана, извлекаем металлическость из R-канала,
+                        // G – roughness, B – ambient occlusion (если потребуется)
                         if (mraoTex != null)
                         {
                             var mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
-                            // R канал - Metallic
-                            // G канал - Roughness
-                            // B канал - Ambient Occlusion
-                            var metallic = mraoColor.R / 255f;
-                            ks = new Vector3(metallic);
+                            metallic = mraoColor.R / 255f;
+                            roughness = mraoColor.G / 255f;
+                        }
+                        
+                        // Преобразуем шероховатость в показатель блеска
+                        // Расчёт эффективного блеска с учётом шероховатости (Pr)
+                        // Чем выше Pr, тем меньше должен быть блеск
+                        var shininess = material.Shininess;
+                        if (roughness > 0)
+                        {
+                            shininess *= (1 - roughness);
                         }
 
+                        var ks = Vector3.Lerp(material.Ks, material.Kd, metallic);
+
+                        // Вычисляем вектор взгляда (от фрагмента к камере)
+                        // Нормализация нужна для расчета зеркальной составляющей.
+                        var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
+
                         var lighting = Light.ApplyPhongShading(lights, interpNormal, viewDir, fragWorld,
-                            material.AmbientColor, material.Ka, diffuseColor, material.Kd, material.SpecularColor, ks,
-                            material.Shininess);
+                            material.AmbientColor, material.Ka, diffuseColor, material.Kd, material.SpecularColor, 
+                            ks, shininess);
                         
                         if (emissiveTex != null)
                         {
