@@ -55,11 +55,23 @@ public static class MtlParser
                     break;
                 case "map_mrao": // (metallic - roughness - ambient occlusion)
                     if (current != null && parts.Length >= 2)
-                        current.SpecularMap = GetFullPath(mtlDirectory, parts[1]);
+                        current.MraoMap = GetFullPath(mtlDirectory, parts[1]);
+                    break;
+                case "map_metallic":
+                    if (current != null && parts.Length >= 2)
+                        current.MetallicMap = GetFullPath(mtlDirectory, parts[1]);
+                    break;
+                case "map_roughness":
+                    if (current != null && parts.Length >= 2)
+                        current.RoughnessMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "map_ke":
                     if (current != null && parts.Length >= 2)
                         current.EmissiveMap = GetFullPath(mtlDirectory, parts[1]);
+                    break;
+                case "map_specular":
+                    if (current != null && parts.Length >= 2)
+                        current.SpecularMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "ka":
                     if (current != null && parts.Length >= 4)

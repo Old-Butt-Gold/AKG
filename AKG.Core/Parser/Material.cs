@@ -35,7 +35,22 @@ public class Material
     /// <summary>
     /// Путь к текстуре карты MRAO (map_MRAO) (metallic-roughness-ambient occlusion).
     /// </summary>
+    public string MraoMap { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Путь к текстуре карты Specular Map
+    /// </summary>
     public string SpecularMap { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Отдельная текстура для metallic.
+    /// </summary>
+    public string MetallicMap { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Отдельная текстура для roughness.
+    /// </summary>
+    public string RoughnessMap { get; set; } = string.Empty;
 
     /// <summary>
     /// Путь к bump-карте (map_bump или bump).
