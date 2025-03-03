@@ -31,6 +31,11 @@ public class Material
     /// Путь к нормальной карте (norm).
     /// </summary>
     public string NormalMap { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Путь к текстуре AO (ambient occlusion), если задан отдельно.
+    /// </summary>
+    public string AoMap { get; set; } = string.Empty;
 
     /// <summary>
     /// Путь к текстуре карты MRAO (map_MRAO) (metallic-roughness-ambient occlusion).
@@ -106,8 +111,7 @@ public class Material
     /// roughness
     public float Pr { get; set; } = 0.0f;
     
-    // Эти должны изменяться для каждого пикселя грани (face), в теории
-    // (на практике, ломается из-за кучи потоков, с одним все норм, но медленнее)
+    // Эти должны изменяться для каждого пикселя грани (face)
     
     /// <summary>
     /// Амбиентная компонента освещения.

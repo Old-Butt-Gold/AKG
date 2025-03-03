@@ -57,6 +57,10 @@ public static class MtlParser
                     if (current != null && parts.Length >= 2)
                         current.MraoMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
+                case "map_ao": // текстура ambient occlusion
+                    if (current != null && parts.Length >= 2)
+                        current.AoMap = GetFullPath(mtlDirectory, parts[1]);
+                    break;
                 case "map_metallic":
                     if (current != null && parts.Length >= 2)
                         current.MetallicMap = GetFullPath(mtlDirectory, parts[1]);

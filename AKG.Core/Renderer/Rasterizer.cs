@@ -546,6 +546,7 @@ public static class Rasterizer
         var emissiveTex = !string.IsNullOrEmpty(material.EmissiveMap) ? TextureLoader.Load(material.EmissiveMap) : null;
         var bumpTex = !string.IsNullOrEmpty(material.BumpMap) ? TextureLoader.Load(material.BumpMap) : null;
         var specularTex = !string.IsNullOrEmpty(material.SpecularMap) ? TextureLoader.Load(material.SpecularMap) : null;
+        var aoTex = !string.IsNullOrEmpty(material.AoMap) ? TextureLoader.Load(material.AoMap) : null;
 
         // Ограничивающий прямоугольник (не выходит за пределы экрана)
         int minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
@@ -621,16 +622,19 @@ public static class Rasterizer
                         }
                         
                         var diffuseColor = material.DiffuseColor;
+                        var ambientColor = material.AmbientColor;
 
                         // Создаём локальные копии для диффузного и амбиентного цвета
                         if (diffuseTex != null)
                         {
                             var texColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
                             diffuseColor = texColor.ToVector3();
+                            ambientColor = texColor.ToVector3();
                         }
                         
                         var metallic = material.Pm;
                         var roughness = material.Pr;
+                        var ao = 1.0f;
 
                         // Если mrao‑текстура задана, извлекаем металлическость из R-канала,
                         // G – roughness, B – ambient occlusion (если потребуется)
@@ -639,6 +643,7 @@ public static class Rasterizer
                             var mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
                             metallic = mraoColor.R / 255f;
                             roughness = mraoColor.G / 255f;
+                            ao = mraoColor.B / 255f;
                         }
                         
                         // Если заданы отдельные карты, они имеют приоритет:
@@ -648,12 +653,21 @@ public static class Rasterizer
                             // Берём только R-компоненту, так как карта хранится в grayscale или значение metallic записано в R
                             metallic = metalColor.R / 255f;
                         }
+                        
                         if (roughnessTex != null)
                         {
                             var roughColor = TextureSampler.Sample(roughnessTex, uv.X, uv.Y);
                             // Аналогично для roughness – используем R-компоненту
                             roughness = roughColor.R / 255f;
                         }
+                        
+                        if (aoTex != null)
+                        {
+                            var aoColor = TextureSampler.Sample(aoTex, uv.X, uv.Y);
+                            ao = aoColor.R / 255f;
+                        }
+
+                        ambientColor *= ao;
                         
                         // Преобразуем шероховатость в показатель блеска
                         // Расчёт эффективного блеска с учётом шероховатости (Pr)
@@ -679,7 +693,7 @@ public static class Rasterizer
                         var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
 
                         var lighting = Light.ApplyPhongShading(lights, interpNormal, viewDir, fragWorld,
-                            material.AmbientColor, material.Ka, diffuseColor, material.Kd, specularColor, 
+                            ambientColor, material.Ka, diffuseColor, material.Kd, specularColor, 
                             ks, shininess);
                         
                         if (emissiveTex != null)
