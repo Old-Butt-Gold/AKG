@@ -73,8 +73,8 @@ public class Camera
         // Y = Radius * cos(Zeta)
         // Z = Radius * sin(Phi) * sin(Zeta)
         Eye = new Vector3(
-            Radius * (float)Math.Cos(Phi) * (float)Math.Sin(Zeta),
-            Radius * (float)Math.Cos(Zeta),
-            Radius * (float)Math.Sin(Phi) * (float)Math.Sin(Zeta));
+            Radius * MathF.Cos(Phi) * MathF.Sin(Zeta),
+            Radius * MathF.Cos(Zeta),
+            Radius * MathF.Sin(Phi) * MathF.Sin(Zeta));
     }
 }

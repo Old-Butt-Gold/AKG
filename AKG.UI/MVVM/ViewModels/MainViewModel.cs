@@ -427,7 +427,6 @@ public class MainViewModel : INotifyPropertyChanged
         }
         
         UpdateAxisWidget();
-        UpdateModelRotationWidget();
     }
     
     private Point _axisXEnd = new(70, 50);
@@ -495,83 +494,6 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(AxisZText));
         }
     }
-
-    private bool _isModelSelected;
-    public bool IsModelSelected
-    {
-        get => _isModelSelected;
-        set
-        {
-            _isModelSelected = value;
-            OnPropertyChanged(nameof(IsModelSelected));
-        }
-    }
-
-    private Point _modelAxisXEnd = new(112.5, 67.5);
-    public Point ModelAxisXEnd
-    {
-        get => _modelAxisXEnd;
-        set
-        {
-            _modelAxisXEnd = value;
-            OnPropertyChanged(nameof(ModelAxisXEnd));
-        }
-    }
-
-    private Point _modelAxisYEnd = new Point(50, 30);
-    public Point ModelAxisYEnd
-    {
-        get => _modelAxisYEnd;
-        set
-        {
-            _modelAxisYEnd = value;
-            OnPropertyChanged(nameof(ModelAxisYEnd));
-        }
-    }
-
-    private Point _modelAxisZEnd = new(45, 75);
-    public Point ModelAxisZEnd
-    {
-        get => _modelAxisZEnd;
-        set
-        {
-            _modelAxisZEnd = value;
-            OnPropertyChanged(nameof(ModelAxisZEnd));
-        }
-    }
-
-    private Point _modelAxisXText = new(112.5, 67.5);
-    public Point ModelAxisXText
-    {
-        get => _modelAxisXText;
-        set
-        {
-            _modelAxisXText = value;
-            OnPropertyChanged(nameof(ModelAxisXText));
-        }
-    }
-
-    private Point _modelAxisYText = new(67.5, 37.5);
-    public Point ModelAxisYText
-    {
-        get => _modelAxisYText;
-        set
-        {
-            _modelAxisYText = value;
-            OnPropertyChanged(nameof(ModelAxisYText));
-        }
-    }
-
-    private Point _modelAxisZText = new(37.5, 67.5);
-    public Point ModelAxisZText
-    {
-        get => _modelAxisZText;
-        set
-        {
-            _modelAxisZText = value;
-            OnPropertyChanged(nameof(ModelAxisZText));
-        }
-    }
     
     private void UpdateAxisWidget()
     {
@@ -592,41 +514,6 @@ public class MainViewModel : INotifyPropertyChanged
         AxisXText = new Point(AxisXEnd.X + axisX.X * textOffset, AxisXEnd.Y - axisX.Y * textOffset);
         AxisYText = new Point(AxisYEnd.X + axisY.X * textOffset, AxisYEnd.Y - axisY.Y * textOffset);
         AxisZText = new Point(AxisZEnd.X + axisZ.X * textOffset, AxisZEnd.Y - axisZ.Y * textOffset);
-    }
-    
-    private void UpdateModelRotationWidget()
-    {
-        IsModelSelected = Scene.SelectedModel != null;
-    
-        if (Scene.SelectedModel == null) return;
-
-        var modelRotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
-            Scene.SelectedModel.Rotation.Y,
-            Scene.SelectedModel.Rotation.X,
-            Scene.SelectedModel.Rotation.Z
-        );
-
-        // Определяем локальные оси модели в мировом пространстве
-        var localAxisX = Vector3.TransformNormal(Vector3.UnitX, modelRotationMatrix);
-        var localAxisY = Vector3.TransformNormal(Vector3.UnitY, modelRotationMatrix);
-        var localAxisZ = Vector3.TransformNormal(Vector3.UnitZ, modelRotationMatrix);
-
-        // Преобразуем оси в координаты, учитывающие ориентацию камеры
-        var viewMatrix = Scene.Camera.GetViewMatrix();
-        var screenAxisX = Vector3.Normalize(Vector3.TransformNormal(localAxisX, viewMatrix));
-        var screenAxisY = Vector3.Normalize(Vector3.TransformNormal(localAxisY, viewMatrix));
-        var screenAxisZ = Vector3.Normalize(Vector3.TransformNormal(localAxisZ, viewMatrix));
-        
-        const double scale = 60;
-        const double textOffset = 5;
-
-        ModelAxisXEnd = new Point(75 + screenAxisX.X * scale, 75 - screenAxisX.Y * scale);
-        ModelAxisYEnd = new Point(75 + screenAxisY.X * scale, 75 - screenAxisY.Y * scale);
-        ModelAxisZEnd = new Point(75 + screenAxisZ.X * scale, 75 - screenAxisZ.Y * scale);
-
-        ModelAxisXText = new Point(ModelAxisXEnd.X + screenAxisX.X * textOffset, ModelAxisXEnd.Y - screenAxisX.Y * textOffset);
-        ModelAxisYText = new Point(ModelAxisYEnd.X + screenAxisY.X * textOffset, ModelAxisYEnd.Y - screenAxisY.Y * textOffset);
-        ModelAxisZText = new Point(ModelAxisZEnd.X + screenAxisZ.X * textOffset, ModelAxisZEnd.Y - screenAxisZ.Y * textOffset);
     }
     
     /// <summary>

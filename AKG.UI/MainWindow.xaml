@@ -20,7 +20,6 @@
                 <TextBlock Text="{Binding SelectedModelInfo}" TextWrapping="Wrap"/>
             </Border>
         </DataTemplate>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -110,40 +109,6 @@
                 <TextBlock Text="Z" Foreground="Blue" FontWeight="Bold"
                            Canvas.Left="{Binding AxisZText.X}" 
                            Canvas.Top="{Binding AxisZText.Y}"/>
-            </Canvas>
-            
-            <TextBlock Text="Model AXIS" Visibility="{Binding IsModelSelected}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14" ></TextBlock>
-            <Canvas Margin="10" Width="150" Height="150"
-                    Visibility="{Binding IsModelSelected, Converter={StaticResource BoolToVisibility}}">
-                <Ellipse Width="150" Height="150" Stroke="Gray" Fill="#33000000"/>
-    
-                <!-- Ось X модели -->
-                <Line Stroke="Red" X1="75" Y1="75" 
-                      X2="{Binding ModelAxisXEnd.X}" Y2="{Binding ModelAxisXEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <!-- Ось Y модели -->
-                <Line Stroke="Green" X1="75" Y1="75" 
-                      X2="{Binding ModelAxisYEnd.X}" Y2="{Binding ModelAxisYEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <!-- Ось Z модели -->
-                <Line Stroke="Blue" X1="75" Y1="75" 
-                      X2="{Binding ModelAxisZEnd.X}" Y2="{Binding ModelAxisZEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <!-- Подписи осей -->
-                <TextBlock Text="X" Foreground="Red" FontWeight="Bold"
-                           Canvas.Left="{Binding ModelAxisXText.X}" 
-                           Canvas.Top="{Binding ModelAxisXText.Y}"/>
-    
-                <TextBlock Text="Y" Foreground="Green" FontWeight="Bold"
-                           Canvas.Left="{Binding ModelAxisYText.X}" 
-                           Canvas.Top="{Binding ModelAxisYText.Y}"/>
-    
-                <TextBlock Text="Z" Foreground="Blue" FontWeight="Bold"
-                           Canvas.Left="{Binding ModelAxisZText.X}" 
-                           Canvas.Top="{Binding ModelAxisZText.Y}"/>
             </Canvas>
         </StackPanel>
         

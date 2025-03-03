@@ -62,10 +62,12 @@ public static class MtlParser
                         current.AoMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "map_metallic":
+                case "map_refl":
                     if (current != null && parts.Length >= 2)
                         current.MetallicMap = GetFullPath(mtlDirectory, parts[1]);
                     break;
                 case "map_roughness":
+                case "map_ns":
                     if (current != null && parts.Length >= 2)
                         current.RoughnessMap = GetFullPath(mtlDirectory, parts[1]);
                     break;

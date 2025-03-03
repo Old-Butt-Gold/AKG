@@ -6,8 +6,6 @@ namespace AKG.Core.VectorTransformations;
 
 public static class Transformations
 {
-    // !!!! ВАЖНО, конструкторы должны быть инверсированы для формул !!!!
-    
     /// <summary>
     /// Создаёт итоговую матрицу преобразования, объединяя масштабирование, вращение и перевод.
     /// Порядок умножения: итоговая матрица = Translation * Rotation * Scale.
@@ -23,9 +21,7 @@ public static class Transformations
         
         var translationMatrix = Matrix4x4.CreateTranslation(translation);
 
-        // Итоговая матрица (порядок: сначала масштаб, затем вращение, затем перевод)
-        // Если представлять вершину в виде столбца (как у нас и в OpenGL), то итоговое преобразование: M = T * R * S.
-        var worldMatrix = translationMatrix * rotation * scaleMatrix;
+        var worldMatrix = rotation * translationMatrix * scaleMatrix;
         
         return worldMatrix;
     }
