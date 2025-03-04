@@ -6,13 +6,16 @@ namespace AKG.Core.Renderer;
 
 public static class RendererFacade
 {
-    public static void Render(Scene scene, WriteableBitmap? wb, Color backgroundColor, Color foregroundColor, RenderMode mode)
+    public static void Render(Scene scene, WriteableBitmap? wb, Color backgroundColor, Color foregroundColor, Color highlightColor, RenderMode mode)
     {
         if (wb == null) return;
         
         WireframeRenderer.ClearBitmap(wb, backgroundColor);
         
         scene.Camera.ChangeEye();
+        
+        WireframeRenderer.RenderSelectionOutlineDoublePass(scene, wb, highlightColor);
+        
         scene.UpdateAllModels();
         
         switch (mode)
@@ -20,7 +23,7 @@ public static class RendererFacade
             case RenderMode.Wireframe:
                 foreach (var model in scene.Models)
                 {
-                    WireframeRenderer.DrawWireframe(model, wb, foregroundColor, scene.Camera);
+                    WireframeRenderer.DrawWireframe(model, wb, foregroundColor, scene.Camera, 1);
                 }
                 break;
             case RenderMode.FilledTrianglesLambert:
@@ -58,9 +61,5 @@ public static class RendererFacade
             default:
                 throw new NotSupportedException("Неизвестный режим рендеринга");
         }
-        
-        if (scene.SelectedModel is not null)
-            WireframeRenderer.Draw3DSelectionHighlight(scene, scene.SelectedModel, wb, Colors.Aqua);
-
     }
 }

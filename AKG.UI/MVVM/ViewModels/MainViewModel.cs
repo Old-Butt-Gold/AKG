@@ -58,6 +58,19 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
     
+    private Color _highlightColor = Colors.Peru;
+
+    public Color HighlightColor
+    {
+        get => _highlightColor;
+        set
+        {
+            _highlightColor = value;
+            UpdateView();
+            OnPropertyChanged(nameof(HighlightColor));
+        }
+    }
+    
     private string _selectedModelInfo = string.Empty;
     public string SelectedModelInfo
     {
@@ -101,6 +114,7 @@ public class MainViewModel : INotifyPropertyChanged
     // Комманды для цветовой палитры
     public ICommand PickForegroundColorCommand { get; }
     public ICommand PickBackgroundColorCommand { get; }
+    public ICommand PickHighlightColorCommand { get; }
     
     public ICommand ToggleModelInfoCommand { get; }
 
@@ -168,6 +182,15 @@ public class MainViewModel : INotifyPropertyChanged
             if (color != null)
             {
                 BackgroundColor = color.Value;
+            }
+        });
+
+        PickHighlightColorCommand = new RelayCommand(_ =>
+        {
+            var color = ColorPickerService.PickColor();
+            if (color != null)
+            {
+                HighlightColor = color.Value;
             }
         });
 
@@ -411,7 +434,7 @@ public class MainViewModel : INotifyPropertyChanged
     
     public void UpdateView()
     {
-        RendererFacade.Render(Scene, WriteableBitmap, BackgroundColor, ForegroundColor, SelectedRenderMode);
+        RendererFacade.Render(Scene, WriteableBitmap, BackgroundColor, ForegroundColor, HighlightColor, SelectedRenderMode);
         
         UpdateSelectedModelInfo();
         
@@ -428,7 +451,7 @@ public class MainViewModel : INotifyPropertyChanged
         
         UpdateAxisWidget();
     }
-    private Point _axisXNegativeEnd = new(70, 100); // Добавляем точку для отрицательной оси X
+    private Point _axisXNegativeEnd = new(70, 100); 
     public Point AxisXNegativeEnd
     {
         get => _axisXNegativeEnd;
@@ -439,7 +462,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Point _axisYNegativeEnd = new(50, 110); // Добавляем точку для отрицательной оси Y
+    private Point _axisYNegativeEnd = new(50, 110); 
     public Point AxisYNegativeEnd
     {
         get => _axisYNegativeEnd;
@@ -450,7 +473,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Point _axisZNegativeEnd = new(45, 125); // Добавляем точку для отрицательной оси Z
+    private Point _axisZNegativeEnd = new(45, 125); 
     public Point AxisZNegativeEnd
     {
         get => _axisZNegativeEnd;
@@ -461,7 +484,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Point _axisXNegativeText = new(112.5, 87.5); // Точка для текста отрицательной оси X
+    private Point _axisXNegativeText = new(112.5, 87.5); 
     public Point AxisXNegativeText
     {
         get => _axisXNegativeText;
@@ -472,7 +495,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Point _axisYNegativeText = new(67.5, 107.5); // Точка для текста отрицательной оси Y
+    private Point _axisYNegativeText = new(67.5, 107.5); 
     public Point AxisYNegativeText
     {
         get => _axisYNegativeText;
@@ -483,7 +506,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private Point _axisZNegativeText = new(37.5, 117.5); // Точка для текста отрицательной оси Z
+    private Point _axisZNegativeText = new(37.5, 117.5); 
     public Point AxisZNegativeText
     {
         get => _axisZNegativeText;

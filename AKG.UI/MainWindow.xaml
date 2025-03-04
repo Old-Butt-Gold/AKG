@@ -40,6 +40,10 @@
                 <TextBlock Text="Background Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <Button Focusable="False" Content="Pick Color" Command="{Binding PickBackgroundColorCommand}" Width="100" Height="30"/>
             </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="Highlight Color:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <Button Focusable="False" Content="Pick Color" Command="{Binding PickHighlightColorCommand}" Width="100" Height="30"/>
+            </StackPanel>
             <Button Focusable="False" Content="Model Info" ClickMode="Press" Command="{Binding ToggleModelInfoCommand}" Margin="10" Padding="5"/>
             
             <Popup x:Name="ModelInfoPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=StackPanel}" IsOpen="{Binding IsModelInfoVisible}" StaysOpen="False">
