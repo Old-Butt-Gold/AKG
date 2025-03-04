@@ -64,69 +64,44 @@ public class Scene
         model.ApplyFinalTransformation(finalTransform, Camera);
     }
     
-    /// <summary>
-    /// Пытается выбрать модель, экранный bounding box которой содержит точку clickPoint.
-    /// </summary>
-    /// <param name="clickPoint">Координаты клика (в системе координат компонента Image)</param>
-    /// <returns>Найденная модель или null</returns>
     public ObjModel? PickModel(Point clickPoint)
     {
-        List<ObjModel> candidates = [];
-
-        // Собираем все модели, чей bounding box содержит clickPoint.
+        ObjModel? pickedModel = null;
+        float bestDepth = float.MaxValue;
+ 
         foreach (var model in Models)
         {
-            Rect bb = GetScreenBoundingBox(model);
-            if (bb.Contains(clickPoint))
-                candidates.Add(model);
+            if (model.TransformedVertices.Length == 0)
+                continue;
+ 
+            // Вычисляем экранный bounding box для модели
+            float minX = float.MaxValue, minY = float.MaxValue;
+            float maxX = float.MinValue, maxY = float.MinValue;
+            float modelDepth = float.MaxValue;
+ 
+            foreach (var v in model.TransformedVertices)
+            {
+                minX = MathF.Min(minX, v.X);
+                minY = MathF.Min(minY, v.Y);
+                maxX = MathF.Max(maxX, v.X);
+                maxY = MathF.Max(maxY, v.Y);
+                // Используем минимальное Z (ближайшую к камере точку)
+                modelDepth = MathF.Min(modelDepth, v.Z);
+            }
+ 
+            // Проверяем, находится ли точка клика внутри bounding box
+            if (clickPoint.X >= minX && clickPoint.X <= maxX &&
+                clickPoint.Y >= minY && clickPoint.Y <= maxY)
+            {
+                // Если моделей несколько, выбираем ту, которая ближе к камере (меньший Z)
+                if (modelDepth < bestDepth)
+                {
+                    bestDepth = modelDepth;
+                    pickedModel = model;
+                }
+            }
         }
-    
-        if (candidates.Count == 0)
-            return null;
-
-        // Для каждого кандидата вычисляем параметр глубины.
-        // Например, можно взять среднее значение z-координаты его пересчитанных вершин.
-        // (Обратите внимание, что система координат после перспективного преобразования может требовать корректировки критериев.)
-        candidates.Sort((a, b) =>
-        {
-            var depthA = GetModelAverageDepth(a);
-            var depthB = GetModelAverageDepth(b);
-            return depthA.CompareTo(depthB);
-        });
-    
-        // Если в вашей системе меньшие z (или большее, в зависимости от соглашений) означает, что объект ближе,
-        // можно выбрать, например, последний элемент (наиболее удалённый) или предложить пользователю циклически переключаться.
-        return candidates[^1];
-        
-        float GetModelAverageDepth(ObjModel model)
-        {
-            return model.TransformedVertices.Length == 0
-                ? float.MaxValue
-                : model.TransformedVertices.Sum(v => v.Z) / model.TransformedVertices.Length;
-        }
-    }
-    
-    /// <summary>
-    /// Вычисляет bounding box для модели на основе её пересчитанных экранных координат (TransformedVertices).
-    /// </summary>
-    public Rect GetScreenBoundingBox(ObjModel model)
-    {
-        if (model.TransformedVertices.Length == 0)
-            return Rect.Empty;
-    
-        double minX = double.MaxValue;
-        double minY = double.MaxValue;
-        double maxX = double.MinValue;
-        double maxY = double.MinValue;
-    
-        foreach (var v in model.TransformedVertices)
-        {
-            if (v.X < minX) minX = v.X;
-            if (v.Y < minY) minY = v.Y;
-            if (v.X > maxX) maxX = v.X;
-            if (v.Y > maxY) maxY = v.Y;
-        }
-    
-        return new Rect(minX, minY, maxX - minX, maxY - minY);
+ 
+        return pickedModel;
     }
 }
