@@ -66,7 +66,7 @@ public static class WireframeRenderer
                     }
 
                     // Отрисовываем линию с использованием алгоритма Брезенхэма (все записи будут в один и тот же цвет)
-                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor);
+                    DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor, 1);
                 }
             });
         }
@@ -76,34 +76,52 @@ public static class WireframeRenderer
         wb.Unlock();
     }
     
-    public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color)
+    public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color, int thickness)
     {
         int dx = Math.Abs(x1 - x0);
         int dy = Math.Abs(y1 - y0);
         int sx = x0 < x1 ? 1 : -1;
         int sy = y0 < y1 ? 1 : -1;
         int err = dx - dy;
-
+ 
         while (true)
         {
-            if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height)
-            {
-                buffer[y0 * width + x0] = color;
-            }
-
+            DrawThickPixel(buffer, width, height, x0, y0, color, thickness);
+ 
             if (x0 == x1 && y0 == y1)
                 break;
-
+ 
             int e2 = 2 * err;
             if (e2 > -dy)
             {
                 err -= dy;
                 x0 += sx;
             }
+ 
             if (e2 < dx)
             {
                 err += dx;
                 y0 += sy;
+            }
+        }
+    }
+ 
+    /// <summary>
+    /// Отрисовывает "толстый" пиксель, закрашивая область вокруг него
+    /// </summary>
+    private static unsafe void DrawThickPixel(int* buffer, int width, int height, int x, int y, int color, int thickness)
+    {
+        int radius = thickness / 2;  // Определяем радиус заполнения
+        for (int i = -radius; i <= radius; i++)
+        {
+            for (int j = -radius; j <= radius; j++)
+            {
+                int px = x + i;
+                int py = y + j;
+                if (px >= 0 && px < width && py >= 0 && py < height)
+                {
+                    buffer[py * width + px] = color;
+                }
             }
         }
     }
@@ -203,7 +221,7 @@ public static class WireframeRenderer
                     continue;
                 }
                 
-                DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor);
+                DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor, 1);
             }
 
             wb.AddDirtyRect(new Int32Rect(0, 0, width, height));
