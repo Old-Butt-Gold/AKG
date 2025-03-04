@@ -428,6 +428,72 @@ public class MainViewModel : INotifyPropertyChanged
         
         UpdateAxisWidget();
     }
+    private Point _axisXNegativeEnd = new(70, 100); // Добавляем точку для отрицательной оси X
+    public Point AxisXNegativeEnd
+    {
+        get => _axisXNegativeEnd;
+        set
+        {
+            _axisXNegativeEnd = value;
+            OnPropertyChanged(nameof(AxisXNegativeEnd));
+        }
+    }
+
+    private Point _axisYNegativeEnd = new(50, 110); // Добавляем точку для отрицательной оси Y
+    public Point AxisYNegativeEnd
+    {
+        get => _axisYNegativeEnd;
+        set
+        {
+            _axisYNegativeEnd = value;
+            OnPropertyChanged(nameof(AxisYNegativeEnd));
+        }
+    }
+
+    private Point _axisZNegativeEnd = new(45, 125); // Добавляем точку для отрицательной оси Z
+    public Point AxisZNegativeEnd
+    {
+        get => _axisZNegativeEnd;
+        set
+        {
+            _axisZNegativeEnd = value;
+            OnPropertyChanged(nameof(AxisZNegativeEnd));
+        }
+    }
+
+    private Point _axisXNegativeText = new(112.5, 87.5); // Точка для текста отрицательной оси X
+    public Point AxisXNegativeText
+    {
+        get => _axisXNegativeText;
+        set
+        {
+            _axisXNegativeText = value;
+            OnPropertyChanged(nameof(AxisXNegativeText));
+        }
+    }
+
+    private Point _axisYNegativeText = new(67.5, 107.5); // Точка для текста отрицательной оси Y
+    public Point AxisYNegativeText
+    {
+        get => _axisYNegativeText;
+        set
+        {
+            _axisYNegativeText = value;
+            OnPropertyChanged(nameof(AxisYNegativeText));
+        }
+    }
+
+    private Point _axisZNegativeText = new(37.5, 117.5); // Точка для текста отрицательной оси Z
+    public Point AxisZNegativeText
+    {
+        get => _axisZNegativeText;
+        set
+        {
+            _axisZNegativeText = value;
+            OnPropertyChanged(nameof(AxisZNegativeText));
+        }
+    }
+
     
     private Point _axisXEnd = new(70, 50);
     public Point AxisXEnd
@@ -499,7 +565,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var camera = Scene.Camera;
         var viewMatrix = camera.GetViewMatrix();
-    
+
         var axisX = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitX, viewMatrix));
         var axisY = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, viewMatrix));
         var axisZ = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, viewMatrix));
@@ -507,13 +573,25 @@ public class MainViewModel : INotifyPropertyChanged
         const double scale = 60;
         const double textOffset = 5;
 
+        // Положительные оси
         AxisXEnd = new Point(75 + axisX.X * scale, 75 - axisX.Y * scale);
         AxisYEnd = new Point(75 + axisY.X * scale, 75 - axisY.Y * scale);
         AxisZEnd = new Point(75 + axisZ.X * scale, 75 - axisZ.Y * scale);
 
+        // Отрицательные оси
+        AxisXNegativeEnd = new Point(75 - axisX.X * scale, 75 + axisX.Y * scale);
+        AxisYNegativeEnd = new Point(75 - axisY.X * scale, 75 + axisY.Y * scale);
+        AxisZNegativeEnd = new Point(75 - axisZ.X * scale, 75 + axisZ.Y * scale);
+
+        // Положительный текст
         AxisXText = new Point(AxisXEnd.X + axisX.X * textOffset, AxisXEnd.Y - axisX.Y * textOffset);
         AxisYText = new Point(AxisYEnd.X + axisY.X * textOffset, AxisYEnd.Y - axisY.Y * textOffset);
         AxisZText = new Point(AxisZEnd.X + axisZ.X * textOffset, AxisZEnd.Y - axisZ.Y * textOffset);
+
+        // Текст для отрицательных осей
+        AxisXNegativeText = new Point(AxisXNegativeEnd.X + axisX.X * textOffset, AxisXNegativeEnd.Y - axisX.Y * textOffset);
+        AxisYNegativeText = new Point(AxisYNegativeEnd.X + axisY.X * textOffset, AxisYNegativeEnd.Y - axisY.Y * textOffset);
+        AxisZNegativeText = new Point(AxisZNegativeEnd.X + axisZ.X * textOffset, AxisZNegativeEnd.Y - axisZ.Y * textOffset);
     }
     
     /// <summary>

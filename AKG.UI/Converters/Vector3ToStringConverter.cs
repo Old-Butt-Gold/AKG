@@ -19,7 +19,7 @@ public class Vector3ToStringConverter : IValueConverter
     {
         if (value is string str)
         {
-            string[] parts = str.Split([';'], StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = str.Split(new[]{';'}, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 3 &&
                 float.TryParse(parts[0].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var x) &&
                 float.TryParse(parts[1].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var y) &&

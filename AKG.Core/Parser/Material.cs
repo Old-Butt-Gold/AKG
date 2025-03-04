@@ -81,7 +81,6 @@ public class Material
     /// Коэффициент рассеянного (диффузного) освещения
     /// </summary>
     public Vector3 Kd { get; set; } = new(1.0f);
-    
     /// <summary>
     /// Коэффициент зеркального освещения
     /// </summary>

@@ -87,28 +87,55 @@
                 <Ellipse Width="150" Height="150" Stroke="Gray" Fill="#33000000"/>
     
                 <Line Stroke="Red" X1="75" Y1="75" 
-                      X2="{Binding AxisXEnd.X}" Y2="{Binding AxisXEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <Line Stroke="Green" X1="75" Y1="75" 
-                      X2="{Binding AxisYEnd.X}" Y2="{Binding AxisYEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <Line Stroke="Blue" X1="75" Y1="75" 
-                      X2="{Binding AxisZEnd.X}" Y2="{Binding AxisZEnd.Y}"
-                      StrokeThickness="3" StrokeEndLineCap="Round"/>
-    
-                <TextBlock Text="X" Foreground="Red" FontWeight="Bold"
-                           Canvas.Left="{Binding AxisXText.X}" 
-                           Canvas.Top="{Binding AxisXText.Y}"/>
-    
-                <TextBlock Text="Y" Foreground="Green" FontWeight="Bold"
-                           Canvas.Left="{Binding AxisYText.X}" 
-                           Canvas.Top="{Binding AxisYText.Y}"/>
-    
-                <TextBlock Text="Z" Foreground="Blue" FontWeight="Bold"
-                           Canvas.Left="{Binding AxisZText.X}" 
-                           Canvas.Top="{Binding AxisZText.Y}"/>
+      X2="{Binding AxisXEnd.X}" Y2="{Binding AxisXEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<Line Stroke="Green" X1="75" Y1="75" 
+      X2="{Binding AxisYEnd.X}" Y2="{Binding AxisYEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<Line Stroke="Blue" X1="75" Y1="75" 
+      X2="{Binding AxisZEnd.X}" Y2="{Binding AxisZEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<!-- Текст для положительных осей -->
+<TextBlock Text="X" Foreground="Red" FontWeight="Bold"
+           Canvas.Left="{Binding AxisXText.X}" 
+           Canvas.Top="{Binding AxisXText.Y}"/>
+
+<TextBlock Text="Y" Foreground="Green" FontWeight="Bold"
+           Canvas.Left="{Binding AxisYText.X}" 
+           Canvas.Top="{Binding AxisYText.Y}"/>
+
+<TextBlock Text="Z" Foreground="Blue" FontWeight="Bold"
+           Canvas.Left="{Binding AxisZText.X}" 
+           Canvas.Top="{Binding AxisZText.Y}"/>
+
+<!-- Линии для отрицательных осей -->
+<Line Stroke="Red" X1="75" Y1="75" 
+      X2="{Binding AxisXNegativeEnd.X}" Y2="{Binding AxisXNegativeEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<Line Stroke="Green" X1="75" Y1="75" 
+      X2="{Binding AxisYNegativeEnd.X}" Y2="{Binding AxisYNegativeEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<Line Stroke="Blue" X1="75" Y1="75" 
+      X2="{Binding AxisZNegativeEnd.X}" Y2="{Binding AxisZNegativeEnd.Y}"
+      StrokeThickness="3" StrokeEndLineCap="Round"/>
+
+<!-- Текст для отрицательных осей -->
+<TextBlock Text="-X" Foreground="Red" FontWeight="Bold"
+           Canvas.Left="{Binding AxisXNegativeText.X}" 
+           Canvas.Top="{Binding AxisXNegativeText.Y}"/>
+
+<TextBlock Text="-Y" Foreground="Green" FontWeight="Bold"
+           Canvas.Left="{Binding AxisYNegativeText.X}" 
+           Canvas.Top="{Binding AxisYNegativeText.Y}"/>
+
+<TextBlock Text="-Z" Foreground="Blue" FontWeight="Bold"
+           Canvas.Left="{Binding AxisZNegativeText.X}" 
+           Canvas.Top="{Binding AxisZNegativeText.Y}"/>
             </Canvas>
         </StackPanel>
         

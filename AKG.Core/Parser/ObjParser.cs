@@ -37,7 +37,7 @@ public static class ObjParser
             if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("#"))
                 continue;
 
-            var tokens = trimmedLine.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+            var tokens = trimmedLine.Split(new[]{' '}, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length == 0)
                 continue;
 
