@@ -25,4 +25,9 @@ public static class TextureLoader
         _cache[path] = bitmap;
         return bitmap;
     }
+    
+    public static void ClearCache()
+    {
+        _cache.Clear();
+    }
 }

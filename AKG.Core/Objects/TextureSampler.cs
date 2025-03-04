@@ -29,7 +29,7 @@ public static class TextureSampler
         var pixels = GetPixels(texture);
         return GetColorAt(pixels, width, x, y);
     }
-    
+
     private static byte[] GetPixels(BitmapImage texture)
     {
         // Используем кэш для ускорения
@@ -42,9 +42,10 @@ public static class TextureSampler
             texture.CopyPixels(pixels, stride, 0);
             _textureCache[texture] = pixels;
         }
+
         return pixels;
     }
-    
+
     private static Color GetColorAt(byte[] pixels, int width, int x, int y)
     {
         int index = (y * width + x) * 4;
@@ -53,5 +54,10 @@ public static class TextureSampler
         byte r = pixels[index + 2];
         byte a = pixels[index + 3];
         return Color.FromArgb(a, r, g, b);
+    }
+
+    public static void ClearCache()
+    {
+        _textureCache.Clear();
     }
 }

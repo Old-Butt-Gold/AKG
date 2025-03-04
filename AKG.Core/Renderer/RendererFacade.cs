@@ -12,11 +12,15 @@ public static class RendererFacade
         
         WireframeRenderer.ClearBitmap(wb, backgroundColor);
         
+        BackgroundRenderer.RenderBackground(scene, wb);
+        
         scene.Camera.ChangeEye();
         
         WireframeRenderer.RenderSelectionOutlineDoublePass(scene, wb, highlightColor);
         
         scene.UpdateAllModels();
+
+        Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
         
         switch (mode)
         {

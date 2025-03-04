@@ -99,6 +99,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     // Пример команд для загрузки, очистки и редактирования камеры
     public ICommand LoadFileCommand { get; }
+    public ICommand LoadBackgroundCommand { get; }
     public ICommand ClearSceneCommand { get; }
     public ICommand EditCameraCommand { get; }
     
@@ -158,6 +159,7 @@ public class MainViewModel : INotifyPropertyChanged
         Scene.CanvasHeight = 600;
 
         LoadFileCommand = new RelayCommand(_ => LoadFile());
+        LoadBackgroundCommand = new RelayCommand(_ => LoadBackground());
         ClearSceneCommand = new RelayCommand(_ => ClearScene());
         EditCameraCommand = new RelayCommand(_ => EditCamera());
         
@@ -202,6 +204,26 @@ public class MainViewModel : INotifyPropertyChanged
         SelectedRenderMode = RenderMode.Wireframe;
         Scene.Lights.Add(new Light());
     }
+    
+    private void LoadBackground()
+    {
+        using var dlg = new CommonOpenFileDialog();
+        dlg.Filters.Add(new CommonFileDialogFilter("HDR Files", "*.hdr"));
+        //dlg.Filters.Add(new CommonFileDialogFilter("PNG Files", "*.png"));
+        if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            try
+            {
+                Scene.Background = new HDRiBackground();
+                Scene.Background.LoadFromHdrFile(dlg.FileName!);
+                UpdateView();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка загрузки фона: " + ex.Message);
+            }
+        }
+    }
 
     private void LoadFile()
     {
@@ -235,10 +257,16 @@ public class MainViewModel : INotifyPropertyChanged
     private void ClearScene()
     {
         Scene.Models.Clear();
+        Scene.Background = null;
         Scene.SelectedModel = null;
         Scene.Camera = new();
+        
+        TextureLoader.ClearCache();
+        TextureSampler.ClearCache();
+        
         UpdateView();
         OnPropertyChanged(nameof(Scene));
+        GC.Collect();
     }
 
     private void EditCamera()

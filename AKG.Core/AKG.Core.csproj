@@ -15,4 +15,8 @@
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="StbImageSharp" Version="2.30.15" />
+    </ItemGroup>
+
 </Project>

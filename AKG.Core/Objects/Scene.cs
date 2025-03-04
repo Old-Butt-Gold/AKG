@@ -25,6 +25,8 @@ public class Scene
     
     public ObjModel? SelectedModel { get; set; }
     
+    public HDRiBackground? Background { get; set; }
+    
     public void UpdateAllModels()
     {
         var view = Camera.GetViewMatrix();
