@@ -19,7 +19,7 @@ public static class RendererFacade
         WireframeRenderer.RenderSelectionOutlineDoublePass(scene, wb, highlightColor);
         
         scene.UpdateAllModels();
-        Light.DrawLights(scene, wb);
+        WireframeRenderer.DrawLights(scene, wb);
         Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
         
         switch (mode)

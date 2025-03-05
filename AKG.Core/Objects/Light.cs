@@ -15,7 +15,7 @@ public class Light
     
     public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
     
-    public float Intensity { get; set; } = 4.0f;
+    public float Intensity { get; set; } = 1.0f;
     
     public static Vector3 ApplyPhongShading(
         List<Light> lights,
@@ -69,24 +69,16 @@ public class Light
             (byte)(baseColor.G * totalIntensity),
             (byte)(baseColor.B * totalIntensity));
     }
-    public static void DrawLights(Scene scene, WriteableBitmap wb)
+    
+    public Vector3 TransformLightToScreen(Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
     {
-        var view = scene.Camera.GetViewMatrix();
-        var projection = scene.Camera.GetProjectionMatrix();
-        var viewport = scene.GetViewportMatrix();
+        var transformedPosition = Vector4.Transform(Direction, view * projection * viewport);
 
-        unsafe
+        if (transformedPosition.W != 0)
         {
-            int* buffer = (int*)wb.BackBuffer;
-
-            foreach (var light in scene.Lights)
-            {
-                // Преобразуем позицию источника света в экранные координаты
-                var screenPosition = Transformations.TransformLightToScreen(light, view, projection, viewport);
-
-                // Отрисовываем источник света
-                WireframeRenderer.DrawLight(buffer, wb.PixelWidth, wb.PixelHeight, screenPosition, light.Intensity);
-            }
+            transformedPosition /= transformedPosition.W;
         }
+
+        return transformedPosition.AsVector3();
     }
 }

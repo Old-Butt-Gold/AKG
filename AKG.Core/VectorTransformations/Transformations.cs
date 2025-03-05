@@ -114,25 +114,4 @@ public static class Transformations
 
         return viewportMatrix;
     }
-    
-    public static Vector3 TransformLightToScreen(Light light, Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
-    {
-        // Преобразуем позицию источника света в Vector4 (однородные координаты)
-        Vector4 lightPosition = new Vector4(light.Direction, 1.0f);
-
-        // Создаем мировую матрицу для источника света (если нужно)
-        var world = Matrix4x4.Identity; // По умолчанию без преобразований
-
-        // Применяем преобразования: World * View * Projection * Viewport
-        var transformedPosition = Vector4.Transform(lightPosition, world * view * projection * viewport);
-
-        // Если W != 0, выполняем перспективное деление
-        if (transformedPosition.W != 0)
-        {
-            transformedPosition /= transformedPosition.W;
-        }
-
-        // Возвращаем только X, Y, Z (отбрасываем W)
-        return new Vector3(transformedPosition.X, transformedPosition.Y, transformedPosition.Z);
-    }
 }
