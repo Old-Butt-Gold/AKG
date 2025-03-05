@@ -264,6 +264,88 @@ public static class WireframeRenderer
         DrawWireframe(selected, wb, outlineColor, scene.Camera, 3);
     }
     
-  
+  public static void DrawGrid(Scene scene, WriteableBitmap wb, Color color, int gridSize, int step, int thickness = 1)
+{
+    var camera = scene.Camera;
+    var view = camera.GetViewMatrix();
+    var projection = camera.GetProjectionMatrix();
+    var viewport = scene.GetViewportMatrix();
+    var intColor = color.ColorToIntBgra();
+
+    wb.Lock();
+
+    unsafe
+    {
+        var pBackBuffer = (int*)wb.BackBuffer;
+        var width = wb.PixelWidth;
+        var height = wb.PixelHeight;
+
+        for (int i = -gridSize; i <= gridSize; i++)
+        {
+            float worldX = i * step;
+            float worldZ = i * step;
+
+            // Линии вдоль оси Z (вертикальные)
+            var lineStartX = new Vector3(worldX, 0, -gridSize * step);
+            var lineEndX = new Vector3(worldX, 0, gridSize * step);
+            var screenStartX = TransformWorldToScreen(lineStartX, view, projection, viewport, camera);
+            var screenEndX = TransformWorldToScreen(lineEndX, view, projection, viewport, camera);
+
+            DrawLineIfVisible(pBackBuffer, width, height, screenStartX, screenEndX, intColor, thickness);
+
+            // Линии вдоль оси X (горизонтальные)
+            var lineStartZ = new Vector3(-gridSize * step, 0, worldZ);
+            var lineEndZ = new Vector3(gridSize * step, 0, worldZ);
+            var screenStartZ = TransformWorldToScreen(lineStartZ, view, projection, viewport, camera);
+            var screenEndZ = TransformWorldToScreen(lineEndZ, view, projection, viewport, camera);
+
+            DrawLineIfVisible(pBackBuffer, width, height, screenStartZ, screenEndZ, intColor, thickness);
+        }
+    }
+
+    wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
+    wb.Unlock();
+}
+
+private static Vector3 TransformWorldToScreen(Vector3 worldPos, Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport, Camera camera)
+{
+    var worldVec = new Vector4(worldPos, 1.0f);
+    
+    // Преобразование в пространство камеры (view space)
+    var viewPos = Vector4.Transform(worldVec, view);
+    
+    // Проверка на диапазон znear/zfar в view space
+    // (Z в view space должен быть между -ZFar и -ZNear)
+    if (viewPos.Z < -camera.ZFar || viewPos.Z > -camera.ZNear)
+        return new Vector3(-1, -1, -1); // Недопустимые координаты
+    
+    // Применение проекции
+    var clipPos = Vector4.Transform(viewPos, projection);
+    
+    if (clipPos.W == 0)
+        return new Vector3(-1, -1, -1);
+    
+    // Перспективное деление
+    var ndcPos = clipPos / clipPos.W;
+    
+    // Преобразование в экранные координаты
+    var viewportPos = Vector4.Transform(ndcPos, viewport);
+    
+    return new Vector3(viewportPos.X, viewportPos.Y, viewportPos.Z);
+}
+
+private static unsafe void DrawLineIfVisible(int* buffer, int width, int height, Vector3 start, Vector3 end, int color, int thickness)
+{
+    // Если хотя бы одна точка не прошла проверку видимости (Z < 0)
+    if (start.Z < 0 || end.Z < 0)
+        return;
+
+    int x0 = (int)Math.Round(start.X);
+    int y0 = (int)Math.Round(start.Y);
+    int x1 = (int)Math.Round(end.X);
+    int y1 = (int)Math.Round(end.Y);
+
+    DrawLineBresenham(buffer, width, height, x0, y0, x1, y1, color, thickness);
+}
 
 }
