@@ -167,6 +167,57 @@ public static class WireframeRenderer
         }
 
         DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, (int)(intensity * 4));
+        // Отрисовываем центральную точку (опционально)
+        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, (int)(intensity * 3));
+
+        // Отрисовываем круг вокруг центральной точки
+        int radius = (int)(intensity * 5); // Радиус круга зависит от интенсивности
+        DrawCircleBresenham(buffer, width, height, x, y, radius, lightColor);
+    }
+    public static unsafe void DrawCircleBresenham(int* buffer, int width, int height, int xc, int yc, int radius, int color)
+    {
+        int x = 0;
+        int y = radius;
+        int d = 3 - 2 * radius;
+
+        while (x <= y)
+        {
+            // Отрисовываем 8 точек окружности (симметрия)
+            DrawCirclePoints(buffer, width, height, xc, yc, x, y, color);
+
+            if (d < 0)
+            {
+                d = d + 4 * x + 6;
+            }
+            else
+            {
+                d = d + 4 * (x - y) + 10;
+                y--;
+            }
+            x++;
+        }
+    }
+
+    private static unsafe void DrawCirclePoints(int* buffer, int width, int height, int xc, int yc, int x, int y, int color)
+    {
+        // Отрисовываем 8 симметричных точек окружности
+        DrawPixel(buffer, width, height, xc + x, yc + y, color);
+        DrawPixel(buffer, width, height, xc - x, yc + y, color);
+        DrawPixel(buffer, width, height, xc + x, yc - y, color);
+        DrawPixel(buffer, width, height, xc - x, yc - y, color);
+        DrawPixel(buffer, width, height, xc + y, yc + x, color);
+        DrawPixel(buffer, width, height, xc - y, yc + x, color);
+        DrawPixel(buffer, width, height, xc + y, yc - x, color);
+        DrawPixel(buffer, width, height, xc - y, yc - x, color);
+    }
+
+    private static unsafe void DrawPixel(int* buffer, int width, int height, int x, int y, int color)
+    {
+        // Проверяем, чтобы координаты были в пределах экрана
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            buffer[y * width + x] = color;
+        }
     }
     
     

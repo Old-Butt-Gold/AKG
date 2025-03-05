@@ -16,7 +16,21 @@ public class Light
     public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
     
     public float Intensity { get; set; } = 1.0f;
-    
+    public Light() { }
+
+    // Конструктор с параметром direction
+    public Light(Vector3 direction)
+    {
+        Direction = direction;
+    }
+
+    // Конструктор с параметрами direction, color и intensity
+    public Light(Vector3 direction, Vector3 color, float intensity)
+    {
+        Direction = direction;
+        Color = color;
+        Intensity = intensity;
+    }
     public static Vector3 ApplyPhongShading(
         List<Light> lights,
         Vector3 normal,

@@ -203,6 +203,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         SelectedRenderMode = RenderMode.Wireframe;
         Scene.Lights.Add(new Light());
+        Scene.Lights.Add(new Light( new Vector3(2,4,1)));
+        Scene.Lights.Add(new Light( new Vector3(5,1,1)));
     }
     
     private void LoadBackground()
