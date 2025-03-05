@@ -1,18 +1,17 @@
 ﻿using System.Windows;
-using AKG.UI.MVVM.ViewModels;
 
 namespace AKG.UI;
 
-public partial class CameraSettingsWindow
+public partial class LightEditWindow : Window
 {
-    public CameraSettingsWindow()
+    public LightEditWindow()
     {
         InitializeComponent();
     }
 
     private void OKButton_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is CameraSettingsViewModel vm) vm.CommitChanges();
+        if (DataContext is LightEditViewModel vm) vm.ApplyChanges();
         DialogResult = true;
         Close();
     }

@@ -8,17 +8,17 @@
         <UseWPF>true</UseWPF>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' " />
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' "/>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' " />
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' "/>
 
     <ItemGroup>
-      <ProjectReference Include="..\AKG.Core\AKG.Core.csproj" />
+        <ProjectReference Include="..\AKG.Core\AKG.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-      <PackageReference Include="WindowsAPICodePack" Version="8.0.6" />
+        <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135"/>
+        <PackageReference Include="WindowsAPICodePack" Version="8.0.6"/>
     </ItemGroup>
 
 </Project>

@@ -10,18 +10,18 @@ public static class TextureSampler
     private static readonly ConcurrentDictionary<BitmapImage, byte[]> _textureCache = [];
 
     /// <summary>
-    /// Выбирает (sample) цвет из текстуры по заданным координатам u и v.
-    /// Предполагается, что u,v ∈ [0,1]. Координата v инвертируется, поскольку
-    /// изображения WPF имеют начало координат в верхнем левом углу.
+    ///     Выбирает (sample) цвет из текстуры по заданным координатам u и v.
+    ///     Предполагается, что u,v ∈ [0,1]. Координата v инвертируется, поскольку
+    ///     изображения WPF имеют начало координат в верхнем левом углу.
     /// </summary>
     public static Color Sample(BitmapImage texture, float u, float v)
     {
-        int width = texture.PixelWidth;
-        int height = texture.PixelHeight;
+        var width = texture.PixelWidth;
+        var height = texture.PixelHeight;
 
         // Приводим u,v к пиксельным координатам.
-        int x = (int)(u * width);
-        int y = (int)((1.0f - v) * height);
+        var x = (int)(u * width);
+        var y = (int)((1.0f - v) * height);
 
         x = Math.Clamp(x, 0, width - 1);
         y = Math.Clamp(y, 0, height - 1);
@@ -35,9 +35,9 @@ public static class TextureSampler
         // Используем кэш для ускорения
         if (!_textureCache.TryGetValue(texture, out var pixels))
         {
-            int width = texture.PixelWidth;
-            int height = texture.PixelHeight;
-            int stride = width * 4;
+            var width = texture.PixelWidth;
+            var height = texture.PixelHeight;
+            var stride = width * 4;
             pixels ??= new byte[height * stride];
             texture.CopyPixels(pixels, stride, 0);
             _textureCache[texture] = pixels;
@@ -48,11 +48,11 @@ public static class TextureSampler
 
     private static Color GetColorAt(byte[] pixels, int width, int x, int y)
     {
-        int index = (y * width + x) * 4;
-        byte b = pixels[index];
-        byte g = pixels[index + 1];
-        byte r = pixels[index + 2];
-        byte a = pixels[index + 3];
+        var index = (y * width + x) * 4;
+        var b = pixels[index];
+        var g = pixels[index + 1];
+        var r = pixels[index + 2];
+        var a = pixels[index + 3];
         return Color.FromArgb(a, r, g, b);
     }
 

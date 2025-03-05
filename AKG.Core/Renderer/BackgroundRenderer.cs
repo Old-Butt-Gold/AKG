@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using AKG.Core.Objects;
 
@@ -10,8 +11,8 @@ public static class BackgroundRenderer
     {
         if (scene.Background == null) return;
 
-        int width = wb.PixelWidth;
-        int height = wb.PixelHeight;
+        var width = wb.PixelWidth;
+        var height = wb.PixelHeight;
         var camera = scene.Camera;
 
         // Вычисляем обратные матрицы единожды
@@ -21,17 +22,17 @@ public static class BackgroundRenderer
         wb.Lock();
         unsafe
         {
-            byte* buffer = (byte*)wb.BackBuffer;
-            int stride = wb.BackBufferStride;
+            var buffer = (byte*)wb.BackBuffer;
+            var stride = wb.BackBufferStride;
 
             Parallel.For(0, height, y =>
             {
-                for (int x = 0; x < width; x++)
+                for (var x = 0; x < width; x++)
                 {
-                    float ndcX = (2f * x / width) - 1f;
-                    float ndcY = 1f - (2f * y / height);
+                    var ndcX = 2f * x / width - 1f;
+                    var ndcY = 1f - 2f * y / height;
                     var rayClip = new Vector4(ndcX, ndcY, 1f, 1f);
-                
+
                     // Преобразуем из клип-пространства в мировые координаты,
                     // используя предвычисленные обратные матрицы
                     var rayEye = Vector4.Transform(rayClip, invProj);
@@ -40,9 +41,9 @@ public static class BackgroundRenderer
 
                     // Получаем цвет из HDRi
                     var color = scene.Background.SampleSpherical(rayWorld);
-                    
-                    int offset = y * stride + x * 4;
-                    
+
+                    var offset = y * stride + x * 4;
+
                     buffer[offset] = (byte)color.Z; // B
                     buffer[offset + 1] = (byte)color.Y; // G
                     buffer[offset + 2] = (byte)color.X; // R
@@ -50,7 +51,8 @@ public static class BackgroundRenderer
                 }
             });
         }
-        wb.AddDirtyRect(new (0, 0, wb.PixelWidth, wb.PixelHeight));
+
+        wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
     }
 }

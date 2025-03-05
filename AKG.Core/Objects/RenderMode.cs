@@ -4,7 +4,7 @@ public enum RenderMode
 {
     Wireframe,
     FilledTrianglesLambert,
-    FilledTrianglesPhong,         
+    FilledTrianglesPhong,
     FilledTrianglesAverageFaceNormalPhong,
-    Texture,
+    Texture
 }

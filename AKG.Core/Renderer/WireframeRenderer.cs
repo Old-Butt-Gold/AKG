@@ -11,8 +11,8 @@ namespace AKG.Core.Renderer;
 public static class WireframeRenderer
 {
     /// <summary>
-    /// Рисует проволочную 3D модель с использованием алгоритма Брезенхэма для растеризации линий.
-    /// Рисование производится на WriteableBitmap, которая затем может быть установлена, например, как Source для Image.
+    ///     Рисует проволочную 3D модель с использованием алгоритма Брезенхэма для растеризации линий.
+    ///     Рисование производится на WriteableBitmap, которая затем может быть установлена, например, как Source для Image.
     /// </summary>
     /// <param name="model">Объект модели, в котором уже заполнены TransformedVertices</param>
     /// <param name="wb">WriteableBitmap, куда будет производиться отрисовка</param>
@@ -21,28 +21,28 @@ public static class WireframeRenderer
     public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color, Camera camera, int thickness)
     {
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
-        int intColor = color.ColorToIntBgra();
+        var intColor = color.ColorToIntBgra();
 
         wb.Lock();
 
         unsafe
         {
             // Получаем указатель на начало буфера пикселей
-            int* pBackBuffer = (int*)wb.BackBuffer;
-            int width = wb.PixelWidth;
-            int height = wb.PixelHeight;
+            var pBackBuffer = (int*)wb.BackBuffer;
+            var width = wb.PixelWidth;
+            var height = wb.PixelHeight;
 
             Parallel.ForEach(model.Faces, face =>
             {
-                int count = face.Vertices.Count;
+                var count = face.Vertices.Count;
                 if (count < 2)
                     return; // Пропускаем, если грань не имеет хотя бы двух вершин
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     // Вычисляем индексы вершин (в OBJ индексы начинаются с 1)
-                    int index1 = face.Vertices[i].VertexIndex - 1;
-                    int index2 = face.Vertices[(i + 1) % count].VertexIndex - 1;
+                    var index1 = face.Vertices[i].VertexIndex - 1;
+                    var index2 = face.Vertices[(i + 1) % count].VertexIndex - 1;
 
                     // Проверяем корректность индексов
                     if (index1 < 0 || index1 >= model.TransformedVertices.Length ||
@@ -50,20 +50,18 @@ public static class WireframeRenderer
                         continue;
 
                     // Вычисляем экранные координаты вершин
-                    int x0 = (int)Math.Round(model.TransformedVertices[index1].X);
-                    int y0 = (int)Math.Round(model.TransformedVertices[index1].Y);
-                    int x1 = (int)Math.Round(model.TransformedVertices[index2].X);
-                    int y1 = (int)Math.Round(model.TransformedVertices[index2].Y);
-                    float z0 = model.TransformedVertices[index1].Z;
-                    float z1 = model.TransformedVertices[index2].Z;
+                    var x0 = (int)Math.Round(model.TransformedVertices[index1].X);
+                    var y0 = (int)Math.Round(model.TransformedVertices[index1].Y);
+                    var x1 = (int)Math.Round(model.TransformedVertices[index2].X);
+                    var y1 = (int)Math.Round(model.TransformedVertices[index2].Y);
+                    var z0 = model.TransformedVertices[index1].Z;
+                    var z1 = model.TransformedVertices[index2].Z;
 
                     // Если обе точки явно вне экрана или вне диапазона z – пропускаем
                     if ((x0 >= width && x1 >= width) || (x0 <= 0 && x1 <= 0) ||
                         (y0 >= height && y1 >= height) || (y0 <= 0 && y1 <= 0) ||
-                        (z0 < camera.ZNear || z1 < camera.ZNear) || (z0 > camera.ZFar || z1 > camera.ZFar))
-                    {
+                        z0 < camera.ZNear || z1 < camera.ZNear || z0 > camera.ZFar || z1 > camera.ZFar)
                         continue;
-                    }
 
                     // Отрисовываем линию с использованием алгоритма Брезенхэма (все записи будут в один и тот же цвет)
                     DrawLineBresenham(pBackBuffer, width, height, x0, y0, x1, y1, intColor, thickness);
@@ -75,29 +73,30 @@ public static class WireframeRenderer
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
     }
-    
-    public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1, int color, int thickness)
+
+    public static unsafe void DrawLineBresenham(int* buffer, int width, int height, int x0, int y0, int x1, int y1,
+        int color, int thickness)
     {
-        int dx = Math.Abs(x1 - x0);
-        int dy = Math.Abs(y1 - y0);
-        int sx = x0 < x1 ? 1 : -1;
-        int sy = y0 < y1 ? 1 : -1;
-        int err = dx - dy;
- 
+        var dx = Math.Abs(x1 - x0);
+        var dy = Math.Abs(y1 - y0);
+        var sx = x0 < x1 ? 1 : -1;
+        var sy = y0 < y1 ? 1 : -1;
+        var err = dx - dy;
+
         while (true)
         {
             DrawThickPixel(buffer, width, height, x0, y0, color, thickness);
- 
+
             if (x0 == x1 && y0 == y1)
                 break;
- 
-            int e2 = 2 * err;
+
+            var e2 = 2 * err;
             if (e2 > -dy)
             {
                 err -= dy;
                 x0 += sx;
             }
- 
+
             if (e2 < dx)
             {
                 err += dx;
@@ -105,27 +104,23 @@ public static class WireframeRenderer
             }
         }
     }
- 
+
     /// <summary>
-    /// Отрисовывает "толстый" пиксель, закрашивая область вокруг него
+    ///     Отрисовывает "толстый" пиксель, закрашивая область вокруг него
     /// </summary>
-    private static unsafe void DrawThickPixel(int* buffer, int width, int height, int x, int y, int color, int thickness)
+    private static unsafe void DrawThickPixel(int* buffer, int width, int height, int x, int y, int color,
+        int thickness)
     {
-        int radius = thickness / 2;  // Определяем радиус заполнения
-        for (int i = -radius; i <= radius; i++)
+        var radius = thickness / 2; // Определяем радиус заполнения
+        for (var i = -radius; i <= radius; i++)
+        for (var j = -radius; j <= radius; j++)
         {
-            for (int j = -radius; j <= radius; j++)
-            {
-                int px = x + i;
-                int py = y + j;
-                if (px >= 0 && px < width && py >= 0 && py < height)
-                {
-                    buffer[py * width + px] = color;
-                }
-            }
+            var px = x + i;
+            var py = y + j;
+            if (px >= 0 && px < width && py >= 0 && py < height) buffer[py * width + px] = color;
         }
     }
-    
+
     public static void DrawLights(Scene scene, WriteableBitmap wb)
     {
         var view = scene.Camera.GetViewMatrix();
@@ -134,7 +129,7 @@ public static class WireframeRenderer
 
         unsafe
         {
-            int* buffer = (int*)wb.BackBuffer;
+            var buffer = (int*)wb.BackBuffer;
 
             foreach (var light in scene.Lights)
             {
@@ -144,15 +139,15 @@ public static class WireframeRenderer
             }
         }
     }
-    
+
     public static unsafe void DrawLight(int* buffer, int width, int height, Vector3 screenPosition, float intensity)
     {
-        int x = (int)screenPosition.X;
-        int y = (int)screenPosition.Y;
+        var x = (int)screenPosition.X;
+        var y = (int)screenPosition.Y;
 
-        int lightColor = Colors.Peru.ColorToIntBgra();
+        var lightColor = Colors.Peru.ColorToIntBgra();
 
-        int rayLength = (int)(intensity * 5);
+        var rayLength = 5;
 
         float[] angles = { 0, 45, 90, 135, 180, 225, 270, 315 };
 
@@ -160,25 +155,27 @@ public static class WireframeRenderer
         {
             var radians = angle * MathF.PI / 180.0f;
 
-            int xEnd = x + (int)(rayLength * MathF.Cos(radians));
-            int yEnd = y + (int)(rayLength * MathF.Sin(radians));
+            var xEnd = x + (int)(rayLength * MathF.Cos(radians));
+            var yEnd = y + (int)(rayLength * MathF.Sin(radians));
 
-            DrawLineBresenham(buffer, width, height, x, y, xEnd, yEnd, lightColor, (int)(intensity * 0.4));
+            DrawLineBresenham(buffer, width, height, x, y, xEnd, yEnd, lightColor, 1);
         }
 
-        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, (int)(intensity * 4));
+        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, 4);
         // Отрисовываем центральную точку (опционально)
-        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, (int)(intensity * 3));
+        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, 3);
 
         // Отрисовываем круг вокруг центральной точки
-        int radius = (int)(intensity * 5); // Радиус круга зависит от интенсивности
+        var radius = 15; // Радиус круга зависит от интенсивности
         DrawCircleBresenham(buffer, width, height, x, y, radius, lightColor);
     }
-    public static unsafe void DrawCircleBresenham(int* buffer, int width, int height, int xc, int yc, int radius, int color)
+
+    public static unsafe void DrawCircleBresenham(int* buffer, int width, int height, int xc, int yc, int radius,
+        int color)
     {
-        int x = 0;
-        int y = radius;
-        int d = 3 - 2 * radius;
+        var x = 0;
+        var y = radius;
+        var d = 3 - 2 * radius;
 
         while (x <= y)
         {
@@ -194,11 +191,13 @@ public static class WireframeRenderer
                 d = d + 4 * (x - y) + 10;
                 y--;
             }
+
             x++;
         }
     }
 
-    private static unsafe void DrawCirclePoints(int* buffer, int width, int height, int xc, int yc, int x, int y, int color)
+    private static unsafe void DrawCirclePoints(int* buffer, int width, int height, int xc, int yc, int x, int y,
+        int color)
     {
         // Отрисовываем 8 симметричных точек окружности
         DrawPixel(buffer, width, height, xc + x, yc + y, color);
@@ -214,16 +213,13 @@ public static class WireframeRenderer
     private static unsafe void DrawPixel(int* buffer, int width, int height, int x, int y, int color)
     {
         // Проверяем, чтобы координаты были в пределах экрана
-        if (x >= 0 && x < width && y >= 0 && y < height)
-        {
-            buffer[y * width + x] = color;
-        }
+        if (x >= 0 && x < width && y >= 0 && y < height) buffer[y * width + x] = color;
     }
-    
-    
+
+
     public static void ClearBitmap(WriteableBitmap wb, Color clearColor)
     {
-        int intColor = clearColor.ColorToIntBgra();
+        var intColor = clearColor.ColorToIntBgra();
 
         wb.Lock();
 
@@ -231,15 +227,11 @@ public static class WireframeRenderer
         {
             unsafe
             {
-                int* pBackBuffer = (int*)wb.BackBuffer;
+                var pBackBuffer = (int*)wb.BackBuffer;
 
-                for (int i = 0; i < wb.PixelHeight; i++)
-                {
-                    for (int j = 0; j < wb.PixelWidth; j++)
-                    {
-                        *pBackBuffer++ = intColor;
-                    }
-                }
+                for (var i = 0; i < wb.PixelHeight; i++)
+                for (var j = 0; j < wb.PixelWidth; j++)
+                    *pBackBuffer++ = intColor;
             }
 
             wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
@@ -254,21 +246,24 @@ public static class WireframeRenderer
     {
         if (scene.SelectedModel is null)
             return;
- 
+
         var selected = scene.SelectedModel;
- 
+
         var view = scene.Camera.GetViewMatrix();
         var projection = scene.Camera.GetProjectionMatrix();
         var viewport = scene.GetViewportMatrix();
- 
+
         var outlineWorld = Transformations.CreateWorldTransform(
             selected.Scale * 1.001f,
             Matrix4x4.CreateFromYawPitchRoll(selected.Rotation.Y, selected.Rotation.X, selected.Rotation.Z),
             selected.Translation);
         var finalOutlineTransform = outlineWorld * view * projection * viewport;
- 
+
         selected.ApplyFinalTransformation(finalOutlineTransform, scene.Camera);
- 
+
         DrawWireframe(selected, wb, outlineColor, scene.Camera, 3);
     }
+    
+  
+
 }

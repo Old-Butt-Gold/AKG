@@ -1,26 +1,24 @@
 ﻿using System.ComponentModel;
 using System.Numerics;
-using System.Windows.Input;
 using AKG.Core.Objects;
-using AKG.UI.MVVM.Commands;
 
 namespace AKG.UI.MVVM.ViewModels;
 
 public class CameraSettingsViewModel : INotifyPropertyChanged
 {
     private readonly Camera _camera;
+    private float _aspect;
 
     // Для отмены действий
     private Vector3 _eye;
+    private float _fov;
+    private float _phi;
+    private float _radius;
     private Vector3 _target;
     private Vector3 _up;
-    private float _fov;
-    private float _aspect;
-    private float _zNear;
-    private float _zFar;
-    private float _radius;
     private float _zeta;
-    private float _phi;
+    private float _zFar;
+    private float _zNear;
 
     public CameraSettingsViewModel(Camera camera)
     {
@@ -40,59 +38,105 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
     public Vector3 Eye
     {
         get => _eye;
-        set { _eye = value; OnPropertyChanged(nameof(Eye)); }
+        set
+        {
+            _eye = value;
+            OnPropertyChanged(nameof(Eye));
+        }
     }
+
     public Vector3 Target
     {
         get => _target;
-        set { _target = value; OnPropertyChanged(nameof(Target)); }
+        set
+        {
+            _target = value;
+            OnPropertyChanged(nameof(Target));
+        }
     }
+
     public Vector3 Up
     {
         get => _up;
-        set { _up = value; OnPropertyChanged(nameof(Up)); }
+        set
+        {
+            _up = value;
+            OnPropertyChanged(nameof(Up));
+        }
     }
+
     public float Fov
     {
         get => _fov;
-        set { _fov = value; OnPropertyChanged(nameof(Fov)); }
+        set
+        {
+            _fov = value;
+            OnPropertyChanged(nameof(Fov));
+        }
     }
+
     public float Aspect
     {
         get => _aspect;
-        set { _aspect = value; OnPropertyChanged(nameof(Aspect)); }
+        set
+        {
+            _aspect = value;
+            OnPropertyChanged(nameof(Aspect));
+        }
     }
+
     public float ZNear
     {
         get => _zNear;
-        set { _zNear = value; OnPropertyChanged(nameof(ZNear)); }
+        set
+        {
+            _zNear = value;
+            OnPropertyChanged(nameof(ZNear));
+        }
     }
+
     public float ZFar
     {
         get => _zFar;
-        set { _zFar = value; OnPropertyChanged(nameof(ZFar)); }
+        set
+        {
+            _zFar = value;
+            OnPropertyChanged(nameof(ZFar));
+        }
     }
-    
+
     public float Radius
     {
         get => _radius;
-        set { _radius = value; OnPropertyChanged(nameof(Radius)); }
+        set
+        {
+            _radius = value;
+            OnPropertyChanged(nameof(Radius));
+        }
     }
-    
+
     public float Zeta
     {
         get => _zeta;
-        set { _zeta = value; OnPropertyChanged(nameof(Zeta)); }
+        set
+        {
+            _zeta = value;
+            OnPropertyChanged(nameof(Zeta));
+        }
     }
-    
+
     public float Phi
     {
         get => _phi;
-        set { _phi = value; OnPropertyChanged(nameof(Phi)); }
+        set
+        {
+            _phi = value;
+            OnPropertyChanged(nameof(Phi));
+        }
     }
-    
+
     public event PropertyChangedEventHandler? PropertyChanged;
-    
+
     public void CommitChanges()
     {
         _camera.Eye = Eye;
@@ -106,7 +150,9 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _camera.Zeta = Zeta;
         _camera.Phi = Phi;
     }
-    
-    protected void OnPropertyChanged(string propertyName) =>
+
+    protected void OnPropertyChanged(string propertyName)
+    {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

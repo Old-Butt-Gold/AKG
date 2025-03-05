@@ -1,22 +1,13 @@
 ﻿using System.Numerics;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using AKG.Core.Renderer;
-using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Objects;
 
 public class Light
 {
-    /// <summary>
-    /// Направление источника света (не нормализовано).
-    /// </summary>
-    public Vector3 Direction { get; set; } = new(1, 1, 2);
-    
-    public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
-    
-    public float Intensity { get; set; } = 1.0f;
-    public Light() { }
+    public Light()
+    {
+    }
 
     // Конструктор с параметром direction
     public Light(Vector3 direction)
@@ -31,6 +22,16 @@ public class Light
         Color = color;
         Intensity = intensity;
     }
+
+    /// <summary>
+    ///     Направление источника света (не нормализовано).
+    /// </summary>
+    public Vector3 Direction { get; set; } = new(1, 1, 2);
+
+    public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
+
+    public float Intensity { get; set; } = 1.0f;
+
     public static Vector3 ApplyPhongShading(
         List<Light> lights,
         Vector3 normal,
@@ -44,7 +45,7 @@ public class Light
         foreach (var light in lights)
         {
             var lightDir = Vector3.Normalize(light.Direction - fragWorld);
-        
+
             // Diffuse
             var diff = MathF.Max(Vector3.Dot(normal, lightDir), 0);
             var diffuse = light.Color * diffuseColor * diff * kd;
@@ -61,16 +62,16 @@ public class Light
 
         return lighting;
     }
-    
+
     public static Color ApplyLambert(List<Light> lambertLights, Vector3 normal, Color baseColor)
     {
-        float totalIntensity = 0f;
+        var totalIntensity = 0f;
         foreach (var light in lambertLights)
         {
             var lightDir = Vector3.Normalize(light.Direction);
-            
+
             var intensity = MathF.Max(Vector3.Dot(normal, lightDir), 0);
-            
+
             totalIntensity += intensity;
         }
 
@@ -83,15 +84,12 @@ public class Light
             (byte)(baseColor.G * totalIntensity),
             (byte)(baseColor.B * totalIntensity));
     }
-    
+
     public Vector3 TransformLightToScreen(Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
     {
         var transformedPosition = Vector4.Transform(Direction, view * projection * viewport);
 
-        if (transformedPosition.W != 0)
-        {
-            transformedPosition /= transformedPosition.W;
-        }
+        if (transformedPosition.W != 0) transformedPosition /= transformedPosition.W;
 
         return transformedPosition.AsVector3();
     }

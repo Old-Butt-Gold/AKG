@@ -10,7 +10,7 @@ public static class MtlParser
     {
         var materials = new Dictionary<string, Material>();
         Material? current = null;
-        string mtlDirectory = Path.GetDirectoryName(mtlFilePath)!;
+        var mtlDirectory = Path.GetDirectoryName(mtlFilePath)!;
 
         foreach (var line in File.ReadLines(mtlFilePath))
         {
@@ -26,6 +26,7 @@ public static class MtlParser
                             materials[current.Name] = current;
                         current = new Material { Name = parts[1] };
                     }
+
                     break;
                 case "map_kd":
                     if (current != null && parts.Length >= 2)
@@ -52,6 +53,7 @@ public static class MtlParser
                             current.BumpMap = GetFullPath(mtlDirectory, parts[1]);
                         }
                     }
+
                     break;
                 case "map_mrao": // (metallic - roughness - ambient occlusion)
                     if (current != null && parts.Length >= 2)
@@ -121,7 +123,7 @@ public static class MtlParser
     {
         return Path.Combine(baseDirectory, relativePath);
     }
-    
+
     private static Vector3 ParseVector3(string[] parts)
     {
         return new Vector3(
