@@ -126,6 +126,39 @@ public static class WireframeRenderer
         }
     }
     
+    public static unsafe void DrawLight(int* buffer, int width, int height, Vector3 screenPosition, float intensity)
+    {
+        int x = (int)screenPosition.X;
+        int y = (int)screenPosition.Y;
+
+        // Фиксированный красный цвет (R=255, G=0, B=0)
+        int lightColor = Colors.Red.ColorToIntBgra();
+
+        // Определяем длину лучей звезды (зависит от интенсивности)
+        int rayLength = (int)(intensity * 10);
+
+        // Углы для лучей звезды (в градусах)
+        int[] angles = { 0, 45, 90, 135, 180, 225, 270, 315 };
+
+        // Отрисовываем лучи звезды
+        foreach (var angle in angles)
+        {
+            // Преобразуем угол в радианы
+            double radians = angle * Math.PI / 180.0;
+
+            // Вычисляем конечные точки для каждого луча
+            int xEnd = x + (int)(rayLength * Math.Cos(radians));
+            int yEnd = y + (int)(rayLength * Math.Sin(radians));
+
+            // Отрисовываем линию от центра к конечной точке
+            DrawLineBresenham(buffer, width, height, x, y, xEnd, yEnd, lightColor, 1);
+        }
+
+        // Отрисовываем центральную точку (опционально)
+        DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, (int)(intensity * 3));
+    }
+    
+    
     public static void ClearBitmap(WriteableBitmap wb, Color clearColor)
     {
         int intColor = clearColor.ColorToIntBgra();

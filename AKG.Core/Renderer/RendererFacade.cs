@@ -19,7 +19,7 @@ public static class RendererFacade
         WireframeRenderer.RenderSelectionOutlineDoublePass(scene, wb, highlightColor);
         
         scene.UpdateAllModels();
-
+        Light.DrawLights(scene, wb);
         Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
         
         switch (mode)
@@ -65,5 +65,6 @@ public static class RendererFacade
             default:
                 throw new NotSupportedException("Неизвестный режим рендеринга");
         }
+        
     }
 }

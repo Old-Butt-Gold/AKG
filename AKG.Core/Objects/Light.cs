@@ -1,5 +1,8 @@
 ﻿using System.Numerics;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using AKG.Core.Renderer;
+using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Objects;
 
@@ -12,7 +15,7 @@ public class Light
     
     public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
     
-    public float Intensity { get; set; } = 1.0f;
+    public float Intensity { get; set; } = 4.0f;
     
     public static Vector3 ApplyPhongShading(
         List<Light> lights,
@@ -65,5 +68,25 @@ public class Light
             (byte)(baseColor.R * totalIntensity),
             (byte)(baseColor.G * totalIntensity),
             (byte)(baseColor.B * totalIntensity));
+    }
+    public static void DrawLights(Scene scene, WriteableBitmap wb)
+    {
+        var view = scene.Camera.GetViewMatrix();
+        var projection = scene.Camera.GetProjectionMatrix();
+        var viewport = scene.GetViewportMatrix();
+
+        unsafe
+        {
+            int* buffer = (int*)wb.BackBuffer;
+
+            foreach (var light in scene.Lights)
+            {
+                // Преобразуем позицию источника света в экранные координаты
+                var screenPosition = Transformations.TransformLightToScreen(light, view, projection, viewport);
+
+                // Отрисовываем источник света
+                WireframeRenderer.DrawLight(buffer, wb.PixelWidth, wb.PixelHeight, screenPosition, light.Intensity);
+            }
+        }
     }
 }
