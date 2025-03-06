@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:converters="clr-namespace:AKG.UI.Converters"
         mc:Ignorable="d"
-        Title="Edit Light" Height="300" Width="300" MinHeight="250" MinWidth="250">
+        Title="Edit Light" Height="200" Width="300">
     <Window.Resources>
         <!-- Существующий конвертер для Vector3 -->
         <converters:Vector3ToStringConverter x:Key="Vector3Converter" />

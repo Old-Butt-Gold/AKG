@@ -8,14 +8,14 @@
         Title="Lights Settings" Width="400" Height="400">
     <Window.Resources>
         <converters:Vector3ToStringConverter x:Key="Vector3Converter" />
-
+        <converters:ColorVectorConverter x:Key="VectorColorConverter"/>
         <!-- DataTemplate для отображения источника света -->
         <DataTemplate x:Key="LightTemplate">
             <StackPanel Orientation="Vertical">
                 <TextBlock
                     Text="{Binding Path=Direction, Converter={StaticResource Vector3Converter}, StringFormat=Position: {0}}" />
                 <TextBlock
-                    Text="{Binding Path=Color, Converter={StaticResource Vector3Converter}, StringFormat=Color: {0}}" />
+                    Text="{Binding Path=Color, Converter={StaticResource VectorColorConverter}, StringFormat=Color: {0}}" />
                 <TextBlock Text="{Binding Path=Intensity, StringFormat=Intensity: {0:F2}}" />
             </StackPanel>
         </DataTemplate>

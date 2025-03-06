@@ -135,17 +135,19 @@ public static class WireframeRenderer
             {
                 var screenPosition = light.TransformLightToScreen(view, projection, viewport);
 
-                DrawLight(buffer, wb.PixelWidth, wb.PixelHeight, screenPosition, light.Intensity);
+                var lightColor = (light.Color * 255f).ToColor().ColorToIntBgra();
+                
+                DrawLight(buffer, wb.PixelWidth, wb.PixelHeight, screenPosition, light.Intensity, lightColor);
             }
         }
     }
 
-    public static unsafe void DrawLight(int* buffer, int width, int height, Vector3 screenPosition, float intensity)
+    public static unsafe void DrawLight(int* buffer, int width, int height, Vector3 screenPosition, float intensity, int color)
     {
         var x = (int)screenPosition.X;
         var y = (int)screenPosition.Y;
 
-        var lightColor = Colors.Peru.ColorToIntBgra();
+        var lightColor = color;
 
         var rayLength = 5;
 

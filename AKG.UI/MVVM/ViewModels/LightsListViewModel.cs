@@ -13,7 +13,7 @@ public class LightsListViewModel : INotifyPropertyChanged
 
     public LightsListViewModel(List<Light> lights)
     {
-        Lights = new ObservableCollection<Light>(lights);
+        Lights = new(lights);
         EditLightCommand = new RelayCommand(_ => EditSelectedLight(), _ => SelectedLight != null);
         AddLightCommand = new RelayCommand(_ => AddNewLight());
         RemoveLightCommand = new RelayCommand(_ => RemoveSelectedLight(), _ => SelectedLight != null);
@@ -40,11 +40,7 @@ public class LightsListViewModel : INotifyPropertyChanged
 
     private void AddNewLight()
     {
-        var newLight = new Light(
-            new Vector3(0, 0, 0),
-            new Vector3(1, 1, 1),
-            1.0f
-        );
+        var newLight = new Light(new Vector3(0, 0, 0), new Vector3(1, 1, 1), 1.0f);
 
         var editWindow = new LightEditWindow
         {

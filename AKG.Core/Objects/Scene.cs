@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.ObjectModel;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using AKG.Core.VectorTransformations;

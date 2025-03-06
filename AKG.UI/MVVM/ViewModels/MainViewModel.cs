@@ -428,15 +428,6 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (lightsWindow.ShowDialog() == true)
         {
-            var updatedLights = (lightsWindow.DataContext as LightsListViewModel)?.Lights.ToList();
-
-            Scene.Lights.Clear();
-
-            foreach (var light in updatedLights!)
-            {
-                Scene.Lights.Add(light);
-            }
-
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
