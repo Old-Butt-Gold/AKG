@@ -27,7 +27,7 @@ public class LightEditViewModel : BaseViewModel
         set
         {
             _tempPosition = value;
-            OnPropertyChanged(nameof(TempPosition));
+            OnPropertyChanged();
         }
     }
 
@@ -37,7 +37,7 @@ public class LightEditViewModel : BaseViewModel
         set
         {
             _tempColor = value;
-            OnPropertyChanged(nameof(TempColor));
+            OnPropertyChanged();
         }
     }
 
@@ -47,7 +47,7 @@ public class LightEditViewModel : BaseViewModel
         set
         {
             _tempIntensity = value;
-            OnPropertyChanged(nameof(TempIntensity));
+            OnPropertyChanged();
         }
     }
 

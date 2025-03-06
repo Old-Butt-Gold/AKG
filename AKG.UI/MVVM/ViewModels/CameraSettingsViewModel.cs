@@ -41,7 +41,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _eye = value;
-            OnPropertyChanged(nameof(Eye));
+            OnPropertyChanged();
         }
     }
 
@@ -51,7 +51,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _target = value;
-            OnPropertyChanged(nameof(Target));
+            OnPropertyChanged();
         }
     }
 
@@ -61,7 +61,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _up = value;
-            OnPropertyChanged(nameof(Up));
+            OnPropertyChanged();
         }
     }
 
@@ -71,7 +71,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _fov = value;
-            OnPropertyChanged(nameof(Fov));
+            OnPropertyChanged();
         }
     }
 
@@ -81,7 +81,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _aspect = value;
-            OnPropertyChanged(nameof(Aspect));
+            OnPropertyChanged();
         }
     }
 
@@ -91,7 +91,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _zNear = value;
-            OnPropertyChanged(nameof(ZNear));
+            OnPropertyChanged();
         }
     }
 
@@ -101,7 +101,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _zFar = value;
-            OnPropertyChanged(nameof(ZFar));
+            OnPropertyChanged();
         }
     }
 
@@ -111,7 +111,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _radius = value;
-            OnPropertyChanged(nameof(Radius));
+            OnPropertyChanged();
         }
     }
 
@@ -121,7 +121,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _zeta = value;
-            OnPropertyChanged(nameof(Zeta));
+            OnPropertyChanged();
         }
     }
 
@@ -131,7 +131,7 @@ public class CameraSettingsViewModel : BaseViewModel
         set
         {
             _phi = value;
-            OnPropertyChanged(nameof(Phi));
+            OnPropertyChanged();
         }
     }
 

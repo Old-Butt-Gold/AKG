@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using System.Windows.Data;
 
@@ -12,7 +11,7 @@ namespace AKG.UI.Converters;
 public class ColorVectorConverter : IValueConverter
 {
     // Преобразует нормализованный вектор (0-1) в строку с компонентами от 0 до 255
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is Vector3 vec)
         {
@@ -25,7 +24,7 @@ public class ColorVectorConverter : IValueConverter
     }
 
     // Преобразует строку вида "R; G; B" в нормализованный вектор (0-1)
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is string s)
         {

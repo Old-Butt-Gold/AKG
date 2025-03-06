@@ -82,7 +82,6 @@ public class MainViewModel : INotifyPropertyChanged
         EditLightsCommand = new RelayCommand(_ => EditLights());
         MouseWheelCommand = new RelayCommand(OnMouseWheel);
         MouseMoveCommand = new RelayCommand(OnMouseMove);
-        OpenMaterialsCommand = new RelayCommand(_ => OpenMaterials());
         MouseLeftButtonDownCommand = new RelayCommand(OnMouseLeftButtonDown);
         MouseRightButtonDownCommand = new RelayCommand(OnMouseRightButtonDown);
         KeyDownCommand = new RelayCommand(OnKeyDown);
@@ -198,7 +197,6 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand PickForegroundColorCommand { get; }
     public ICommand PickBackgroundColorCommand { get; }
     public ICommand PickHighlightColorCommand { get; }
-    public ICommand OpenMaterialsCommand { get; }
     public ICommand ToggleModelInfoCommand { get; }
     private float RotateSensitivity => MathF.PI / 360.0f;
 
@@ -441,15 +439,6 @@ public class MainViewModel : INotifyPropertyChanged
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
-    }
-
-    private void OpenMaterials()
-    {
-        var sceneObjectsWindow = new SceneObjectsWindow
-        {
-            DataContext = new SceneObjectsViewModel(Scene)
-        };
-        sceneObjectsWindow.ShowDialog();
     }
     
     private void OnMouseWheel(object? parameter)

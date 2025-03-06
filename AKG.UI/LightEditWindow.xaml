@@ -5,11 +5,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:converters="clr-namespace:AKG.UI.Converters"
         mc:Ignorable="d"
-        Title="Edit Light" Height="200" Width="300">
+        Title="Edit Light" Height="200" Width="350">
     <Window.Resources>
-        <!-- Существующий конвертер для Vector3 -->
         <converters:Vector3ToStringConverter x:Key="Vector3Converter" />
-        <!-- Новый конвертер для цвета: преобразует вектор цвета из диапазона [0,1] в строку с диапазоном [0,255] и обратно -->
         <converters:ColorVectorConverter x:Key="ColorVectorConverter" />
     </Window.Resources>
     <Grid Margin="10">
@@ -23,23 +21,27 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
+        <!-- Position -->
         <TextBlock Text="Position:" Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding TempPosition, Converter={StaticResource Vector3Converter}, Mode=TwoWay}" 
-                 Grid.Row="0" Grid.Column="1" Margin="5"/>
+        <TextBox Text="{Binding TempPosition, Converter={StaticResource Vector3Converter}, Mode=TwoWay}"
+                 Grid.Row="0" Grid.Column="1" Margin="5" />
 
+        <!-- Color -->
         <TextBlock Text="Color (0-255):" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding TempColor, Converter={StaticResource ColorVectorConverter}, Mode=TwoWay}" 
-                 Grid.Row="1" Grid.Column="1" Margin="5"/>
+        <TextBox Text="{Binding TempColor, Converter={StaticResource ColorVectorConverter}, Mode=TwoWay}"
+                 Grid.Row="1" Grid.Column="1" Margin="5" />
+        <!-- Кнопка выбора цвета -->
+        <Button Content="Pick" Grid.Row="1" Grid.Column="2" Margin="5" Click="PickColor_Click"/>
 
+        <!-- Intensity -->
         <TextBlock Text="Intensity:" Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding TempIntensity, Mode=TwoWay}" 
-                 Grid.Row="2" Grid.Column="1" Margin="5"/>
+        <TextBox Text="{Binding TempIntensity, Mode=TwoWay}"
+                 Grid.Row="2" Grid.Column="1" Margin="5" Grid.ColumnSpan="2"/>
 
-        <!-- Дополнительные элементы можно добавить на свободном месте Grid.Row="3" -->
-
-        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
+        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" 
                     HorizontalAlignment="Right" Margin="5">
             <Button Content="OK" Width="75" Margin="5" Click="OKButton_Click"/>
             <Button Content="Cancel" Width="75" Margin="5" Click="CancelButton_Click"/>

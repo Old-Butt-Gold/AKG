@@ -31,7 +31,7 @@ public class LightsListViewModel : BaseViewModel
         set
         {
             _selectedLight = value;
-            OnPropertyChanged(nameof(SelectedLight));
+            OnPropertyChanged();
             CommandManager.InvalidateRequerySuggested();
         }
     }
