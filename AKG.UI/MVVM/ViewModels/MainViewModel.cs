@@ -428,10 +428,23 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var lightsWindow = new LightsSettingsWindow
         {
-            DataContext = new LightsListViewModel(Scene.Lights.ToList())
+            DataContext = new LightsListViewModel(Scene.Lights) // Преобразуем в List, если Scene.Lights не является List
         };
+
         if (lightsWindow.ShowDialog() == true)
         {
+            // Получаем обновленный список источников света из ViewModel
+            var updatedLights = (lightsWindow.DataContext as LightsListViewModel).Lights.ToList();
+
+            // Очищаем текущий список источников света в Scene
+            Scene.Lights.Clear();
+
+            // Добавляем все элементы из обновленного списка в Scene.Lights
+            foreach (var light in updatedLights)
+            {
+                Scene.Lights.Add(light);
+            }
+
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
