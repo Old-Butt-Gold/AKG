@@ -85,8 +85,7 @@ public class MainViewModel : INotifyPropertyChanged
         MouseLeftButtonDownCommand = new RelayCommand(OnMouseLeftButtonDown);
         MouseRightButtonDownCommand = new RelayCommand(OnMouseRightButtonDown);
         KeyDownCommand = new RelayCommand(OnKeyDown);
-
-
+        
         PickForegroundColorCommand = new RelayCommand(_ =>
         {
             var color = ColorPickerService.PickColor();
@@ -105,12 +104,10 @@ public class MainViewModel : INotifyPropertyChanged
             if (color != null) HighlightColor = color.Value;
         });
 
-        ToggleModelInfoCommand = new RelayCommand(_ => { IsModelInfoVisible = !IsModelInfoVisible; });
+        ToggleModelInfoCommand = new RelayCommand(_ => IsModelInfoVisible = !IsModelInfoVisible);
 
         SelectedRenderMode = RenderMode.Wireframe;
         Scene.Lights.Add(new Light());
-
-        Scene.Lights.Add(new Light(new Vector3(5, 1, 1)));
     }
 
     public Scene Scene { get; set; } = new();
@@ -187,7 +184,6 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand EditLightsCommand { get; }
 
     // Команды для событий мыши и клавиатуры
-    public ICommand MouseDoubleClickCommand { get; }
     public ICommand MouseWheelCommand { get; }
     public ICommand MouseMoveCommand { get; }
 
@@ -355,7 +351,6 @@ public class MainViewModel : INotifyPropertyChanged
     {
         using var dlg = new CommonOpenFileDialog();
         dlg.Filters.Add(new CommonFileDialogFilter("HDR Files", "*.hdr"));
-        //dlg.Filters.Add(new CommonFileDialogFilter("PNG Files", "*.png"));
         if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
             try
             {
@@ -428,38 +423,20 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var lightsWindow = new LightsSettingsWindow
         {
-            DataContext = new LightsListViewModel(Scene.Lights) // Преобразуем в List, если Scene.Lights не является List
+            DataContext = new LightsListViewModel(Scene.Lights)
         };
 
         if (lightsWindow.ShowDialog() == true)
         {
-            // Получаем обновленный список источников света из ViewModel
-            var updatedLights = (lightsWindow.DataContext as LightsListViewModel).Lights.ToList();
+            var updatedLights = (lightsWindow.DataContext as LightsListViewModel)?.Lights.ToList();
 
-            // Очищаем текущий список источников света в Scene
             Scene.Lights.Clear();
 
-            // Добавляем все элементы из обновленного списка в Scene.Lights
-            foreach (var light in updatedLights)
+            foreach (var light in updatedLights!)
             {
                 Scene.Lights.Add(light);
             }
 
-            UpdateView();
-            OnPropertyChanged(nameof(Scene));
-        }
-    }
-
-    private void EditLight(Light selectedLight)
-    {
-        var editWindow = new LightEditWindow
-        {
-            DataContext = new LightEditViewModel(selectedLight)
-        };
-
-        if (editWindow.ShowDialog() == true)
-        {
-            // Обновляем сцену, если пользователь нажал "OK"
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }

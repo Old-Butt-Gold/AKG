@@ -166,12 +166,11 @@ public static class WireframeRenderer
         DrawLineBresenham(buffer, width, height, x, y, x, y, lightColor, 3);
 
         // Отрисовываем круг вокруг центральной точки
-        var radius = 15; // Радиус круга зависит от интенсивности
+        var radius = 10; // Радиус круга зависит от интенсивности
         DrawCircleBresenham(buffer, width, height, x, y, radius, lightColor);
     }
 
-    public static unsafe void DrawCircleBresenham(int* buffer, int width, int height, int xc, int yc, int radius,
-        int color)
+    public static unsafe void DrawCircleBresenham(int* buffer, int width, int height, int xc, int yc, int radius, int color)
     {
         var x = 0;
         var y = radius;
@@ -179,7 +178,6 @@ public static class WireframeRenderer
 
         while (x <= y)
         {
-            // Отрисовываем 8 точек окружности (симметрия)
             DrawCirclePoints(buffer, width, height, xc, yc, x, y, color);
 
             if (d < 0)

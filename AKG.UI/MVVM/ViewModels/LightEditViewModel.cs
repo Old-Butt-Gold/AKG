@@ -2,6 +2,8 @@
 using System.Numerics;
 using AKG.Core.Objects;
 
+namespace AKG.UI.MVVM.ViewModels;
+
 public class LightEditViewModel : INotifyPropertyChanged
 {
     private Light _selectedLight;
@@ -15,19 +17,6 @@ public class LightEditViewModel : INotifyPropertyChanged
         _tempDirection = selectedLight.Direction;
         _tempColor = selectedLight.Color;
         _tempIntensity = selectedLight.Intensity;
-    }
-
-    public Light SelectedLight
-    {
-        get => _selectedLight;
-        set
-        {
-            _selectedLight = value;
-            _tempDirection = value.Direction;
-            _tempColor = value.Color;
-            _tempIntensity = value.Intensity;
-            OnPropertyChanged(nameof(SelectedLight));
-        }
     }
 
     public Vector3 TempDirection

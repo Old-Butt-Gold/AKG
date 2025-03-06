@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using AKG.UI.MVVM.ViewModels;
 
 namespace AKG.UI;
 
@@ -11,9 +12,9 @@ public partial class LightEditWindow : Window
 
     private void OKButton_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is LightEditViewModel viewModel)
+        if (DataContext is LightEditViewModel vm)
         {
-            viewModel.ApplyChanges();
+            vm.ApplyChanges();
         }
         DialogResult = true;
         Close();

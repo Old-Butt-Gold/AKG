@@ -13,13 +13,13 @@ public class LightsListViewModel : INotifyPropertyChanged
 
     public LightsListViewModel(List<Light> lights)
     {
-        Lights = new ObservableCollection<Light>(lights); // Используем ObservableCollection
+        Lights = new ObservableCollection<Light>(lights);
         EditLightCommand = new RelayCommand(_ => EditSelectedLight(), _ => SelectedLight != null);
         AddLightCommand = new RelayCommand(_ => AddNewLight());
         RemoveLightCommand = new RelayCommand(_ => RemoveSelectedLight(), _ => SelectedLight != null);
     }
 
-    public ObservableCollection<Light> Lights { get; } // Заменяем List на ObservableCollection
+    public ObservableCollection<Light> Lights { get; }
 
     public Light? SelectedLight
     {
@@ -41,9 +41,9 @@ public class LightsListViewModel : INotifyPropertyChanged
     private void AddNewLight()
     {
         var newLight = new Light(
-            new Vector3(0, 0, 0),  // default position
-            new Vector3(1, 1, 1),   // default color (white)
-            1.0f                    // default intensity
+            new Vector3(0, 0, 0),
+            new Vector3(1, 1, 1),
+            1.0f
         );
 
         var editWindow = new LightEditWindow
@@ -53,8 +53,8 @@ public class LightsListViewModel : INotifyPropertyChanged
 
         if (editWindow.ShowDialog() == true)
         {
-            Lights.Add(newLight); // Добавляем новый источник света
-            SelectedLight = newLight; // Выделяем новый источник
+            Lights.Add(newLight);
+            SelectedLight = newLight;
         }
     }
 
@@ -62,8 +62,8 @@ public class LightsListViewModel : INotifyPropertyChanged
     {
         if (SelectedLight != null)
         {
-            Lights.Remove(SelectedLight); // Удаляем выбранный источник
-            SelectedLight = null; // Сбрасываем выделение
+            Lights.Remove(SelectedLight);
+            SelectedLight = null;
         }
     }
 
@@ -76,16 +76,14 @@ public class LightsListViewModel : INotifyPropertyChanged
             DataContext = new LightEditViewModel(SelectedLight)
         };
 
-        if (editWindow.ShowDialog() == true)
-        {
-            // Изменения применяются автоматически, так как SelectedLight редактируется напрямую
-        }
+        editWindow.ShowDialog();
     }
 
     protected void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+    
     public void RefreshLights()
     {
         OnPropertyChanged(nameof(Lights));

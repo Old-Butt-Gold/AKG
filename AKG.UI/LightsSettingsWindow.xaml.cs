@@ -4,7 +4,7 @@ using AKG.UI.MVVM.ViewModels;
 
 namespace AKG.UI;
 
-public partial class LightsSettingsWindow : Window
+public partial class LightsSettingsWindow
 {
     public LightsSettingsWindow()
     {
@@ -13,7 +13,7 @@ public partial class LightsSettingsWindow : Window
 
     private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is LightsListViewModel viewModel && viewModel.SelectedLight != null)
+        if (DataContext is LightsListViewModel { SelectedLight: not null } viewModel)
         {
             var editWindow = new LightEditWindow
             {
@@ -21,8 +21,9 @@ public partial class LightsSettingsWindow : Window
             };
 
             if (editWindow.ShowDialog() == true)
-                // Обновляем данные, если пользователь нажал "OK"
+            {
                 viewModel.RefreshLights();
+            }
         }
     }
 

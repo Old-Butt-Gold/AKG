@@ -5,17 +5,8 @@ namespace AKG.Core.Objects;
 
 public class Light
 {
-    public Light()
-    {
-    }
-
-    // Конструктор с параметром direction
-    public Light(Vector3 direction)
-    {
-        Direction = direction;
-    }
-
-    // Конструктор с параметрами direction, color и intensity
+    public Light() { }
+    
     public Light(Vector3 direction, Vector3 color, float intensity)
     {
         Direction = direction;
@@ -89,7 +80,10 @@ public class Light
     {
         var transformedPosition = Vector4.Transform(Direction, view * projection * viewport);
 
-        if (transformedPosition.W != 0) transformedPosition /= transformedPosition.W;
+        if (transformedPosition.W != 0)
+        {
+            transformedPosition /= transformedPosition.W;
+        }
 
         return transformedPosition.AsVector3();
     }
