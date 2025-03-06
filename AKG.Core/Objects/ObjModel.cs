@@ -8,6 +8,8 @@ namespace AKG.Core.Objects;
 /// </summary>
 public class ObjModel
 {
+    public string ModelName { get; set; } = "Unnamed Model";
+
     private float _scale;
 
     // Список исходных (оригинальных) вершин, полученных из файла OBJ.

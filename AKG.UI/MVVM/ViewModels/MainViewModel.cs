@@ -80,6 +80,7 @@ public class MainViewModel : INotifyPropertyChanged
         ClearSceneCommand = new RelayCommand(_ => ClearScene());
         EditCameraCommand = new RelayCommand(_ => EditCamera());
         EditLightsCommand = new RelayCommand(_ => EditLights());
+        OpenMaterialEditorCommand = new RelayCommand(_ => OpenMaterialEditor());
         MouseWheelCommand = new RelayCommand(OnMouseWheel);
         MouseMoveCommand = new RelayCommand(OnMouseMove);
         MouseLeftButtonDownCommand = new RelayCommand(OnMouseLeftButtonDown);
@@ -108,6 +109,15 @@ public class MainViewModel : INotifyPropertyChanged
 
         SelectedRenderMode = RenderMode.Wireframe;
         Scene.Lights.Add(new Light());
+    }
+    
+    private void OpenMaterialEditor()
+    {
+        var window = new MaterialListWindow
+        {
+            DataContext = new MaterialListViewModel(Scene.Models)
+        };
+        window.Show();
     }
 
     public Scene Scene { get; set; } = new();
@@ -182,6 +192,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand EditCameraCommand { get; }
 
     public ICommand EditLightsCommand { get; }
+    public ICommand OpenMaterialEditorCommand { get; }
 
     // Команды для событий мыши и клавиатуры
     public ICommand MouseWheelCommand { get; }

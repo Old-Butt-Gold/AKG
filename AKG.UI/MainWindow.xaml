@@ -37,6 +37,8 @@
                     Command="{Binding EditCameraCommand}" />
             <Button Focusable="False" Content="Edit Lights" Margin="5" Padding="5"
                     Command="{Binding EditLightsCommand}" />
+            <Button Focusable="False" Content="Edit Materials" Margin="5" Padding="5"
+                    Command="{Binding OpenMaterialEditorCommand}" />
             <TextBlock Text="{Binding Fps, StringFormat=FPS: {0:F1}}" VerticalAlignment="Center" Margin="15,0,5,0" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                 <TextBlock Text="Foreground Color:" VerticalAlignment="Center" Margin="0,0,10,0" />
