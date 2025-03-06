@@ -1,9 +1,7 @@
-﻿using System.ComponentModel;
-using System.Numerics;
-using System.Runtime.CompilerServices;
+﻿using System.Numerics;
 using AKG.Core.Objects;
 
-namespace AKG.UI.MVVM.ViewModels;
+namespace AKG.UI.MVVM.ViewModels.LightsVm;
 
 public class LightViewModel : BaseViewModel
 {

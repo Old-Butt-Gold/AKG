@@ -1,8 +1,7 @@
-﻿using System.ComponentModel;
-using System.Numerics;
+﻿using System.Numerics;
 using AKG.Core.Objects;
 
-namespace AKG.UI.MVVM.ViewModels;
+namespace AKG.UI.MVVM.ViewModels.CameraVm;
 
 public class CameraSettingsViewModel : BaseViewModel
 {

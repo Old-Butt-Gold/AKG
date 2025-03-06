@@ -1,12 +1,12 @@
 ﻿using System.Numerics;
 using System.Windows;
-using AKG.UI.MVVM.ViewModels;
+using AKG.UI.MVVM.ViewModels.LightsVm;
 using AKG.UI.Services.Implementations;
 using AKG.UI.Services.Interfaces;
 
-namespace AKG.UI;
+namespace AKG.UI.LightsUI;
 
-public partial class LightEditWindow : Window
+public partial class LightEditWindow
 {
     public LightEditWindow()
     {

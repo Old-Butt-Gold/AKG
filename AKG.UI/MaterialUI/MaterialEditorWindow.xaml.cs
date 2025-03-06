@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace AKG.UI;
+namespace AKG.UI.MaterialUI;
 
 public partial class MaterialEditorWindow : Window
 {

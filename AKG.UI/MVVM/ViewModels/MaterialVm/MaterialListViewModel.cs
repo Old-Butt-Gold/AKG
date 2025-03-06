@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using AKG.Core.Objects;
 
-namespace AKG.UI.MVVM.ViewModels;
+namespace AKG.UI.MVVM.ViewModels.MaterialVm;
 
 public class MaterialListViewModel : BaseViewModel
 {

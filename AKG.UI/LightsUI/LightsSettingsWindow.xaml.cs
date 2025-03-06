@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using AKG.UI.MVVM.ViewModels;
+using AKG.UI.MVVM.ViewModels.LightsVm;
 
-namespace AKG.UI;
+namespace AKG.UI.LightsUI;
 
 public partial class LightsSettingsWindow
 {

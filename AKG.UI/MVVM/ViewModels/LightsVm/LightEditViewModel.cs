@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
-using System.Numerics;
-using AKG.Core.Objects;
+﻿using System.Numerics;
 
-namespace AKG.UI.MVVM.ViewModels;
+namespace AKG.UI.MVVM.ViewModels.LightsVm;
 
 public class LightEditViewModel : BaseViewModel
 {

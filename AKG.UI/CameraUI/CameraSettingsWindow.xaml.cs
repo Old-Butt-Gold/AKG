@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using AKG.UI.MVVM.ViewModels;
+using AKG.UI.MVVM.ViewModels.CameraVm;
 
-namespace AKG.UI;
+namespace AKG.UI.CameraUI;
 
 public partial class CameraSettingsWindow
 {
