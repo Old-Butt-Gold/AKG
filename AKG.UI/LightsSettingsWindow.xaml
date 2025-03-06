@@ -13,7 +13,7 @@
         <DataTemplate x:Key="LightTemplate">
             <StackPanel Orientation="Vertical">
                 <TextBlock
-                    Text="{Binding Path=Direction, Converter={StaticResource Vector3Converter}, StringFormat=Position: {0}}" />
+                    Text="{Binding Path=Position, Converter={StaticResource Vector3Converter}, StringFormat=Position: {0}}" />
                 <TextBlock
                     Text="{Binding Path=Color, Converter={StaticResource VectorColorConverter}, StringFormat=Color: {0}}" />
                 <TextBlock Text="{Binding Path=Intensity, StringFormat=Intensity: {0:F2}}" />

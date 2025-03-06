@@ -116,7 +116,7 @@ public class Scene
         foreach (var light in Lights)
         {
             // Преобразуем позицию источника света в экранные координаты
-            var lightPosition = light.Direction;
+            var lightPosition = light.Position;
             var view = Camera.GetViewMatrix();
             var projection = Camera.GetProjectionMatrix();
             var viewport = GetViewportMatrix();

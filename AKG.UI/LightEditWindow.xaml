@@ -26,7 +26,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="Position:" Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding TempDirection, Converter={StaticResource Vector3Converter}, Mode=TwoWay}" 
+        <TextBox Text="{Binding TempPosition, Converter={StaticResource Vector3Converter}, Mode=TwoWay}" 
                  Grid.Row="0" Grid.Column="1" Margin="5"/>
 
         <TextBlock Text="Color (0-255):" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>

@@ -8,26 +8,26 @@ public class LightEditViewModel : BaseViewModel
 {
     private LightViewModel _selectedLight;
     private Vector3 _tempColor;
-    private Vector3 _tempDirection;
+    private Vector3 _tempPosition;
     private float _tempIntensity;
 
     public LightEditViewModel(LightViewModel selectedLight)
     {
         _selectedLight = selectedLight;
-        _tempDirection = selectedLight.Direction;
+        _tempPosition = selectedLight.Position;
         _tempColor = selectedLight.Color;
         _tempIntensity = selectedLight.Intensity;
     }
 
     public LightViewModel SelectedLight => _selectedLight;
 
-    public Vector3 TempDirection
+    public Vector3 TempPosition
     {
-        get => _tempDirection;
+        get => _tempPosition;
         set
         {
-            _tempDirection = value;
-            OnPropertyChanged(nameof(TempDirection));
+            _tempPosition = value;
+            OnPropertyChanged(nameof(TempPosition));
         }
     }
 
@@ -53,7 +53,7 @@ public class LightEditViewModel : BaseViewModel
 
     public void ApplyChanges()
     {
-        _selectedLight.Direction = _tempDirection;
+        _selectedLight.Position = _tempPosition;
         _selectedLight.Color = _tempColor;
         _selectedLight.Intensity = _tempIntensity;
     }

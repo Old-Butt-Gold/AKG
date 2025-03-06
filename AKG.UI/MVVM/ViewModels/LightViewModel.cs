@@ -10,26 +10,26 @@ public class LightViewModel : BaseViewModel
 
     public LightViewModel(Light light)
     {
-        _direction = light.Direction;
+        _position = light.Position;
         _color = light.Color;
         _intensity = light.Intensity;
     }
 
     public Light ToLight()
     {
-        return new Light(_direction, _color, _intensity);
+        return new Light(_position, _color, _intensity);
     }
 
-    private Vector3 _direction;
+    private Vector3 _position;
     private Vector3 _color;
     private float _intensity;
 
-    public Vector3 Direction
+    public Vector3 Position
     {
-        get => _direction;
+        get => _position;
         set
         {
-            _direction = value;
+            _position = value;
             OnPropertyChanged();
         }
     }

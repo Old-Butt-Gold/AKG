@@ -576,7 +576,7 @@ public class MainViewModel : INotifyPropertyChanged
                 {
                     var newLight = (editWindow.DataContext as LightEditViewModel)?.SelectedLight;
                     pickedLight.Color = newLight!.Color;
-                    pickedLight.Direction = newLight.Direction;
+                    pickedLight.Position = newLight.Position;
                     pickedLight.Intensity = newLight.Intensity;
                     UpdateView();
                     OnPropertyChanged(nameof(Scene));

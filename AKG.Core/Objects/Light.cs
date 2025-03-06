@@ -7,17 +7,17 @@ public class Light
 {
     public Light() { }
     
-    public Light(Vector3 direction, Vector3 color, float intensity)
+    public Light(Vector3 position, Vector3 color, float intensity)
     {
-        Direction = direction;
+        Position = position;
         Color = color;
         Intensity = intensity;
     }
 
     /// <summary>
-    ///     Направление источника света (не нормализовано).
+    /// Направление источника света (не нормализовано).
     /// </summary>
-    public Vector3 Direction { get; set; } = new(1, 1, 2);
+    public Vector3 Position { get; set; } = new(1, 1, 2);
 
     public Vector3 Color { get; set; } = Vector3.One; // Аналог Colors.White.ToVector3() / 255f
 
@@ -35,7 +35,7 @@ public class Light
 
         foreach (var light in lights)
         {
-            var lightDir = Vector3.Normalize(light.Direction - fragWorld);
+            var lightDir = Vector3.Normalize(light.Position - fragWorld);
 
             // Diffuse
             var diff = MathF.Max(Vector3.Dot(normal, lightDir), 0);
@@ -59,7 +59,7 @@ public class Light
         var totalIntensity = 0f;
         foreach (var light in lambertLights)
         {
-            var lightDir = Vector3.Normalize(light.Direction);
+            var lightDir = Vector3.Normalize(light.Position);
 
             var intensity = MathF.Max(Vector3.Dot(normal, lightDir), 0);
 
@@ -78,7 +78,7 @@ public class Light
 
     public Vector3 TransformLightToScreen(Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
     {
-        var transformedPosition = Vector4.Transform(Direction, view * projection * viewport);
+        var transformedPosition = Vector4.Transform(Position, view * projection * viewport);
 
         if (transformedPosition.W != 0)
         {
