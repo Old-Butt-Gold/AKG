@@ -54,6 +54,6 @@ public static class RendererFacade
                 throw new NotSupportedException("Неизвестный режим рендеринга");
         }
         
-        WireframeRenderer.DrawLights(scene, wb);
+        LightRenderer.DrawLights(scene, wb);
     }
 }
