@@ -4,20 +4,22 @@ using AKG.Core.Objects;
 
 namespace AKG.UI.MVVM.ViewModels;
 
-public class LightEditViewModel : INotifyPropertyChanged
+public class LightEditViewModel : BaseViewModel
 {
-    private Light _selectedLight;
+    private LightViewModel _selectedLight;
     private Vector3 _tempColor;
     private Vector3 _tempDirection;
     private float _tempIntensity;
 
-    public LightEditViewModel(Light selectedLight)
+    public LightEditViewModel(LightViewModel selectedLight)
     {
         _selectedLight = selectedLight;
         _tempDirection = selectedLight.Direction;
         _tempColor = selectedLight.Color;
         _tempIntensity = selectedLight.Intensity;
     }
+
+    public LightViewModel SelectedLight => _selectedLight;
 
     public Vector3 TempDirection
     {
@@ -49,17 +51,10 @@ public class LightEditViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public void ApplyChanges()
     {
         _selectedLight.Direction = _tempDirection;
         _selectedLight.Color = _tempColor;
         _selectedLight.Intensity = _tempIntensity;
-    }
-
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

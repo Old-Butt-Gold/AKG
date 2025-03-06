@@ -4,7 +4,7 @@ using AKG.Core.Objects;
 
 namespace AKG.UI.MVVM.ViewModels;
 
-public class CameraSettingsViewModel : INotifyPropertyChanged
+public class CameraSettingsViewModel : BaseViewModel
 {
     private readonly Camera _camera;
     private float _aspect;
@@ -135,8 +135,6 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public void CommitChanges()
     {
         _camera.Eye = Eye;
@@ -149,10 +147,5 @@ public class CameraSettingsViewModel : INotifyPropertyChanged
         _camera.Radius = Radius;
         _camera.Zeta = Zeta;
         _camera.Phi = Phi;
-    }
-
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

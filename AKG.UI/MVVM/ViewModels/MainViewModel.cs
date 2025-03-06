@@ -428,6 +428,15 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (lightsWindow.ShowDialog() == true)
         {
+            Scene.Lights.Clear();
+
+            var updatedLights = (lightsWindow.DataContext as LightsListViewModel)?.Lights;
+
+            foreach (var light in updatedLights!)
+            {
+                Scene.Lights.Add(light.ToLight());
+            }
+            
             UpdateView();
             OnPropertyChanged(nameof(Scene));
         }
@@ -549,9 +558,8 @@ public class MainViewModel : INotifyPropertyChanged
         var clickPoint = e.GetPosition(null);
 
         // Получаем элемент Image
-        var image = Application.Current.MainWindow.FindName("ImgDisplay") as Image;
 
-        if (image != null)
+        if (Application.Current.MainWindow!.FindName("ImgDisplay") is Image image)
         {
             // Определяем, какой источник света был выбран
             var pickedLight = Scene.PickLight(clickPoint, image);
@@ -561,21 +569,22 @@ public class MainViewModel : INotifyPropertyChanged
                 // Открываем окно редактирования для выбранного источника света
                 var editWindow = new LightEditWindow
                 {
-                    DataContext = new LightEditViewModel(pickedLight)
+                    DataContext = new LightEditViewModel(new(pickedLight))
                 };
 
                 if (editWindow.ShowDialog() == true)
                 {
-                    // Обновляем сцену, если пользователь нажал "OK"
+                    var newLight = (editWindow.DataContext as LightEditViewModel)?.SelectedLight;
+                    pickedLight.Color = newLight!.Color;
+                    pickedLight.Direction = newLight.Direction;
+                    pickedLight.Intensity = newLight.Intensity;
                     UpdateView();
                     OnPropertyChanged(nameof(Scene));
                 }
             }
         }
     }
-
-   
-
+    
     private void OnMouseRightButtonDown(object? parameter)
     {
         if (parameter is MouseButtonEventArgs e)

@@ -20,10 +20,7 @@ public partial class LightsSettingsWindow
                 DataContext = new LightEditViewModel(viewModel.SelectedLight)
             };
 
-            if (editWindow.ShowDialog() == true)
-            {
-                viewModel.RefreshLights();
-            }
+            editWindow.ShowDialog();
         }
     }
 

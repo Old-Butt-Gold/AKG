@@ -7,21 +7,25 @@ using AKG.UI.MVVM.Commands;
 
 namespace AKG.UI.MVVM.ViewModels;
 
-public class LightsListViewModel : INotifyPropertyChanged
+public class LightsListViewModel : BaseViewModel
 {
-    private Light? _selectedLight;
+    private LightViewModel? _selectedLight;
 
     public LightsListViewModel(List<Light> lights)
     {
-        Lights = new(lights);
+        Lights = new();
+        foreach (var light in lights)
+        {
+            Lights.Add(new(light));
+        }
         EditLightCommand = new RelayCommand(_ => EditSelectedLight(), _ => SelectedLight != null);
         AddLightCommand = new RelayCommand(_ => AddNewLight());
         RemoveLightCommand = new RelayCommand(_ => RemoveSelectedLight(), _ => SelectedLight != null);
     }
 
-    public ObservableCollection<Light> Lights { get; }
+    public ObservableCollection<LightViewModel> Lights { get; }
 
-    public Light? SelectedLight
+    public LightViewModel? SelectedLight
     {
         get => _selectedLight;
         set
@@ -36,21 +40,21 @@ public class LightsListViewModel : INotifyPropertyChanged
     public ICommand AddLightCommand { get; }
     public ICommand RemoveLightCommand { get; }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     private void AddNewLight()
     {
         var newLight = new Light(new Vector3(0, 0, 0), new Vector3(1, 1, 1), 1.0f);
 
+        var viewModelLight = new LightViewModel(newLight);
+        
         var editWindow = new LightEditWindow
         {
-            DataContext = new LightEditViewModel(newLight)
+            DataContext = new LightEditViewModel(viewModelLight)
         };
 
         if (editWindow.ShowDialog() == true)
         {
-            Lights.Add(newLight);
-            SelectedLight = newLight;
+            Lights.Add(viewModelLight);
+            SelectedLight = viewModelLight;
         }
     }
 
@@ -73,15 +77,5 @@ public class LightsListViewModel : INotifyPropertyChanged
         };
 
         editWindow.ShowDialog();
-    }
-
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-    
-    public void RefreshLights()
-    {
-        OnPropertyChanged(nameof(Lights));
     }
 }
