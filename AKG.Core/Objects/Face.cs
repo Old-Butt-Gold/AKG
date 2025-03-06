@@ -1,4 +1,4 @@
-namespace AKG.Core.Parser;
+namespace AKG.Core.Objects;
 
 /// <summary>
 ///     Класс, описывающий грань (полигон). Грань может состоять из 3 и более вершин.

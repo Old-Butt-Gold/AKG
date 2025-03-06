@@ -2,7 +2,7 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace AKG.Core.Objects;
+namespace AKG.Core.ImageHelpers;
 
 public static class TextureSampler
 {

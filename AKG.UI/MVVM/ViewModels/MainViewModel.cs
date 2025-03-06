@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AKG.Core.Enum;
+using AKG.Core.ImageHelpers;
 using AKG.Core.Objects;
 using AKG.Core.Parser;
 using AKG.Core.Renderer;

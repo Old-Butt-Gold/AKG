@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Media.Imaging;
 
-namespace AKG.Core.Objects;
+namespace AKG.Core.ImageHelpers;
 
 public static class TextureLoader
 {

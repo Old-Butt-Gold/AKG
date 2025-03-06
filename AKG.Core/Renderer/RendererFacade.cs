@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AKG.Core.Enum;
 using AKG.Core.Objects;
 
 namespace AKG.Core.Renderer;

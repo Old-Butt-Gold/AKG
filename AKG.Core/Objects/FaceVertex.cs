@@ -1,4 +1,4 @@
-namespace AKG.Core.Parser;
+namespace AKG.Core.Objects;
 
 /// <summary>
 ///     Структура, описывающая один элемент грани (индексы вершины, текстурной координаты и нормали).

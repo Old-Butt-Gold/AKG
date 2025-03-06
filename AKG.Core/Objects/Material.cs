@@ -2,7 +2,7 @@
 using System.Windows.Media;
 using AKG.Core.Extensions;
 
-namespace AKG.Core.Parser;
+namespace AKG.Core.Objects;
 
 /// <summary>
 ///     Класс, описывающий свойства материала.

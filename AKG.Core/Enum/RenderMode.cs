@@ -1,4 +1,4 @@
-﻿namespace AKG.Core.Objects;
+﻿namespace AKG.Core.Enum;
 
 public enum RenderMode
 {

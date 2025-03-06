@@ -7,6 +7,7 @@
         xmlns:viewModels="clr-namespace:AKG.UI.MVVM.ViewModels"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:objects="clr-namespace:AKG.Core.Objects;assembly=AKG.Core"
+        xmlns:enum="clr-namespace:AKG.Core.Enum;assembly=AKG.Core"
         mc:Ignorable="d"
         Title="3D Obj Viewer" Loaded="MainWindow_OnLoaded" WindowState="Maximized"
         FocusManager.FocusedElement="{Binding ElementName=ImgDisplay}">
@@ -64,13 +65,13 @@
             </Popup>
             <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Focusable="False"
                       SelectedValue="{Binding SelectedRenderMode}" SelectedValuePath="Tag" Margin="5">
-                <ComboBoxItem Content="Wireframe" Tag="{x:Static objects:RenderMode.Wireframe}" />
+                <ComboBoxItem Content="Wireframe" Tag="{x:Static enum:RenderMode.Wireframe}" />
                 <ComboBoxItem Content="Filled Triangles Lambert"
-                              Tag="{x:Static objects:RenderMode.FilledTrianglesLambert}" />
-                <ComboBoxItem Content="Filled Triangles Phong" Tag="{x:Static objects:RenderMode.FilledTrianglesPhong}" />
+                              Tag="{x:Static enum:RenderMode.FilledTrianglesLambert}" />
+                <ComboBoxItem Content="Filled Triangles Phong" Tag="{x:Static enum:RenderMode.FilledTrianglesPhong}" />
                 <ComboBoxItem Content="Filled Triangles Average Face Normal Phong"
-                              Tag="{x:Static objects:RenderMode.FilledTrianglesAverageFaceNormalPhong}" />
-                <ComboBoxItem Content="Texture" Tag="{x:Static objects:RenderMode.Texture}" />
+                              Tag="{x:Static enum:RenderMode.FilledTrianglesAverageFaceNormalPhong}" />
+                <ComboBoxItem Content="Texture" Tag="{x:Static enum:RenderMode.Texture}" />
             </ComboBox>
 
         </StackPanel>
