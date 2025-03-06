@@ -1,0 +1,86 @@
+﻿<Window x:Class="AKG.UI.MaterialSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:AKG.UI.Converters"
+        Title="Material Settings" Height="600" Width="800">
+    <Window.Resources>
+        <converters:ColorVectorConverter x:Key="ColorVectorConverter" />
+        <converters:Vector3ToStringConverter x:Key="Vector3ToStringConverter" />
+    </Window.Resources>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="10">
+                <!-- Имя материала -->
+                <TextBlock Text="Name" />
+                <TextBox Text="{Binding Material.Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Текстуры -->
+                <TextBlock Text="Diffuse Map" />
+                <TextBox Text="{Binding Material.DiffuseMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Emissive Map" />
+                <TextBox Text="{Binding Material.EmissiveMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Normal Map" />
+                <TextBox Text="{Binding Material.NormalMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="AO Map" />
+                <TextBox Text="{Binding Material.AoMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="MRAO Map" />
+                <TextBox Text="{Binding Material.MraoMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Specular Map" />
+                <TextBox Text="{Binding Material.SpecularMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Metallic Map" />
+                <TextBox Text="{Binding Material.MetallicMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Roughness Map" />
+                <TextBox Text="{Binding Material.RoughnessMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Bump Map" />
+                <TextBox Text="{Binding Material.BumpMap, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Коэффициенты -->
+                <TextBlock Text="Bump Scale" />
+                <TextBox Text="{Binding Material.BumpScale, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Цвета (используем ColorVectorConverter) -->
+                <TextBlock Text="Ambient Color (Ka)" />
+                <TextBox Text="{Binding Material.Ka, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Diffuse Color (Kd)" />
+                <TextBox Text="{Binding Material.Kd, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Specular Color (Ks)" />
+                <TextBox Text="{Binding Material.Ks, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Emissive Color (Ke)" />
+                <TextBox Text="{Binding Material.Ke, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Shininess (Ns)" />
+                <TextBox Text="{Binding Material.Shininess, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Metallic (Pm)" />
+                <TextBox Text="{Binding Material.Pm, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Roughness (Pr)" />
+                <TextBox Text="{Binding Material.Pr, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Цвета для освещения (используем ColorVectorConverter) -->
+                <TextBlock Text="Ambient Color (AmbientColor)" />
+                <TextBox Text="{Binding Material.AmbientColor, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Diffuse Color (DiffuseColor)" />
+                <TextBox Text="{Binding Material.DiffuseColor, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Specular Color (SpecularColor)" />
+                <TextBox Text="{Binding Material.SpecularColor, Converter={StaticResource Vector3ToStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Кнопка сохранения -->
+                <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,20,0,0" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
