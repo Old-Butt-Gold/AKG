@@ -11,7 +11,10 @@ public partial class LightEditWindow : Window
 
     private void OKButton_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is LightEditViewModel vm) vm.ApplyChanges();
+        if (DataContext is LightEditViewModel viewModel)
+        {
+            viewModel.ApplyChanges();
+        }
         DialogResult = true;
         Close();
     }
