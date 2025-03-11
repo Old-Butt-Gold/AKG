@@ -73,8 +73,8 @@ public static class ObjParser
                         throw new ArgumentException($"Неверный формат текстурной координаты на ${lineIndex} строке");
 
                     var u = float.Parse(tokens[1], culture);
-                    var v = tokens.Length >= 3 ? float.Parse(tokens[2], culture) : 0;
-                    var w = tokens.Length >= 4 ? float.Parse(tokens[3], culture) : 0;
+                    var v = tokens.Length >= 3 ? float.Parse(tokens[2], culture) : 0.0f;
+                    var w = tokens.Length >= 4 ? float.Parse(tokens[3], culture) : 1.0f;
                     model.TextureCoords.Add(new Vector3(u, v, w));
                     break;
                 }
@@ -187,6 +187,7 @@ public static class ObjParser
         model.Counters = new int[model.OriginalVertices.Count];
         model.VertexNormals = new Vector3[model.OriginalVertices.Count];
         model.ModelName = Path.GetFileName(filePath);
+        model.WValues = new float[model.OriginalVertices.Count];
 
         // Попытка загрузить .mtl файл из той же папки
         var mtlPath = Path.ChangeExtension(filePath, ".mtl");

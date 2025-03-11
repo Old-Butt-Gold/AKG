@@ -45,6 +45,7 @@ public class ObjModel
 
     // F/V/N список полигонов/граней
     public List<Face> Faces { get; } = [];
+    public float[] WValues { get; set; } = [];
 
     // Словарь материалов
     public Dictionary<string, Material>? Materials { get; set; }
@@ -165,6 +166,9 @@ public class ObjModel
         Parallel.For(0, count, i =>
         {
             var v = Vector4.Transform(OriginalVertices[i], finalTransform);
+
+            WValues[i] = v.W;
+            
             if (v.W > camera.ZNear && v.W < camera.ZFar) v /= v.W;
 
             /*if (v.W != 0)

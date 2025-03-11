@@ -435,7 +435,6 @@ public static class Rasterizer
 
         // 2. Проходим по каждой грани модели (с фан‑трайангуляцией)
         Parallel.ForEach(model.Faces, face =>
-            //foreach (var face in model.Faces)
         {
             if (face.Vertices.Count < 3) return;
 
@@ -483,9 +482,12 @@ public static class Rasterizer
                     continue;
 
                 // 6. Извлекаем UV-координаты для каждой вершины
-                var uv0 = model.TextureCoords[face.Vertices[0].TextureIndex - 1]; // разделить на W еще 
-                var uv1 = model.TextureCoords[face.Vertices[j].TextureIndex - 1];
-                var uv2 = model.TextureCoords[face.Vertices[j + 1].TextureIndex - 1];
+                var uv0 = model.TextureCoords[face.Vertices[0].TextureIndex - 1]
+                          / model.WValues[face.Vertices[0].VertexIndex - 1]; 
+                var uv1 = model.TextureCoords[face.Vertices[j].TextureIndex - 1]
+                          / model.WValues[face.Vertices[j].VertexIndex - 1];
+                var uv2 = model.TextureCoords[face.Vertices[j + 1].TextureIndex - 1]
+                          / model.WValues[face.Vertices[j + 1].VertexIndex - 1];
 
                 // 7. Определяем нормали для затенения (используем нормали вершин, если заданы)
                 var n0 = face.Vertices[0].NormalIndex > 0
@@ -531,9 +533,7 @@ public static class Rasterizer
         var normalTex = !string.IsNullOrEmpty(material.NormalMap) ? TextureLoader.Load(material.NormalMap) : null;
         var mraoTex = !string.IsNullOrEmpty(material.MraoMap) ? TextureLoader.Load(material.MraoMap) : null;
         var metallicTex = !string.IsNullOrEmpty(material.MetallicMap) ? TextureLoader.Load(material.MetallicMap) : null;
-        var roughnessTex = !string.IsNullOrEmpty(material.RoughnessMap)
-            ? TextureLoader.Load(material.RoughnessMap)
-            : null;
+        var roughnessTex = !string.IsNullOrEmpty(material.RoughnessMap) ? TextureLoader.Load(material.RoughnessMap) : null;
         var emissiveTex = !string.IsNullOrEmpty(material.EmissiveMap) ? TextureLoader.Load(material.EmissiveMap) : null;
         var bumpTex = !string.IsNullOrEmpty(material.BumpMap) ? TextureLoader.Load(material.BumpMap) : null;
         var specularTex = !string.IsNullOrEmpty(material.SpecularMap) ? TextureLoader.Load(material.SpecularMap) : null;
@@ -570,11 +570,11 @@ public static class Rasterizer
                 {
                     _zBuffer[x, y] = depth;
 
-                    // Перспективная коррекция текстурных координат
-                    var uv = ComputePerspectiveCorrectUv(uv0, v0.Z, uv1, v1.Z, uv2, v2.Z, alpha, beta, gamma);
-
                     // Линейная интерполяция uv
-                    // var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
+                    var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
+
+                    uv /= uv.Z;
+                    
                     // Интерполируем мировую позицию фрагмента
                     var fragWorld = alpha * w0 + beta * w1 + gamma * w2;
                     // Интерполируем нормаль фрагмента
@@ -694,44 +694,6 @@ public static class Rasterizer
                 }
             }
         }
-    }
-
-    /// <summary>
-    ///     Вычисляет финальные текстурные координаты с перспективной коррекцией.
-    ///     Для каждой вершины вычисляется обратная глубина (r = 1/z) и скорректированные UV (uv' = uv * r).
-    ///     Это позволяет правильно отобразить текстуру даже на поверхностях, расположенных под углом к камере.
-    /// </summary>
-    /// <param name="uv0">Исходные UV для первой вершины (Vector2, X = u, Y = v)</param>
-    /// <param name="z0">Глубина первой вершины</param>
-    /// <param name="uv1">Исходные UV для второй вершины</param>
-    /// <param name="z1">Глубина второй вершины</param>
-    /// <param name="uv2">Исходные UV для третьей вершины</param>
-    /// <param name="z2">Глубина третьей вершины</param>
-    /// <param name="alpha">Барицентрический коэффициент для первой вершины</param>
-    /// <param name="beta">Барицентрический коэффициент для второй вершины</param>
-    /// <param name="gamma">Барицентрический коэффициент для третьей вершины</param>
-    /// <returns>Финальные текстурные координаты (FinalUV) с учетом перспективной коррекции</returns>
-    private static Vector3 ComputePerspectiveCorrectUv(Vector3 uv0, float z0,
-        Vector3 uv1, float z1, Vector3 uv2, float z2,
-        float alpha, float beta, float gamma)
-    {
-        // Вычисляем обратные глубины для каждой вершины
-        var r0 = 1f / z0;
-        var r1 = 1f / z1;
-        var r2 = 1f / z2;
-
-        // Корректируем UV, умножая их на обратную глубину
-        var uv0Corr = uv0 * r0;
-        var uv1Corr = uv1 * r1;
-        var uv2Corr = uv2 * r2;
-
-        // Интерполируем обратную глубину по барицентрическим коэффициентам
-        var rInterp = alpha * r0 + beta * r1 + gamma * r2;
-        // Интерполируем скорректированные UV
-        var uvInterp = alpha * uv0Corr + beta * uv1Corr + gamma * uv2Corr;
-
-        // Финальные UV получаются делением интерполированного значения на интерполированное 1/z
-        return uvInterp / rInterp;
     }
 
     /// <summary>
