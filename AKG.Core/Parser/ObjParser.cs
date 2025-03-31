@@ -75,7 +75,7 @@ public static class ObjParser
                     var u = float.Parse(tokens[1], culture);
                     var v = tokens.Length >= 3 ? float.Parse(tokens[2], culture) : 0.0f;
                     var w = tokens.Length >= 4 ? float.Parse(tokens[3], culture) : 1.0f;
-                    model.TextureCoords.Add(new Vector3(u, v, 1.0f));
+                    model.TextureCoords.Add(new Vector3(u, v, w));
                     break;
                 }
                 case "vn": // Нормаль вершины
