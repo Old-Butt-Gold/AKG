@@ -115,7 +115,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         ToggleModelInfoCommand = new RelayCommand(_ => IsModelInfoVisible = !IsModelInfoVisible);
 
-        SelectedRenderMode = RenderMode.Wireframe;
+        SelectedRenderMode = RenderMode.Texture;
         Scene.Lights.Add(new Light());
     }
     

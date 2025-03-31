@@ -434,7 +434,8 @@ public static class Rasterizer
         var buffer = (int*)wb.BackBuffer;
 
         // 2. Проходим по каждой грани модели (с фан‑трайангуляцией)
-        Parallel.ForEach(model.Faces, face =>
+        //Parallel.ForEach(model.Faces, face =>
+        foreach (var face in model.Faces)
         {
             if (face.Vertices.Count < 3) return;
 
@@ -482,12 +483,12 @@ public static class Rasterizer
                     continue;
 
                 // 6. Извлекаем UV-координаты для каждой вершины
-                var uv0 = model.TextureCoords[face.Vertices[0].TextureIndex - 1]
-                          / model.WValues[face.Vertices[0].VertexIndex - 1]; 
-                var uv1 = model.TextureCoords[face.Vertices[j].TextureIndex - 1]
-                          / model.WValues[face.Vertices[j].VertexIndex - 1];
-                var uv2 = model.TextureCoords[face.Vertices[j + 1].TextureIndex - 1]
-                          / model.WValues[face.Vertices[j + 1].VertexIndex - 1];
+                var uv0 = model.TextureCoords[face.Vertices[0].TextureIndex - 1];
+                uv0 /= model.WValues[face.Vertices[0].VertexIndex - 1];
+                var uv1 = model.TextureCoords[face.Vertices[j].TextureIndex - 1];
+                uv1 /= model.WValues[face.Vertices[j].VertexIndex - 1];
+                var uv2 = model.TextureCoords[face.Vertices[j + 1].TextureIndex - 1];
+                uv2 /= model.WValues[face.Vertices[j + 1].VertexIndex - 1];
 
                 // 7. Определяем нормали для затенения (используем нормали вершин, если заданы)
                 var n0 = face.Vertices[0].NormalIndex > 0
@@ -506,7 +507,7 @@ public static class Rasterizer
                     uv2,
                     buffer, width, height, lights, camera, GetFaceMaterial(model, face), model);
             }
-        });
+        };
 
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
@@ -532,12 +533,8 @@ public static class Rasterizer
         var diffuseTex = !string.IsNullOrEmpty(material.DiffuseMap) ? TextureLoader.Load(material.DiffuseMap) : null;
         var normalTex = !string.IsNullOrEmpty(material.NormalMap) ? TextureLoader.Load(material.NormalMap) : null;
         var mraoTex = !string.IsNullOrEmpty(material.MraoMap) ? TextureLoader.Load(material.MraoMap) : null;
-        var metallicTex = !string.IsNullOrEmpty(material.MetallicMap) ? TextureLoader.Load(material.MetallicMap) : null;
-        var roughnessTex = !string.IsNullOrEmpty(material.RoughnessMap) ? TextureLoader.Load(material.RoughnessMap) : null;
         var emissiveTex = !string.IsNullOrEmpty(material.EmissiveMap) ? TextureLoader.Load(material.EmissiveMap) : null;
-        var bumpTex = !string.IsNullOrEmpty(material.BumpMap) ? TextureLoader.Load(material.BumpMap) : null;
         var specularTex = !string.IsNullOrEmpty(material.SpecularMap) ? TextureLoader.Load(material.SpecularMap) : null;
-        var aoTex = !string.IsNullOrEmpty(material.AoMap) ? TextureLoader.Load(material.AoMap) : null;
 
         // Ограничивающий прямоугольник (не выходит за пределы экрана)
         var minX = Math.Max(0, (int)Math.Floor(Math.Min(v0.X, Math.Min(v1.X, v2.X))));
@@ -594,22 +591,6 @@ public static class Rasterizer
                         interpNormal = Vector3.TransformNormal(mapNormal, rotation);
                     }
 
-                    // Если задана bump-карта, корректируем нормаль с учётом рельефа
-                    if (bumpTex != null)
-                    {
-                        var deltaUv = material.BumpScale;
-                        var heightCenter = GetBumpHeight(bumpTex, uv.X, uv.Y);
-                        var heightRight = GetBumpHeight(bumpTex, uv.X + deltaUv, uv.Y);
-                        var heightUp = GetBumpHeight(bumpTex, uv.X, uv.Y + deltaUv);
-                        var dU = (heightRight - heightCenter) / deltaUv;
-                        var dV = (heightUp - heightCenter) / deltaUv;
-                        // Для простоты используем фиксированные касательные и битангенциальные векторы
-                        var tangent = new Vector3(1, 0, 0);
-                        var bitangent = new Vector3(0, 1, 0);
-                        var perturbedNormal = interpNormal + dU * tangent + dV * bitangent;
-                        interpNormal = Vector3.Normalize(perturbedNormal);
-                    }
-
                     var diffuseColor = material.DiffuseColor;
                     var ambientColor = material.AmbientColor;
 
@@ -621,57 +602,21 @@ public static class Rasterizer
                         ambientColor = texColor.ToVector3();
                     }
 
-                    var metallic = material.Pm;
-                    var roughness = material.Pr;
-                    var ao = 1.0f;
-
                     // Если mrao‑текстура задана, извлекаем металлическость из R-канала,
                     // G – roughness, B – ambient occlusion (если потребуется)
                     if (mraoTex != null)
                     {
                         var mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
-                        metallic = mraoColor.R / 255f;
-                        roughness = mraoColor.G / 255f;
-                        ao = mraoColor.B / 255f;
                     }
-
-                    // Если заданы отдельные карты, они имеют приоритет:
-                    if (metallicTex != null)
-                    {
-                        var metalColor = TextureSampler.Sample(metallicTex, uv.X, uv.Y);
-                        // Берём только R-компоненту, так как карта хранится в grayscale или значение metallic записано в R
-                        metallic = metalColor.R / 255f;
-                    }
-
-                    if (roughnessTex != null)
-                    {
-                        var roughColor = TextureSampler.Sample(roughnessTex, uv.X, uv.Y);
-                        // Аналогично для roughness – используем R-компоненту
-                        roughness = roughColor.R / 255f;
-                    }
-
-                    if (aoTex != null)
-                    {
-                        var aoColor = TextureSampler.Sample(aoTex, uv.X, uv.Y);
-                        ao = aoColor.R / 255f;
-                    }
-
-                    ambientColor *= ao;
-
-                    // Преобразуем шероховатость в показатель блеска
-                    // Расчёт эффективного блеска с учётом шероховатости (Pr)
-                    // Чем выше Pr, тем меньше должен быть блеск
+                    
                     var shininess = material.Shininess;
-                    if (roughness > 0) shininess *= 1 - roughness;
-
-                    var ks = Vector3.Lerp(material.Ks, material.Kd, metallic);
 
                     // Если задана SpecularMap, заменяем статическое значение зеркальной компоненты
                     var specularColor = material.SpecularColor;
+                    var ks = material.Ks;
                     if (specularTex != null)
                     {
-                        var specColor = TextureSampler.Sample(specularTex, uv.X, uv.Y);
-                        specularColor = specColor.ToVector3();
+                        ks = TextureSampler.Sample(specularTex, uv.X, uv.Y).ToVector3() / 255f;
                     }
 
                     // Вычисляем вектор взгляда (от фрагмента к камере)
