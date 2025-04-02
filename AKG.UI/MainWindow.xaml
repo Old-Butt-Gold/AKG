@@ -72,6 +72,7 @@
                 <ComboBoxItem Content="Filled Triangles Average Face Normal Phong"
                               Tag="{x:Static enum:RenderMode.FilledTrianglesAverageFaceNormalPhong}" />
                 <ComboBoxItem Content="Texture" Tag="{x:Static enum:RenderMode.Texture}" />
+                <ComboBoxItem Content="Texture Ray Tracing" Tag="{x:Static enum:RenderMode.TextureRayTracing}" />
             </ComboBox>
 
         </StackPanel>

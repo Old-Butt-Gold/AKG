@@ -22,7 +22,6 @@ public static class RendererFacade
 
         scene.UpdateAllModels();
         
-        //WireframeRenderer.DrawGrid(scene, wb, Colors.Gray, 10, 1);
         Rasterizer.ClearZBuffer(scene.CanvasWidth, scene.CanvasHeight, scene.Camera);
 
         switch (mode)
@@ -38,17 +37,23 @@ public static class RendererFacade
             case RenderMode.FilledTrianglesPhong:
                 // Используем готовые Normals из файлов
                 foreach (var model in scene.Models)
-                    Rasterizer.DrawFilledTrianglePhong(model, wb, scene.Camera, scene.Lights);
+                    Rasterizer.DrawFilledTrianglePhong(model, wb, scene.Camera, scene.Lights, true);
                 break;
             case RenderMode.FilledTrianglesAverageFaceNormalPhong:
                 // Используем усредненные нормали поверхности всех полигонов
                 foreach (var model in scene.Models)
-                    Rasterizer.FilledTrianglesAverageFaceNormalPhong(model, wb, scene.Camera, scene.Lights);
+                    Rasterizer.DrawFilledTrianglePhong(model, wb, scene.Camera, scene.Lights, false);
                 break;
             case RenderMode.Texture:
             {
                 foreach (var model in scene.Models)
-                    Rasterizer.DrawTexturedTriangles(model, wb, scene.Camera, scene.Lights);
+                    Rasterizer.DrawTexturedTriangles(model, wb, scene, false);
+                break;
+            }
+            case RenderMode.TextureRayTracing:
+            {
+                foreach (var model in scene.Models)
+                    Rasterizer.DrawTexturedTriangles(model, wb, scene, true);
                 break;
             }
             default:

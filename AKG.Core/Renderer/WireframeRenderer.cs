@@ -18,6 +18,7 @@ public static class WireframeRenderer
     /// <param name="wb">WriteableBitmap, куда будет производиться отрисовка</param>
     /// <param name="color">Цвет линий (ARGB)</param>
     /// <param name="camera">Камера для проверки диапазона z</param>
+    /// <param name="thickness">Толщина отрисовки пикселей</param>
     public static void DrawWireframe(ObjModel model, WriteableBitmap wb, Color color, Camera camera, int thickness)
     {
         // Определим цвет в формате BGRA (WriteableBitmap обычно использует PixelFormat Bgra32)
@@ -161,9 +162,9 @@ public static class WireframeRenderer
             selected.Scale * 1.001f,
             Matrix4x4.CreateFromYawPitchRoll(selected.Rotation.Y, selected.Rotation.X, selected.Rotation.Z),
             selected.Translation);
-        var finalOutlineTransform = outlineWorld * view * projection * viewport;
+        var finalOutlineTransform = view * projection * viewport;
 
-        selected.ApplyFinalTransformation(finalOutlineTransform, scene.Camera);
+        selected.ApplyFinalTransformation(outlineWorld, finalOutlineTransform, scene.Camera);
 
         DrawWireframe(selected, wb, outlineColor, scene.Camera, 3);
     }

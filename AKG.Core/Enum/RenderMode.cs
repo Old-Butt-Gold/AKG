@@ -6,5 +6,6 @@ public enum RenderMode
     FilledTrianglesLambert,
     FilledTrianglesPhong,
     FilledTrianglesAverageFaceNormalPhong,
-    Texture
+    Texture,
+    TextureRayTracing,
 }

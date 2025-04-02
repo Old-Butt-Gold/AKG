@@ -7,7 +7,7 @@ namespace AKG.Core.ImageHelpers;
 public static class TextureSampler
 {
     // Кэш для хранения массивов пикселей по каждой текстуре.
-    private static readonly ConcurrentDictionary<BitmapImage, byte[]> _textureCache = [];
+    private static readonly ConcurrentDictionary<BitmapImage, byte[]> TextureCache = [];
 
     /// <summary>
     ///     Выбирает (sample) цвет из текстуры по заданным координатам u и v.
@@ -33,14 +33,14 @@ public static class TextureSampler
     private static byte[] GetPixels(BitmapImage texture)
     {
         // Используем кэш для ускорения
-        if (!_textureCache.TryGetValue(texture, out var pixels))
+        if (!TextureCache.TryGetValue(texture, out var pixels))
         {
             var width = texture.PixelWidth;
             var height = texture.PixelHeight;
             var stride = width * 4;
             pixels ??= new byte[height * stride];
             texture.CopyPixels(pixels, stride, 0);
-            _textureCache[texture] = pixels;
+            TextureCache[texture] = pixels;
         }
 
         return pixels;
@@ -58,6 +58,6 @@ public static class TextureSampler
 
     public static void ClearCache()
     {
-        _textureCache.Clear();
+        TextureCache.Clear();
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using AKG.Core.VectorTransformations;
@@ -23,12 +22,9 @@ public class Scene
 
     public ObjModel? SelectedModel { get; set; }
 
-    public HDRiBackground? Background { get; set; }
+    public HdRiBackground? Background { get; set; }
 
-    public Matrix4x4 GetViewportMatrix()
-    {
-        return Transformations.CreateViewportMatrix(CanvasWidth, CanvasHeight);
-    }
+    public Matrix4x4 GetViewportMatrix() => Transformations.CreateViewportMatrix(CanvasWidth, CanvasHeight);
 
     public void UpdateAllModels()
     {
@@ -36,32 +32,18 @@ public class Scene
         var projection = Camera.GetProjectionMatrix();
         var viewport = GetViewportMatrix();
 
-        foreach (var model in Models) UpdateModelTransform(model, view, projection, viewport);
-    }
+        foreach (var model in Models)
+        {
+            // Вычисляем мировую матрицу для модели на основе её локальных параметров:
+            var world = Transformations.CreateWorldTransform(
+                model.Scale,
+                Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
+                model.Translation);
 
-    public void UpdateSelectedModel()
-    {
-        if (SelectedModel is null)
-            return;
-
-        var view = Camera.GetViewMatrix();
-        var projection = Camera.GetProjectionMatrix();
-        var viewport = GetViewportMatrix();
-
-        UpdateModelTransform(SelectedModel, view, projection, viewport);
-    }
-
-    private void UpdateModelTransform(ObjModel model, Matrix4x4 view, Matrix4x4 projection, Matrix4x4 viewport)
-    {
-        // Вычисляем мировую матрицу для модели на основе её локальных параметров:
-        var world = Transformations.CreateWorldTransform(
-            model.Scale,
-            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
-            model.Translation);
-
-        // Композиция матриц: World * View * Projection * Viewport
-        var finalTransform = world * view * projection * viewport;
-        model.ApplyFinalTransformation(finalTransform, Camera);
+            // Композиция матриц: World * View * Projection * Viewport
+            var finalTransform = view * projection * viewport;
+            model.ApplyFinalTransformation(world, finalTransform, Camera);
+        }
     }
 
     public ObjModel? PickModel(Point clickPoint)
@@ -109,7 +91,7 @@ public class Scene
         var bestDepth = float.MaxValue;
 
         // Преобразуем координаты клика из системы координат окна в систему координат Image
-        var imageClickPoint = image.TransformToVisual(Application.Current.MainWindow)
+        var imageClickPoint = image.TransformToVisual(Application.Current.MainWindow!)
             .Transform(new Point(0, 0));
         imageClickPoint = new Point(clickPoint.X - imageClickPoint.X, clickPoint.Y - imageClickPoint.Y);
 

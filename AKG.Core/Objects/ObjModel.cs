@@ -1,5 +1,5 @@
 using System.Numerics;
-using AKG.Core.Parser;
+using AKG.Core.Shadows;
 
 namespace AKG.Core.Objects;
 
@@ -32,6 +32,8 @@ public class ObjModel
     ///     Список вершин, которые будут использоваться для отображения (после применения преобразований).
     /// </summary>
     public Vector4[] TransformedVertices { get; set; } = [];
+
+    public Vector3[] WorldVertices { get; set; } = [];
 
     /// <summary>
     ///     Счетчики количества граней, использующих каждую вершину.
@@ -70,6 +72,8 @@ public class ObjModel
 
     // Вращение модели (углы в радианах по осям X, Y, Z).
     public Vector3 Rotation { get; set; } = Vector3.Zero;
+    
+    public Matrix4x4 WorldMatrix { get; private set; }
 
     // Дополнительная величина, например, для шага перемещения
     public float Delta { get; set; }
@@ -77,7 +81,7 @@ public class ObjModel
     /// <summary>
     ///     Рассчитывает нормали вершин на основе нормалей граней.
     /// </summary>
-    public void CalculateVertexNormals(Matrix4x4 world)
+    public void CalculateVertexNormals()
     {
         // Инициализируем нормали и счетчики нулями
         for (var i = 0; i < OriginalVertices.Count; i++)
@@ -103,9 +107,9 @@ public class ObjModel
                     continue;
 
                 // Преобразуем исходные вершины с учетом текущей мировой матрицы
-                var worldV0 = Vector4.Transform(OriginalVertices[idx0], world).AsVector3();
-                var worldV1 = Vector4.Transform(OriginalVertices[idx1], world).AsVector3();
-                var worldV2 = Vector4.Transform(OriginalVertices[idx2], world).AsVector3();
+                var worldV0 = WorldVertices[idx0];
+                var worldV1 = WorldVertices[idx1];
+                var worldV2 = WorldVertices[idx2];
 
                 // Проверяем на вырожденность треугольника
                 if (worldV0 == worldV1 || worldV1 == worldV2 || worldV0 == worldV2)
@@ -159,16 +163,22 @@ public class ObjModel
     ///     Применяет преобразование к вершинам модели после перемножений матриц World x View x Projection x Viewport
     /// </summary>
     /// <param name="camera">Камера, которой смотрят на модель</param>
+    /// <param name="worldTransform">Матрица мировая</param>
     /// <param name="finalTransform">Матрица, финального преобразования</param>
-    public void ApplyFinalTransformation(Matrix4x4 finalTransform, Camera camera)
+    public void ApplyFinalTransformation(Matrix4x4 worldTransform, Matrix4x4 finalTransform, Camera camera)
     {
         var count = OriginalVertices.Count;
+        WorldMatrix = worldTransform;
         Parallel.For(0, count, i =>
         {
-            var v = Vector4.Transform(OriginalVertices[i], finalTransform);
+            var v = Vector4.Transform(OriginalVertices[i], worldTransform);
+
+            WorldVertices[i] = v.AsVector3();
+
+            v = Vector4.Transform(v, finalTransform);
 
             WValues[i] = v.W;
-            
+
             if (v.W > camera.ZNear && v.W < camera.ZFar) v /= v.W;
 
             /*if (v.W != 0)
@@ -179,4 +189,6 @@ public class ObjModel
             TransformedVertices[i] = v;
         });
     }
+
+    public BvhNode? BvhTree { get; set; }
 }

@@ -4,7 +4,7 @@ using StbImageSharp;
 
 namespace AKG.Core.Objects;
 
-public class HDRiBackground
+public class HdRiBackground
 {
     private int _height;
     private Vector3[] _pixels = [];
@@ -38,10 +38,10 @@ public class HDRiBackground
         var u = (MathF.Atan2(direction.Z, direction.X) + MathF.PI) / (2 * MathF.PI);
         var v = MathF.Acos(direction.Y) / MathF.PI;
 
-        return SampleUV(u, v);
+        return SampleUv(u, v);
     }
 
-    public Vector3 SampleUV(float u, float v)
+    private Vector3 SampleUv(float u, float v)
     {
         var x = (int)(u * _width) % _width;
         var y = (int)(v * _height) % _height;

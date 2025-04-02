@@ -6,6 +6,7 @@ using AKG.Core.Extensions;
 using AKG.Core.ImageHelpers;
 using AKG.Core.Objects;
 using AKG.Core.Parser;
+using AKG.Core.Shadows;
 using AKG.Core.VectorTransformations;
 
 namespace AKG.Core.Renderer;
@@ -20,22 +21,19 @@ public static class Rasterizer
         _zBuffer ??= new float[width, height];
         var initDepth = camera.ZFar;
         for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
-            _zBuffer[x, y] = initDepth;
+        {
+            for (var y = 0; y < height; y++)
+            {
+                _zBuffer[x, y] = initDepth;
+            }
+        }
     }
-
-    #region Lambert
 
     public static unsafe void DrawFilledTriangleLambert(ObjModel model, WriteableBitmap wb, Color color, Camera camera,
         List<Light> lights)
     {
         var width = wb.PixelWidth;
         var height = wb.PixelHeight;
-
-        var world = Transformations.CreateWorldTransform(
-            model.Scale,
-            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
-            model.Translation);
 
         wb.Lock();
 
@@ -60,14 +58,13 @@ public static class Rasterizer
                     continue;
 
                 //Вычисляем нормаль треугольника в мировых координатах
-                var worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
-                var worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
-                var worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
+                var worldV0 = model.WorldVertices[idx0];
+                var worldV1 = model.WorldVertices[idx1];
+                var worldV2 = model.WorldVertices[idx2];
 
                 var edge1 = worldV1 - worldV0;
                 var edge2 = worldV2 - worldV0;
-
-                // Эту нормаль бы сохранять где-то на будущее
+                
                 var normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
 
                 // Backface culling: если треугольник обращён от камеры, отбраковываем грань
@@ -151,13 +148,9 @@ public static class Rasterizer
         }
     }
 
-    #endregion
-
     // Поддерживаются два режима:
     // FilledTrianglesPhong – вычисление цвета на уровне пикселя (обычное Фонговое затенение)
     // FilledTrianglesAverageFaceNormalPhong – использование усреднённых нормалей вершин (Гуравское затенение)
-
-    #region FilledTrianglesPhong
 
     /// <summary>
     ///     Растеризует треугольники для каждой грани модели с применением фан-трайангуляции, backface culling и модели Фонга.
@@ -165,19 +158,18 @@ public static class Rasterizer
     ///     происходит заполнение с использованием Z-буфера и вычислением цвета по модели Фонга.
     /// </summary>
     public static unsafe void DrawFilledTrianglePhong(ObjModel model, WriteableBitmap wb,
-        Camera camera, List<Light> lights)
+        Camera camera, List<Light> lights, bool normalsFromFile)
     {
         var width = wb.PixelWidth;
         var height = wb.PixelHeight;
-
-        // Вычисляем мировую матрицу на основе масштабирования, вращения и трансляции модели
-        var world = Transformations.CreateWorldTransform(
-            model.Scale,
-            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
-            model.Translation);
-
+        
         wb.Lock();
         var buffer = (int*)wb.BackBuffer;
+
+        if (!normalsFromFile)
+        {
+            model.CalculateVertexNormals();
+        }
 
         // Для каждой грани модели (фан-трайангуляция)
         Parallel.ForEach(model.Faces, face =>
@@ -198,9 +190,9 @@ public static class Rasterizer
                     continue;
 
                 // Вычисляем мировые координаты вершин (для backface culling)
-                var worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
-                var worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
-                var worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
+                var worldV0 = model.WorldVertices[idx0];
+                var worldV1 = model.WorldVertices[idx1];
+                var worldV2 = model.WorldVertices[idx2];
 
                 // Вычисляем нормаль треугольника (в мировых координатах)
                 var edge1 = worldV1 - worldV0;
@@ -225,29 +217,29 @@ public static class Rasterizer
                     || screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar)
                     continue;
 
-                // Определяем нормали для затенения:
-                // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
-                var n0 = face.Vertices[0].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[0].NormalIndex - 1], world)
-                    : faceNormal;
-                var n1 = face.Vertices[j].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j].NormalIndex - 1], world)
-                    : faceNormal;
-                var n2 = face.Vertices[j + 1].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world)
-                    : faceNormal;
+                Vector3 n0, n1, n2;
 
-                /* Было
-                 var n0 = (face.Vertices[0].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[0].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-                var n1 = (face.Vertices[j].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[j].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-                var n2 = (face.Vertices[j + 1].NormalIndex > 0)
-                    ? Vector4.Transform(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world).AsVector3()
-                    : faceNormal;
-                 */
+                if (normalsFromFile)
+                {
+                    // Определяем нормали для затенения:
+                    // Если в модели заданы нормали для вершин, используем их; иначе – используем нормаль грани.
+                    n0 = face.Vertices[0].NormalIndex > 0
+                        ? Vector3.TransformNormal(model.Normals[face.Vertices[0].NormalIndex - 1], model.WorldMatrix)
+                        : faceNormal;
+                    n1 = face.Vertices[j].NormalIndex > 0
+                        ? Vector3.TransformNormal(model.Normals[face.Vertices[j].NormalIndex - 1], model.WorldMatrix)
+                        : faceNormal;
+                    n2 = face.Vertices[j + 1].NormalIndex > 0
+                        ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1],
+                            model.WorldMatrix)
+                        : faceNormal;
+                }
+                else
+                {
+                    n0 = model.VertexNormals[idx0];
+                    n1 = model.VertexNormals[idx1];
+                    n2 = model.VertexNormals[idx2];
+                }
 
                 // Отрисовываем треугольник с Фонговым затенением.
                 DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
@@ -259,94 +251,6 @@ public static class Rasterizer
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
     }
-
-    #endregion
-
-    #region FilledTrianglesAverageFaceNormalPhong
-
-    /// <summary>
-    ///     Растеризует треугольники для каждой грани модели с применением фан-трайангуляции, backface culling и модели Фонга.
-    ///     Для каждой треугольной части вычисляются экранные координаты и, если треугольник видим (с учетом нормали),
-    ///     происходит заполнение с использованием Z-буфера и вычислением цвета по модели Фонга.
-    /// </summary>
-    public static unsafe void FilledTrianglesAverageFaceNormalPhong(ObjModel model, WriteableBitmap wb,
-        Camera camera, List<Light> lights)
-    {
-        var width = wb.PixelWidth;
-        var height = wb.PixelHeight;
-
-        // Вычисляем мировую матрицу на основе масштабирования, вращения и трансляции модели
-        var world = Transformations.CreateWorldTransform(
-            model.Scale,
-            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
-            model.Translation);
-
-        wb.Lock();
-        var buffer = (int*)wb.BackBuffer;
-
-        model.CalculateVertexNormals(world);
-
-        // Для каждой грани модели (фан-трайангуляция)
-        Parallel.ForEach(model.Faces, face =>
-        {
-            if (face.Vertices.Count < 3) return;
-
-            // Для каждой треугольной части грани
-            for (var j = 1; j < face.Vertices.Count - 1; j++)
-            {
-                var idx0 = face.Vertices[0].VertexIndex - 1;
-                var idx1 = face.Vertices[j].VertexIndex - 1;
-                var idx2 = face.Vertices[j + 1].VertexIndex - 1;
-
-                if (idx0 < 0 || idx1 < 0 || idx2 < 0 ||
-                    idx0 >= model.TransformedVertices.Length ||
-                    idx1 >= model.TransformedVertices.Length ||
-                    idx2 >= model.TransformedVertices.Length)
-                    continue;
-
-                // Вычисляем мировые координаты вершин (для backface culling)
-                var worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
-                var worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
-                var worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
-
-                // Вычисляем нормаль треугольника (в мировых координатах)
-                var edge1 = worldV1 - worldV0;
-                var edge2 = worldV2 - worldV0;
-                var faceNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
-
-                // Backface culling: если треугольник обращён от камеры, отбраковываем грань
-                var viewDirection = worldV0 - camera.Eye; // Вектор взгляда от камеры к вершине
-                if (Vector3.Dot(faceNormal, viewDirection) > 0)
-                    continue; // Если скалярное произведение положительное, грань отвернута
-
-                // Получаем экранные координаты (уже после всех преобразований)
-                var screenV0 = model.TransformedVertices[idx0].AsVector3();
-                var screenV1 = model.TransformedVertices[idx1].AsVector3();
-                var screenV2 = model.TransformedVertices[idx2].AsVector3();
-
-                if ((screenV0.X >= width && screenV1.X >= width && screenV2.X >= width)
-                    || (screenV0.X <= 0 && screenV1.X <= 0 && screenV2.X <= 0)
-                    || (screenV0.Y >= height && screenV1.Y >= height && screenV2.Y >= height)
-                    || (screenV0.Y <= 0 && screenV1.Y <= 0 && screenV2.Y <= 0)
-                    || screenV0.Z < camera.ZNear || screenV1.Z < camera.ZNear || screenV2.Z < camera.ZNear
-                    || screenV0.Z > camera.ZFar || screenV1.Z > camera.ZFar || screenV2.Z > camera.ZFar)
-                    continue;
-
-                var n0 = model.VertexNormals[idx0];
-                var n1 = model.VertexNormals[idx1];
-                var n2 = model.VertexNormals[idx2];
-
-                DrawFilledTrianglePhong(screenV0, screenV1, screenV2,
-                    n0, n1, n2, worldV0, worldV1, worldV2,
-                    buffer, width, height, lights, camera);
-            }
-        });
-
-        wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
-        wb.Unlock();
-    }
-
-    #endregion
 
     /// <summary>
     ///     Растеризует один треугольник с Фонговым затенением.
@@ -398,12 +302,11 @@ public static class Rasterizer
                     // Нормализация нужна для расчета зеркальной составляющей.
                     var viewDirection = Vector3.Normalize(camera.Eye - fragWorld);
 
-                    var material = Material.DefaultMaterial;
+                    var lightParamers = LightParameters.DefaultLightParameters;
 
                     buffer[y * width + x] =
                         Light.ApplyPhongShading(lights, interpNormal, viewDirection, fragWorld,
-                            material.AmbientColor, material.Ka, material.DiffuseColor, material.Kd,
-                            material.SpecularColor, material.Ks, material.Shininess).ToColor().ColorToIntBgra();
+                            lightParamers).ToColor().ColorToIntBgra();
                 }
             }
         }
@@ -414,28 +317,26 @@ public static class Rasterizer
     ///     вычисляет необходимые параметры и затем для каждого треугольника выполняет
     ///     наложение текстур: диффузной карты, карты нормалей и зеркальной карты.
     /// </summary>
-    /// <param name="model">Модель (объект ObjModel)</param>
-    /// <param name="wb">WriteableBitmap для отрисовки</param>
-    /// <param name="camera">Камера сцены</param>
-    /// <param name="lights">Список источников света</param>
-    public static unsafe void DrawTexturedTriangles(ObjModel model, WriteableBitmap wb, Camera camera,
-        List<Light> lights)
+    public static unsafe void DrawTexturedTriangles(ObjModel model, WriteableBitmap wb, Scene scene, bool rayTrace)
     {
         var width = wb.PixelWidth;
         var height = wb.PixelHeight;
 
-        // 1. Вычисляем мировую матрицу для модели
-        var world = Transformations.CreateWorldTransform(
-            model.Scale,
-            Matrix4x4.CreateFromYawPitchRoll(model.Rotation.Y, model.Rotation.X, model.Rotation.Z),
-            model.Translation);
+        var camera = scene.Camera;
 
+        if (rayTrace)
+        {
+            foreach (var sceneModel in scene.Models)
+            {
+                CreateBvh(sceneModel);
+            }
+        }
+        
         wb.Lock();
         var buffer = (int*)wb.BackBuffer;
 
         // 2. Проходим по каждой грани модели (с фан‑трайангуляцией)
-        //Parallel.ForEach(model.Faces, face =>
-        foreach (var face in model.Faces)
+        Parallel.ForEach(model.Faces, face =>
         {
             if (face.Vertices.Count < 3) return;
 
@@ -454,9 +355,9 @@ public static class Rasterizer
                     continue;
 
                 // 3. Вычисляем мировые координаты вершин
-                var worldV0 = Vector4.Transform(model.OriginalVertices[idx0], world).AsVector3();
-                var worldV1 = Vector4.Transform(model.OriginalVertices[idx1], world).AsVector3();
-                var worldV2 = Vector4.Transform(model.OriginalVertices[idx2], world).AsVector3();
+                var worldV0 = model.WorldVertices[idx0];
+                var worldV1 = model.WorldVertices[idx1];
+                var worldV2 = model.WorldVertices[idx2];
 
                 // 4. Вычисляем нормаль треугольника для backface culling
                 var edge1 = worldV1 - worldV0;
@@ -492,22 +393,20 @@ public static class Rasterizer
 
                 // 7. Определяем нормали для затенения (используем нормали вершин, если заданы)
                 var n0 = face.Vertices[0].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[0].NormalIndex - 1], world)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[0].NormalIndex - 1], model.WorldMatrix)
                     : faceNormal;
                 var n1 = face.Vertices[j].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j].NormalIndex - 1], world)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j].NormalIndex - 1], model.WorldMatrix)
                     : faceNormal;
                 var n2 = face.Vertices[j + 1].NormalIndex > 0
-                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], world)
+                    ? Vector3.TransformNormal(model.Normals[face.Vertices[j + 1].NormalIndex - 1], model.WorldMatrix)
                     : faceNormal;
-
-
+                
                 // 8. Вызываем функцию отрисовки треугольника с наложением текстур
                 DrawFilledTriangleTexture(screenV0, screenV1, screenV2, n0, n1, n2, worldV0, worldV1, worldV2, uv0, uv1,
-                    uv2,
-                    buffer, width, height, lights, camera, GetFaceMaterial(model, face), model);
+                    uv2, buffer, width, height, scene, GetFaceMaterial(model, face), model, rayTrace);
             }
-        };
+        });
 
         wb.AddDirtyRect(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
         wb.Unlock();
@@ -527,8 +426,7 @@ public static class Rasterizer
     /// </summary>
     private static unsafe void DrawFilledTriangleTexture(Vector3 v0, Vector3 v1, Vector3 v2,
         Vector3 n0, Vector3 n1, Vector3 n2, Vector3 w0, Vector3 w1, Vector3 w2,
-        Vector3 uv0, Vector3 uv1, Vector3 uv2, int* buffer, int width, int height, List<Light> lights,
-        Camera camera, Material material, ObjModel model)
+        Vector3 uv0, Vector3 uv1, Vector3 uv2, int* buffer, int width, int height, Scene scene, Material material, ObjModel model, bool rayTrace)
     {
         var diffuseTex = !string.IsNullOrEmpty(material.DiffuseMap) ? TextureLoader.Load(material.DiffuseMap) : null;
         var normalTex = !string.IsNullOrEmpty(material.NormalMap) ? TextureLoader.Load(material.NormalMap) : null;
@@ -567,6 +465,8 @@ public static class Rasterizer
                 {
                     _zBuffer[x, y] = depth;
 
+                    var lightParameters = new LightParameters(material);
+
                     // Линейная интерполяция uv
                     var uv = alpha * uv0 + beta * uv1 + gamma * uv2;
 
@@ -590,16 +490,14 @@ public static class Rasterizer
                         // Применяем вращение модели к нормали (если требуется)
                         interpNormal = Vector3.TransformNormal(mapNormal, rotation);
                     }
-
-                    var diffuseColor = material.DiffuseColor;
-                    var ambientColor = material.AmbientColor;
+                    
 
                     // Создаём локальные копии для диффузного и амбиентного цвета
                     if (diffuseTex != null)
                     {
                         var texColor = TextureSampler.Sample(diffuseTex, uv.X, uv.Y);
-                        diffuseColor = texColor.ToVector3();
-                        ambientColor = texColor.ToVector3();
+                        lightParameters.DiffuseColor = texColor.ToVector3();
+                        lightParameters.AmbientColor = texColor.ToVector3();
                     }
 
                     // Если mrao‑текстура задана, извлекаем металлическость из R-канала,
@@ -609,46 +507,77 @@ public static class Rasterizer
                         var mraoColor = TextureSampler.Sample(mraoTex, uv.X, uv.Y);
                     }
                     
-                    var shininess = material.Shininess;
-
                     // Если задана SpecularMap, заменяем статическое значение зеркальной компоненты
-                    var specularColor = material.SpecularColor;
-                    var ks = material.Ks;
                     if (specularTex != null)
                     {
-                        ks = TextureSampler.Sample(specularTex, uv.X, uv.Y).ToVector3() / 255f;
+                        lightParameters.Ks = TextureSampler.Sample(specularTex, uv.X, uv.Y).ToVector3() / 255f;
                     }
 
                     // Вычисляем вектор взгляда (от фрагмента к камере)
                     // Нормализация нужна для расчета зеркальной составляющей.
-                    var viewDir = Vector3.Normalize(camera.Eye - fragWorld);
+                    var viewDir = Vector3.Normalize(scene.Camera.Eye - fragWorld);
 
-                    var lighting = Light.ApplyPhongShading(lights, interpNormal, viewDir, fragWorld,
-                        ambientColor, material.Ka, diffuseColor, material.Kd, specularColor,
-                        ks, shininess);
+                    Vector3 lighting;
+                    
+                    if (!rayTrace)
+                    {
+                        lighting = Light.ApplyPhongShading(scene.Lights, interpNormal, viewDir, fragWorld,
+                            lightParameters);
+                    }
+                    else
+                    {
+                        lighting = Light.ApplyPhongShadingRayTracing(scene.Lights, interpNormal, viewDir, fragWorld,
+                            lightParameters, scene.Models);
+                    }
 
                     if (emissiveTex != null)
                     {
                         var emissive = TextureSampler.Sample(emissiveTex, uv.X, uv.Y).ToVector3();
-                        lighting += emissive * material.Ke;
+                        lighting += emissive * lightParameters.Ke;
                     }
 
-                    lighting = Vector3.Clamp(lighting, Vector3.Zero, new Vector3(255, 255, 255));
+                    lighting = Vector3.Clamp(lighting, Vector3.Zero, new Vector3(255));
 
                     buffer[y * width + x] = lighting.ToColor().ColorToIntBgra();
                 }
             }
         }
     }
-
-    /// <summary>
-    ///     Пример вспомогательного метода для bump mapping. Получает высоту из bump-текстуры по UV.
-    /// </summary>
-    private static float GetBumpHeight(BitmapImage bumpTex, float u, float v)
+    
+    private static void CreateBvh(ObjModel model)
     {
-        // Выбираем цвет из bump-текстуры
-        var c = TextureSampler.Sample(bumpTex, u, v);
-        // Преобразуем в яркость (среднее значение каналов)
-        return (c.R + c.G + c.B) / (3f * 255f);
+        // Построим список треугольников для BVH на основе граней
+        List<Triangle> triangles = [];
+        foreach (var face in model.Faces)
+        {
+            if (face.Vertices.Count < 3)
+                continue;
+            // Фан-трайангуляция
+            for (int j = 1; j < face.Vertices.Count - 1; j++)
+            {
+                int idx0 = face.Vertices[0].VertexIndex - 1;
+                int idx1 = face.Vertices[j].VertexIndex - 1;
+                int idx2 = face.Vertices[j + 1].VertexIndex - 1;
+
+                if (idx0 < 0 || idx1 < 0 || idx2 < 0 ||
+                    idx0 >= model.OriginalVertices.Count ||
+                    idx1 >= model.OriginalVertices.Count ||
+                    idx2 >= model.OriginalVertices.Count)
+                    continue;
+
+                var worldV0 = model.WorldVertices[idx0];
+                var worldV1 = model.WorldVertices[idx1];
+                var worldV2 = model.WorldVertices[idx2];
+
+                triangles.Add(new Triangle
+                {
+                    V0 = worldV0,
+                    V1 = worldV1,
+                    V2 = worldV2
+                });
+            }
+        }
+
+        model.BvhTree = BvhBuilder.BuildBvh(triangles);
     }
 }

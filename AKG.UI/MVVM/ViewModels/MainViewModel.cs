@@ -372,7 +372,7 @@ public class MainViewModel : INotifyPropertyChanged
         if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
             try
             {
-                Scene.Background = new HDRiBackground();
+                Scene.Background = new HdRiBackground();
                 Scene.Background.LoadFromHdrFile(dlg.FileName!);
                 UpdateView();
             }
