@@ -73,11 +73,27 @@ public class Light
         return (diffuse, specular);
     }
     
+    /// <summary>
+    /// Проверяет, находится ли фрагмент в тени относительно заданного источника света.
+    /// Метод создаёт луч (shadowRay) от точки фрагмента, немного смещённой от поверхности, в направлении источника света.
+    /// Затем для каждого объекта сцены проверяется пересечение этого луча с BVH-деревом модели.
+    /// Если расстояние до пересечения меньше расстояния до источника света, считается, что фрагмент находится в тени.
+    /// </summary>
+    /// <param name="fragWorld">Мировые координаты фрагмента (точки поверхности)</param>
+    /// <param name="lightPosition">Мировые координаты источника света</param>
+    /// <param name="normal">Нормаль к поверхности в точке фрагмента</param>
+    /// <param name="sceneModels">Список моделей сцены, для которых построены BVH-деревья</param>
+    /// <returns>True, если фрагмент находится в тени, иначе false</returns>
     private static bool IsInShadow(Vector3 fragWorld, Vector3 lightPosition, Vector3 normal, List<ObjModel>? sceneModels)
     {
         if (sceneModels == null) return false;
 
+        // Вычисляем направление от фрагмента к источнику света, нормализованное до единичной длины.
         var lightDirection = Vector3.Normalize(lightPosition - fragWorld);
+        
+        // Создаем луч для проверки теней.
+        // Начало луча немного смещается от поверхности (на величину Triangle.Bias) вдоль нормали,
+        // чтобы избежать самопересечений (shadow acne).
         var shadowRay = new Ray
         {
             Origin = fragWorld + normal * Triangle.Bias,
@@ -86,12 +102,18 @@ public class Light
 
         foreach (var model in sceneModels)
         {
+            // Если луч пересекает BVH-дерево модели,
+            // и расстояние до пересечения меньше расстояния до источника света,
+            // значит, перед фрагментом находится какой-либо объект, который отбрасывает тень.
             if (ShadowHelper.RayIntersectBvh(model.BvhTree!, shadowRay, out var t) 
                 && t < Vector3.Distance(fragWorld, lightPosition))
             {
                 return true;
             }
         }
+        
+        // Если для ни одной модели не найдено препятствие на пути к источнику света,
+        // фрагмент не находится в тени
         return false;
     }
     

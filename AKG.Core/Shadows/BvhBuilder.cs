@@ -25,23 +25,25 @@ public static class BvhBuilder
         if (triangles.Count <= LeafThreshold)
         {
             node.Triangles = triangles;
-            node.Bounds = CalculateAABB(triangles); // Вычисляем AABB для всех треугольников
+            node.Bounds = CalculateAABB(triangles); // Вычисляем AABB охватывающий все треугольники
             return node;
         }
 
-        // Разделяем треугольники на две группы (например, по медиане центра)
+        // Разбиваем треугольники на две группы по медиане центра вдоль наиболее протяжённой оси
         var (leftTriangles, rightTriangles) = SplitTriangles(triangles);
 
         // Рекурсивно строим дочерние узлы
         node.Left = BuildRecursive(leftTriangles);
         node.Right = BuildRecursive(rightTriangles);
-        node.Bounds = Union(node.Left.Bounds, node.Right.Bounds); // Объединяем AABB
+        // Объединяем AABB дочерних узлов, чтобы получить AABB для текущего узла
+        node.Bounds = Union(node.Left.Bounds, node.Right.Bounds);
 
         return node;
     }
     
     /// <summary>
     /// Вычисляет Axis-Aligned Bounding Box (AABB) для списка треугольников.
+    /// Перебираются все треугольники, и для каждой вершины находится минимальное и максимальное значение по каждой оси.
     /// </summary>
     private static AABB CalculateAABB(List<Triangle> triangles)
     {
@@ -59,7 +61,7 @@ public static class BvhBuilder
     }
     
     /// <summary>
-    /// Объединяет два AABB в один, охватывающий оба.
+    /// Объединяет два AABB в один, который полностью охватывает оба входных ограничивающих объёма.
     /// </summary>
     private static AABB Union(AABB a, AABB b)
     {
@@ -70,6 +72,7 @@ public static class BvhBuilder
     
     /// <summary>
     /// Разбивает список треугольников на две части по медиане центра вдоль наиболее протяжённой оси.
+    /// Определяется ось с максимальным размером ограничивающего объёма, затем треугольники сортируются по координате центра вдоль этой оси.
     /// </summary>
     private static (List<Triangle> left, List<Triangle> right) SplitTriangles(List<Triangle> triangles)
     {

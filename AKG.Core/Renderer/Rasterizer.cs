@@ -552,7 +552,9 @@ public static class Rasterizer
         {
             if (face.Vertices.Count < 3)
                 continue;
-            // Фан-трайангуляция
+            
+            // Фан-трайангуляция: каждая грань разбивается на треугольники,
+            // где первая вершина фиксирована, а остальные образуют последовательные треугольники.
             for (int j = 1; j < face.Vertices.Count - 1; j++)
             {
                 int idx0 = face.Vertices[0].VertexIndex - 1;
