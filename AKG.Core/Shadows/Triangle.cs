@@ -54,6 +54,6 @@ public class Triangle
         t = f * Vector3.Dot(edge2, q);
         
         // Проверяем, находится ли точка пересечения перед началом луча с учётом bias
-        return true; 
+        return t > Bias; 
     }
 }
